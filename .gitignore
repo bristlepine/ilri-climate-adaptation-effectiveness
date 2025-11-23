@@ -1,0 +1,71 @@
+# -------------------------------
+# OS / Editor Files
+# -------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# -------------------------------
+# Python / Conda
+# -------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+.venv
+venv/
+env/
+pip-wheel-metadata/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# -------------------------------
+# R / RStudio
+# -------------------------------
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+.Rproj.user
+
+# renv
+renv/library/
+renv/staging/
+
+# -------------------------------
+# Node / Frontend (optional later)
+# -------------------------------
+node_modules/
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+build/
+dist/
+
+# -------------------------------
+# Data Files (raw exported search results)
+# Keep raw RIS/CSV files out of git unless needed
+# -------------------------------
+data/raw/*
+data/intermediate/*
+!data/raw/.gitkeep
+!data/intermediate/.gitkeep
+
+# -------------------------------
+# Logs + Outputs
+# -------------------------------
+*.log
+outputs/**/*.pdf
+outputs/**/*.docx
+outputs/**/*.pptx
+
+# -------------------------------
+# Temporary
+# -------------------------------
+*.tmp
+*.temp
+*.bak
