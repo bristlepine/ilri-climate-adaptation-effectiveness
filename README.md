@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/XXXXXX.svg)](https://doi.org/XXXXXX)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17809739.svg)](https://doi.org/10.5281/zenodo.17809739)
 
 # ILRI Climate Adaptation Effectiveness
 ### Evidence synthesis and systematic reviews on climate change and agri-food systems  
@@ -43,7 +43,7 @@ A formal citation will be added to `CITATION.cff` once contributor metadata is f
 
 **Citation placeholder:**
 
-> [Authors] (2025). ILRI Climate Adaptation Effectiveness: Evidence synthesis and systematic reviews for tracking climate adaptation effectiveness in smallholder systems. Version X.X. Zenodo. https://doi.org/XXXXXXX
+> [Authors] (2025). ILRI Climate Adaptation Effectiveness: Evidence synthesis and systematic reviews for tracking climate adaptation effectiveness in smallholder systems. Version X.X. Zenodo. https://doi.org/10.5281/zenodo.17809739
 
 Each deliverable will receive its own versioned DOI, listed below.
 
@@ -53,8 +53,8 @@ Each deliverable will receive its own versioned DOI, listed below.
 
 | Platform | Purpose | URL / Identifier |
 |----------|---------|------------------|
-| **GitHub** | Code, methods, workflows, documentation | https://github.com/[org]/ilri-climate-adaptation-effectiveness |
-| **Zenodo** | DOI-minted snapshots of releases | DOI: To be added |
+| **GitHub** | Code, methods, workflows, documentation | https://github.com/bristlepine/ilri-climate-adaptation-effectiveness |
+| **Zenodo** | DOI-minted snapshots of releases | https://doi.org/10.5281/zenodo.17809739 |
 | **CGSpace** | Permanent ILRI archive for final outputs | Handle: To be added |
 | **Journal Publications** | Scoping review, systematic map, systematic review | To be added |
 
@@ -64,7 +64,7 @@ Each deliverable will receive its own versioned DOI, listed below.
 
 | No. | Deliverable | Type | Due Date | Status | DOI |
 |-----|-------------|------|----------|--------|------|
-| 1 | Inception Report (RQs, search plan, Gantt, methods) | Interim Report | Nov 26, 2025 | Submitted | TBD |
+| 1 | Inception Report | Final RQs, search plan, Gantt chart | Interim | Submitted | [PDF](https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/01_inception_report/Deliverable%201_Inception%20Report_IL01_v1.pdf) • [DOI](https://doi.org/10.5281/zenodo.17809740) |
 | 2 | Draft Scoping Review & Systematic Map Protocol | Interim Report | Jan 2, 2026 | In Progress | TBD |
 | 3 | Final Scoping Review / Systematic Map Protocol (CGSpace) | Final Report | Jan 30, 2026 | Not Started | TBD |
 | 4 | Draft Scoping Review + Evidence Database | Interim | Feb 27, 2026 | Not Started | TBD |
@@ -99,7 +99,7 @@ repo-root/
 │
 ├── deliverables/
 │   ├── 01_inception_report/
-│   │   ├── inception_report.pdf
+│   │   ├── Deliverable 1_Inception Report_IL01_v1.pdf
 │   │   ├── README.md
 │   │   └── metadata.json
 │   │
