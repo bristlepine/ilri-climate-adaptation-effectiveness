@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17809739.svg)](https://doi.org/10.5281/zenodo.17809739)
 
-# ILRI – Measuring what matters: tracking climate adaptation processes and outcomes for smallholder producers in the agriculture sector
+# ILRI – Measuring what matters: tracking climate adaptation processes and outcomes for smallholder producers in the agriculture sector.
 ### Evidence synthesis and systematic reviews on climate change and agri-food systems
 
 This repository hosts the methods, workflows, protocols, documentation, and outputs for the ILRI evidence-synthesis project assessing the effectiveness of climate adaptation interventions for smallholder producers. The project includes a scoping review, systematic evidence map, and systematic review/meta-analysis, following CEE, Campbell Collaboration, and Cochrane standards.
@@ -24,7 +24,7 @@ This repository hosts the methods, workflows, protocols, documentation, and outp
 
 ## How to Cite This Repository
 
-Cissé, J. D., Staub, C. G., & Khan, Z. (2025). ILRI – Measuring What Matters: Tracking the Effectiveness of Climate Adaptation for Smallholder Producers. Version X.X. Zenodo. https://doi.org/10.5281/zenodo.17809739
+Cissé, J. D., Staub, C. G., & Khan, Z. (2025). ILRI – Measuring what matters: tracking climate adaptation processes and outcomes for smallholder producers in the agriculture sector. Version 1.0. Zenodo. https://doi.org/10.5281/zenodo.17809739
 
 Each deliverable will receive its own versioned DOI, listed below.
 
@@ -58,86 +58,28 @@ Each deliverable will receive its own versioned DOI, listed below.
 
 ---
 
-## Key Objectives
-
-1. Map and classify methods used to evaluate climate adaptation effectiveness.  
-2. Conduct a scoping review and systematic evidence map.  
-3. Perform a systematic review/meta-analysis.  
-4. Build a searchable evidence database.  
-5. Ensure reproducibility and FAIR compliance.  
-6. Produce publication-ready manuscripts and policy-friendly outputs.
-
----
-
 ## Repository Structure
 
+<!-- AUTO-STRUCTURE:START -->
 ```bash
 repo-root/
-├── data/
-│   ├── raw/
-│   ├── clean/
-│   └── README.md
-│
+├── CITATION.cff
+├── LICENSE
+├── autodocs.py
 ├── deliverables/
 │   ├── 01_inception_report/
 │   │   ├── Deliverable 1_Inception Report_IL01_v1.pdf
 │   │   ├── README.md
-│   │   └── metadata.json
-│   │
-│   ├── 02_scoping_protocol_draft/
-│   │   ├── scoping_protocol_draft.pdf
-│   │   ├── README.md
-│   │   └── metadata.json
-│   │
-│   ├── 03_scoping_protocol_final/
-│   │   ├── scoping_protocol_final.pdf
-│   │   ├── README.md
-│   │   └── metadata.json
-│   │
-│   ├── 04_scoping_review_draft/
-│   │   ├── scoping_review_draft.pdf
-│   │   ├── README.md
-│   │   └── metadata.json
-│   │
-│   ├── 05_scoping_review_final/
-│   │   ├── scoping_review_final.pdf
-│   │   ├── README.md
-│   │   └── metadata.json
-│   │
-│   ├── 06_srma_protocol_draft/
-│   │   ├── srma_protocol_draft.pdf
-│   │   ├── README.md
-│   │   └── metadata.json
-│   │
-│   ├── 07_srma_protocol_final/
-│   │   ├── srma_protocol_final.pdf
-│   │   ├── README.md
-│   │   └── metadata.json
-│   │
-│   ├── 08_srma_draft/
-│   │   ├── srma_draft.pdf
-│   │   ├── README.md
-│   │   └── metadata.json
-│   │
-│   ├── 09_srma_final/
-│   │   ├── srma_final.pdf
-│   │   ├── README.md
-│   │   └── metadata.json
-│   │
-│   ├── 10_final_presentation/
-│   │   ├── presentation_final.pptx
-│   │   ├── README.md
-│   │   └── metadata.json
-│
-├── scripts/
-│   ├── data_processing/
-│   ├── analysis/
-│   ├── utils.R
-│   ├── utils.py
-│   └── run.py
-│
-├── CITATION.cff
-├── LICENSE
-└── README.md
-```        
+│   │   ├── metadata.json
+├── frontend/
+│   ├── README.md
+│   ├── next-env.d.ts
+│   ├── next.config.ts
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.mjs
+│   ├── tsconfig.json
+```
+<!-- AUTO-STRUCTURE:END --> 
+
 ---
