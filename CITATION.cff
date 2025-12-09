@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this project, please cite it as below."
+title: "ILRI – Measuring What Matters: Tracking the Effectiveness of Climate Adaptation for Smallholder Producers"
+version: "0.1.0"
+doi: 10.5281/zenodo.17809739
+authors:
+  - family-names: "Cissé"
+    given-names: "Jennifer Denno"
+    affiliation: "Bristlepine Resilience Consultants"
+    orcid: "https://orcid.org/0000-0001-5637-1941"
+  - family-names: "Staub"
+    given-names: "Caroline G."
+    affiliation: "Bristlepine Resilience Consultants"
+  - family-names: "Khan"
+    given-names: "Zarrar"
+    affiliation: "Bristlepine Resilience Consultants"
+    orcid: "https://orcid.org/0000-0002-8147-8553"
+abstract: "Evidence-synthesis project evaluating methods for measuring the effectiveness of climate adaptation interventions for smallholder producers through a scoping review, systematic map, and systematic review/meta-analysis."
+keywords:
+  - climate adaptation
+  - smallholder agriculture
+  - evidence synthesis
+  - systematic review
+  - meta-analysis
+repository-code: "https://github.com/bristlepine/ilri-climate-adaptation-effectiveness"

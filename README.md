@@ -1,49 +1,30 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17809739.svg)](https://doi.org/10.5281/zenodo.17809739)
 
-# ILRI Climate Adaptation Effectiveness
-### Evidence synthesis and systematic reviews on climate change and agri-food systems  
-**Project:** “Measuring what matters: tracking the effectiveness of climate adaptation for smallholder producers”
+# ILRI – Measuring What Matters: Tracking the Effectiveness of Climate Adaptation for Smallholder Producers
+### Evidence synthesis and systematic reviews on climate change and agri-food systems
 
-This repository hosts the methods, workflows, protocols, documentation, and outputs for the ILRI evidence-synthesis project assessing the effectiveness of climate adaptation interventions for smallholder producers.  
-The project includes a scoping review, systematic map, and systematic review/meta-analysis, following CEE, Campbell Collaboration, and Cochrane standards.
-
----
-
-## Project Overview
-The project aims to systematically identify, evaluate, and synthesize methods for tracking the effectiveness of climate adaptation interventions in smallholder agricultural systems.  
-It emphasizes:
-- Transparent, preregistered review methods  
-- Reproducible and open workflows  
-- DOI-minted, citable research objects  
-- FAIR data stewardship  
-- Long-term archiving (CGSpace, Zenodo)
+This repository hosts the methods, workflows, protocols, documentation, and outputs for the ILRI evidence-synthesis project assessing the effectiveness of climate adaptation interventions for smallholder producers. The project includes a scoping review, systematic evidence map, and systematic review/meta-analysis, following CEE, Campbell Collaboration, and Cochrane standards.
 
 ---
 
 ## Contributors
 
 ### Principal Investigators & Authors  
-- [Add names + ORCID IDs]
+- Jennifer Denno Cissé — Bristlepine Resilience Consultants — ORCID: 0000-0001-5637-1941 — jenn@bristlep.com  
+- Caroline G. Staub — Bristlepine Resilience Consultants — caroline@bristlep.com  
+- Zarrar Khan — Bristlepine Resilience Consultants — ORCID: 0000-0002-8147-8553 — zarrar@bristlep.com  
 
 ### Systematic Review Methodology Support  
-- Dr. Neal Haddaway  
-- CGIAR / ILRI Evidence Synthesis & Systematic Review Teams
-
-### Data, Analysis, and Workflow Support  
-- [Add names]
+- Neal Haddaway — Evidence Synthesis Specialist
 
 ### Project Coordination  
-- [Add names]
+- Aditi Mukherji — Principal Scientist, Climate Action — ILRI  
 
 ---
 
 ## How to Cite This Repository
 
-A formal citation will be added to `CITATION.cff` once contributor metadata is finalized.
-
-**Citation placeholder:**
-
-> [Authors] (2025). ILRI Climate Adaptation Effectiveness: Evidence synthesis and systematic reviews for tracking climate adaptation effectiveness in smallholder systems. Version X.X. Zenodo. https://doi.org/10.5281/zenodo.17809739
+Cissé, J. D., Staub, C. G., & Khan, Z. (2025). ILRI – Measuring What Matters: Tracking the Effectiveness of Climate Adaptation for Smallholder Producers. Version X.X. Zenodo. https://doi.org/10.5281/zenodo.17809739
 
 Each deliverable will receive its own versioned DOI, listed below.
 
