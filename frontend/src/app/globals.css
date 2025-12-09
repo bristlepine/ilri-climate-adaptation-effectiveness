@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+/* Brand palette + font vars */
+:root {
+  --green: #21472E;
+  --wood: #4D311A;
+  --charcoal: #3C3C3C;
+  --clay: #CAC2B5;
+  --sage: #627882;
+  --sand: #F5F2EC;
+
+  --background: var(--sand);
+  --foreground: var(--charcoal);
+
+  --font-logo: 'EB Garamond', serif;
+  --font-tagline: 'Lato', sans-serif;
+}
+
+
+/* Base styles */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-tagline), sans-serif;
+}
+
+/* Custom utility classes */
+.font-logo {
+  font-family: var(--font-logo);
+}
+.font-tagline {
+  font-family: var(--font-tagline);
+}
+
+.text-green {
+  color: var(--green);
+}
+.text-wood {
+  color: var(--wood);
+}
+.text-charcoal {
+  color: var(--charcoal);
+}
+.text-clay {
+  color: var(--clay);
+}
+.text-sage {
+  color: var(--sage);
+}
+.text-sand {
+  color: var(--sand);
+}
+
+.bg-green {
+  background-color: var(--green);
+}
+.bg-wood {
+  background-color: var(--wood);
+}
+.bg-charcoal {
+  background-color: var(--charcoal);
+}
+.bg-clay {
+  background-color: var(--clay);
+}
+.bg-sage {
+  background-color: var(--sage);
+}
+.bg-sand {
+  background-color: var(--sand);
+}
+
+/* Hover states for custom color utilities */
+.hover\:bg-sage:hover {
+  background-color: var(--sage);
+}
+.hover\:bg-white:hover {
+  background-color: white;
+}
+.hover\:text-green:hover {
+  color: var(--green);
+}
+.hover\:border-green:hover {
+  border-color: var(--green);
+}
+.hover\:shadow-md:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.hover\:text-sage:hover {
+  color: var(--sage);
+}
+.hover\:text-clay:hover {
+  color: var(--clay);
+}
+
+.transition-fade {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}

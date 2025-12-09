@@ -1,0 +1,55 @@
+[
+    {
+        "title": "Agricultural Transformation: Institutional Models in Africa",
+        "institution": "African Agricultural Transformation Initiative (AATI)",
+        "subtitle": "A comprehensive study of agricultural transformation institutions across Sub-Saharan Africa, providing evidence-based insights to strengthen food security, build climate resilience, and drive inclusive agricultural growth.",
+        "link": "#",
+        "image": "/projects/cassava.jpg",
+        "status": "active",
+        "startDate": "2025-05-01",
+        "endDate": null
+    },
+    {
+        "title": "Participatory Integrated Climate Services for Agriculture (PICSA) – Haiti",
+        "institution": "University of Reading & World Food Programme (WFP)",
+        "subtitle": "The University of Reading has partnered with the World Food Programme (WFP) in Haiti to train communities using the Participatory Integrated Climate Services for Agriculture (PICSA) approach. The PICSA approach trains smallholder farmers to assess climate risks and integrate climate forecasts and historical weather data into their decision-making processes. This includes choosing the right livelihood strategies and management practices based on their specific local conditions. Caroline serves as a primary intermediary between international, national, and local partners while working across English, French, and Haitian Creole. She leads a needs assessment, supports refresher training sessions for trainers and a mixed-method evaluation of farmer resilience, reporting on results to inform donor and partner decision-making.",
+        "link": "#",
+        "image": "/projects/clouds.jpg",
+        "imageLink": "https://www.pexels.com/photo/grey-white-clouds-158163/",
+        "startDate": "2025-08-01",
+        "endDate": null
+    },
+    {
+        "title": "Climate Smart Agriculture Investment Plans (CSAIPs)",
+        "institution": "World Bank",
+        "subtitle": "The World Bank’s Climate Smart Agriculture Investment Plans (CSAIPs), developed in Belize, Bangladesh, Burkina Faso, Côte d'Ivoire, Ghana, Jordan, Lesotho, Mali, Morocco, Nepal, Zambia, and Zimbabwe in cooperation with a wide range of partners including the Adaptation for African Agriculture (AAA) Initiative, the International Center for Tropical Agriculture (CIAT) and the International Institute for Applied Systems Analysis (IIASA), identify concrete policy and investment actions to advance climate-smart agriculture and inform NDCs and national plans. Caroline synthesized lessons from these CSAIPs and created a regional M&E framework to assess their impact on policy, investment, knowledge, and agricultural development.",
+        "link": "#",
+        "image": "/projects/ag.jpg",
+        "imageLink": "https://www.pexels.com/photo/selective-focus-photography-of-wheat-field-265216/",
+        "status": "active",
+        "startDate": "2021-02-01",
+        "endDate": "2021-04-01"
+    },
+    {
+        "title": "CDRFI eLearning Module Expansion",
+        "institution": "UNU-EHS & Global Shield Secretariat",
+        "subtitle": "In partnership with the Global Shield Secretariat and UNU-EHS, this project updates and expands the eLearning module “Foundations of CDRFI and Impactful CSO Engagement.” The eLearning modules strengthen the capacity of governments, civil society, and private sector actors to understand and implement climate and disaster risk finance solutions. Jenn leads the technical review and content refresh of the modules, ensuring alignment with the evolving Global Shield framework and expanding their relevance for a broader set of stakeholders worldwide",
+        "link": "#",
+        "image": "/projects/data.jpg",
+        "imageLink": "https://www.pexels.com/photo/close-up-photo-of-monitor-159888/",
+        "status": "active",
+        "startDate": "2025-09-01",
+        "endDate": "2026-03-01"
+    },
+    {
+        "title": "Environmental and Social Standards (ESS) Risk Indicators and Dashboard",
+        "institution": "Asian Development Bank (ADB)",
+        "subtitle": "This project identifies, standardizes, and compiles risk indicators across ten Environmental and Social Standards (ESS), covering contextual risks such as conflict, labor practices, governance, biodiversity, cultural heritage, and climate change. The project also designs a dashboard to visualize these risks, helping practitioners assess vulnerabilities and strengthen decision-making.",
+        "link": "#",
+        "image": "/projects/market.jpg",
+        "imageLink": "https://www.pexels.com/photo/woman-in-gray-and-red-jacket-riding-white-motor-in-crowded-place-159924/",
+        "status": "active",
+        "startDate": "2025-08-01",
+        "endDate": null
+    }
+]
