@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17809739.svg)](https://doi.org/10.5281/zenodo.17809739)
 
-# ILRI – Measuring What Matters: Tracking the Effectiveness of Climate Adaptation for Smallholder Producers
+# ILRI – Measuring what matters: tracking climate adaptation processes and outcomes for smallholder producers in the agriculture sector
 ### Evidence synthesis and systematic reviews on climate change and agri-food systems
 
 This repository hosts the methods, workflows, protocols, documentation, and outputs for the ILRI evidence-synthesis project assessing the effectiveness of climate adaptation interventions for smallholder producers. The project includes a scoping review, systematic evidence map, and systematic review/meta-analysis, following CEE, Campbell Collaboration, and Cochrane standards.

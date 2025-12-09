@@ -42,7 +42,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
         >
-          {"Measuring what matters:\ntracking the effectiveness of\nclimate adaptation for smallholder\nproducers"}
+          {"Measuring what matters: tracking climate adaptation processes and outcomes for smallholder producers in the agriculture sector."}
         </motion.h1>
 
         {/* Subtitle */}
@@ -62,9 +62,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.35 }}
         >
-          Cissé, J. D., Staub, C. G., & Khan, Z. (2025). Measuring what matters: Tracking the
-          effectiveness of climate adaptation for smallholder producers. ILRI Climate Adaptation
-          Effectiveness Project. Zenodo. https://doi.org/10.5281/zenodo.17809739
+          Cissé, J. D., Staub, C. G., & Khan, Z. (2025). Measuring what matters: tracking climate adaptation processes and outcomes for smallholder producers in the agriculture sector. https://doi.org/10.5281/zenodo.17809739
         </motion.p>
 
         {/* Additional spacing before arrow */}
