@@ -1,0 +1,254 @@
+{
+  "C_concept__adaptation_actions": {
+    "query_hash": "587883a5063608a19802cec1037e347f9bfa209c991f19be1798f559fd6b7db1",
+    "query": "TITLE-ABS-KEY(adapt* W/5 (practice* OR behav* OR decision* OR strateg* OR adjust* OR chang*) OR livelihood* OR \"coping strateg*\" OR \"coping capacit*\" OR uptake OR adoption OR participat* OR \"participatory process*\" OR \"adaptive management\" OR learning* OR \"learning process*\" OR \"feedback loop*\" OR \"feedback mechanism*\" OR (governance W/5 (adapt* OR climate)))",
+    "total_results": 564255,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19895",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "C_concept__capacities_knowledge": {
+    "query_hash": "ecfe2ae6037918059aa648d3136506e17bf15cdde8157d331201b4b38c3e5409",
+    "query": "TITLE-ABS-KEY(\"adaptive capacity\" OR (capacity W/3 (build* OR strengthen* OR expand* OR improv*)) OR (knowledge W/3 (adapt* OR climate OR resilience)))",
+    "total_results": 203471,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19894",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "C_concept__livelihood_productivity": {
+    "query_hash": "857359ccab81b9dd708db592fe2a8f74677640e4520759d630967028b7762d8b",
+    "query": "TITLE-ABS-KEY(livelihood* OR \"coping strateg*\" OR \"coping capacit*\" OR (income W/5 (stability OR variability OR loss*)) OR (yield W/5 (stability OR improved OR increased OR variability OR loss*)))",
+    "total_results": 318293,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19893",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "C_concept__maladaptation": {
+    "query_hash": "78a89d3ad99155e1ed3b0c47d31f112f9b10d67b2e62403178dade2869b67855",
+    "query": "TITLE-ABS-KEY(maladapt* OR \"maladaptive outcome*\" OR \"maladaptive adaptation\")",
+    "total_results": 37823,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19892",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "C_concept__resilience_outcomes": {
+    "query_hash": "425177153debb5432e3b78bdf04de0fbf7d1374a48c99913b7c7670c6a743832",
+    "query": "TITLE-ABS-KEY((resilien* W/5 (outcome* OR capacity OR livelihood* OR improv* OR effect*)) OR (adapt* W/5 (outcome* OR impact* OR effect* OR capacity OR livelihood*)) OR (reduc* W/5 (risk OR \"climate risk*\" OR vulnerabilit* OR exposure*)) OR wellbeing OR \"well-being\")",
+    "total_results": 1295233,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19891",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "C_context_agriculture__ag_systems": {
+    "query_hash": "1dca6e2ed36ee973c4ea517d55b5a2a7c10348be6cab035cbfba29390f65cb15",
+    "query": "TITLE-ABS-KEY(agricultur* OR farm* OR crop* OR \"farming system*\" OR \"food production\" OR \"rainfed agriculture\" OR \"irrigated agriculture\" OR \"livestock rearing\" OR \"animal husbandry\" OR rangeland* OR fishery OR fisheries OR aquacultur* OR forestry OR agroforestry OR \"tree crop*\" OR silvopastoral OR \"silvo-pastoral\" OR \"crop-livestock system\" OR \"mixed crop-livestock\" OR \"mixed farming\" OR agroecolog* OR \"integrated farming system*\")",
+    "total_results": 2518229,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19890",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "C_context_climate__climate_framing": {
+    "query_hash": "808f0e3eae878fb3ee5f7e6640e4631d724ad1024e2e3df753a1a57b7f257e5a",
+    "query": "TITLE-ABS-KEY((climate W/3 (change OR adapt* OR resilien* OR risk OR hazard* OR variability OR exposure* OR shock*)) OR \"climate-resilient*\" OR \"climate-smart agriculture\" OR CSA)",
+    "total_results": 712223,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19889",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "C_context_climate__hazards": {
+    "query_hash": "586741285c2fd82954b678d989e1287adae8a5336e56227bce0613ef80fe1ba9",
+    "query": "TITLE-ABS-KEY((extreme* W/3 (climate OR heat OR weather OR rainfall OR aridity)) OR heatwave* OR \"heat wave*\" OR \"heat stress\" OR frost OR \"cold spell\" OR \"heavy rainfall\" OR \"intense rainfall\" OR drought* OR \"water scarcity\" OR \"water stress\" OR \"aridity events\" OR \"dry spell\" OR flood* OR \"storm surge\" OR \"coastal erosion\" OR \"salinity intrusion\" OR \"saline intrusion\" OR cyclone* OR hurricane* OR typhoon* OR (wind W/3 (storm OR gust* OR intens*)) OR \"weather shock*\" OR disaster*)",
+    "total_results": 1065948,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19888",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "M__measurement_eval": {
+    "query_hash": "fdf4cf005c177218e5c98cc072444564e56bef6c23cbbadeff8a34d4a4f355d5",
+    "query": "TITLE-ABS-KEY(indicator* OR metric* OR \"measurement framework*\" OR monitor* OR evaluat* OR assess* OR \"impact evaluation\" OR \"results-based management\" OR \"results based management\" OR \"M&E\" OR MEL OR effectiv* OR impact* OR (measur* W/5 (adapt* OR resilience OR outcome*)) OR index OR indices OR \"data collection\" OR survey* OR (participatory W/3 (monitoring OR method* OR assessment)) OR \"mixed methods\")",
+    "total_results": 35110327,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19887",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "P__agroforestry_tree": {
+    "query_hash": "642dcd6e6214c3ea1282efee42fa35e89e720db827e7d1f67e79ef1bb8b75980",
+    "query": "TITLE-ABS-KEY(\"agroforestry farmer*\" OR \"agroforestry producer*\" OR \"tree crop farmer*\" OR \"fruit grower*\" OR \"forest farmer*\" OR silvopastoral OR \"silvo-pastoral\" OR \"tree-livestock farmer*\")",
+    "total_results": 3317,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19886",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "P__fisheries_aquaculture": {
+    "query_hash": "5d1f5ecdadaa627da4e2ee30e2adabd31490a4aad6e99728dc5e81ae39979746",
+    "query": "TITLE-ABS-KEY(fisher* OR \"small-scale fisher*\" OR \"small scale fisher*\" OR fisherfolk OR \"artisanal fisher*\" OR \"aquaculture producer*\" OR \"fish farmer*\" OR \"shrimp farmer*\")",
+    "total_results": 296279,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19885",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "P__households_poverty": {
+    "query_hash": "f2189b8bcb496e6ce60318f03315d873edafef9948632a6d1d00edd7209716ac",
+    "query": "TITLE-ABS-KEY(\"rural household*\" OR \"farm household*\" OR \"agricultural household*\" OR \"family farmer*\" OR \"low-income household*\" OR \"poor household*\" OR \"female-headed household*\" OR \"women-headed household*\")",
+    "total_results": 28971,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19884",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "P__livestock_pastoral": {
+    "query_hash": "3ca6ee84dabc00c9290aa721268d1b71863f05f3f1c9c889d0868736693aa1fc",
+    "query": "TITLE-ABS-KEY(pastoralist* OR \"agro-pastoralist*\" OR \"agro pastoralist*\" OR herder* OR \"livestock keeper*\" OR \"livestock farmer*\" OR \"livestock producer*\" OR \"dairy farmer*\" OR \"crop-livestock farmer*\")",
+    "total_results": 19145,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19883",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "P__marginalized_groups": {
+    "query_hash": "7f03f7baeb18ee2b69baddc7159f41d1563d769cd3149bf4f07fa5f569a83894",
+    "query": "TITLE-ABS-KEY(women OR female* OR \"women farmer*\" OR \"female farmer*\" OR youth OR \"rural youth\" OR \"young farmer*\" OR \"young producer*\" OR adolescent* OR \"landless farmer*\" OR \"tenant farmer*\" OR sharecropper* OR \"contract farmer*\" OR \"Indigenous Peoples\" OR \"indigenous communit*\" OR \"tribal communit*\" OR \"ethnic minorit*\" OR \"agricultural laborer*\" OR \"farm worker*\" OR \"seasonal worker*\" OR \"migrant farmworker*\")",
+    "total_results": 14878663,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19882",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "P__smallholder_small_scale": {
+    "query_hash": "b49fe1cd0f3e769b88bf3b11e08ba44900b136e4f49d22d08a70ebc8cc808964",
+    "query": "TITLE-ABS-KEY(smallholder* OR \"small holder*\" OR \"small-scale farmer*\" OR \"small-scale producer*\" OR \"subsistence farmer*\" OR \"farmers in low-income countr*\" OR \"small-scale farmers in low-income countr*\" OR \"marginal farmer*\" OR \"resource-poor farmer*\")",
+    "total_results": 33726,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19881",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "C_concept__ALL": {
+    "query_hash": "8c669b6947f185451430b2940eaa9bf954b4e98c94cffd648fa48a543b4b20e8",
+    "query": "TITLE-ABS-KEY(((adapt* W/5 (practice* OR behav* OR decision* OR strateg* OR adjust* OR chang*) OR livelihood* OR \"coping strateg*\" OR \"coping capacit*\" OR uptake OR adoption OR participat* OR \"participatory process*\" OR \"adaptive management\" OR learning* OR \"learning process*\" OR \"feedback loop*\" OR \"feedback mechanism*\" OR (governance W/5 (adapt* OR climate))) OR (\"adaptive capacity\" OR (capacity W/3 (build* OR strengthen* OR expand* OR improv*)) OR (knowledge W/3 (adapt* OR climate OR resilience))) OR ((resilien* W/5 (outcome* OR capacity OR livelihood* OR improv* OR effect*)) OR (adapt* W/5 (outcome* OR impact* OR effect* OR capacity OR livelihood*)) OR (reduc* W/5 (risk OR \"climate risk*\" OR vulnerabilit* OR exposure*)) OR wellbeing OR \"well-being\") OR (livelihood* OR \"coping strateg*\" OR \"coping capacit*\" OR (income W/5 (stability OR variability OR loss*)) OR (yield W/5 (stability OR improved OR increased OR variability OR loss*))) OR (maladapt* OR \"maladaptive outcome*\" OR \"maladaptive adaptation\")))",
+    "total_results": 2276669,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19880",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "C_context_agriculture__ALL": {
+    "query_hash": "9621dd2678f2a874b35c84f3cb374c713eb9856c60bae4613d5999eb7b126a0d",
+    "query": "TITLE-ABS-KEY(((agricultur* OR farm* OR crop* OR \"farming system*\" OR \"food production\" OR \"rainfed agriculture\" OR \"irrigated agriculture\" OR \"livestock rearing\" OR \"animal husbandry\" OR rangeland* OR fishery OR fisheries OR aquacultur* OR forestry OR agroforestry OR \"tree crop*\" OR silvopastoral OR \"silvo-pastoral\" OR \"crop-livestock system\" OR \"mixed crop-livestock\" OR \"mixed farming\" OR agroecolog* OR \"integrated farming system*\")))",
+    "total_results": 2518229,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19879",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "C_context_climate__ALL": {
+    "query_hash": "e957e600e30d6370318f436a3af3bc02974a349b809f03c2b47d1ea5cdaede14",
+    "query": "TITLE-ABS-KEY((((climate W/3 (change OR adapt* OR resilien* OR risk OR hazard* OR variability OR exposure* OR shock*)) OR \"climate-resilient*\" OR \"climate-smart agriculture\" OR CSA) OR ((extreme* W/3 (climate OR heat OR weather OR rainfall OR aridity)) OR heatwave* OR \"heat wave*\" OR \"heat stress\" OR frost OR \"cold spell\" OR \"heavy rainfall\" OR \"intense rainfall\" OR drought* OR \"water scarcity\" OR \"water stress\" OR \"aridity events\" OR \"dry spell\" OR flood* OR \"storm surge\" OR \"coastal erosion\" OR \"salinity intrusion\" OR \"saline intrusion\" OR cyclone* OR hurricane* OR typhoon* OR (wind W/3 (storm OR gust* OR intens*)) OR \"weather shock*\" OR disaster*)))",
+    "total_results": 1636476,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19878",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "M__ALL": {
+    "query_hash": "5c34c932703f4ef21b6428cc4772da2352a06e732e8a10ac19dd39f4b49cb984",
+    "query": "TITLE-ABS-KEY(((indicator* OR metric* OR \"measurement framework*\" OR monitor* OR evaluat* OR assess* OR \"impact evaluation\" OR \"results-based management\" OR \"results based management\" OR \"M&E\" OR MEL OR effectiv* OR impact* OR (measur* W/5 (adapt* OR resilience OR outcome*)) OR index OR indices OR \"data collection\" OR survey* OR (participatory W/3 (monitoring OR method* OR assessment)) OR \"mixed methods\")))",
+    "total_results": 35110327,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19877",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "P__ALL": {
+    "query_hash": "0e7d16e6de4de9557644f06bf2c83c03e0a875bdd288868b4425ca80a0372638",
+    "query": "TITLE-ABS-KEY(((smallholder* OR \"small holder*\" OR \"small-scale farmer*\" OR \"small-scale producer*\" OR \"subsistence farmer*\" OR \"farmers in low-income countr*\" OR \"small-scale farmers in low-income countr*\" OR \"marginal farmer*\" OR \"resource-poor farmer*\") OR (\"rural household*\" OR \"farm household*\" OR \"agricultural household*\" OR \"family farmer*\" OR \"low-income household*\" OR \"poor household*\" OR \"female-headed household*\" OR \"women-headed household*\") OR (pastoralist* OR \"agro-pastoralist*\" OR \"agro pastoralist*\" OR herder* OR \"livestock keeper*\" OR \"livestock farmer*\" OR \"livestock producer*\" OR \"dairy farmer*\" OR \"crop-livestock farmer*\") OR (fisher* OR \"small-scale fisher*\" OR \"small scale fisher*\" OR fisherfolk OR \"artisanal fisher*\" OR \"aquaculture producer*\" OR \"fish farmer*\" OR \"shrimp farmer*\") OR (\"agroforestry farmer*\" OR \"agroforestry producer*\" OR \"tree crop farmer*\" OR \"fruit grower*\" OR \"forest farmer*\" OR silvopastoral OR \"silvo-pastoral\" OR \"tree-livestock farmer*\") OR (women OR female* OR \"women farmer*\" OR \"female farmer*\" OR youth OR \"rural youth\" OR \"young farmer*\" OR \"young producer*\" OR adolescent* OR \"landless farmer*\" OR \"tenant farmer*\" OR sharecropper* OR \"contract farmer*\" OR \"Indigenous Peoples\" OR \"indigenous communit*\" OR \"tribal communit*\" OR \"ethnic minorit*\" OR \"agricultural laborer*\" OR \"farm worker*\" OR \"seasonal worker*\" OR \"migrant farmworker*\")))",
+    "total_results": 15173589,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19876",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  },
+  "TOTAL__ALL": {
+    "query_hash": "f38c5229eaeb68abe359df0d8f581c5ca89816b55f5f82eb593149f370dda206",
+    "query": "TITLE-ABS-KEY((((smallholder* OR \"small holder*\" OR \"small-scale farmer*\" OR \"small-scale producer*\" OR \"subsistence farmer*\" OR \"farmers in low-income countr*\" OR \"small-scale farmers in low-income countr*\" OR \"marginal farmer*\" OR \"resource-poor farmer*\") OR (\"rural household*\" OR \"farm household*\" OR \"agricultural household*\" OR \"family farmer*\" OR \"low-income household*\" OR \"poor household*\" OR \"female-headed household*\" OR \"women-headed household*\") OR (pastoralist* OR \"agro-pastoralist*\" OR \"agro pastoralist*\" OR herder* OR \"livestock keeper*\" OR \"livestock farmer*\" OR \"livestock producer*\" OR \"dairy farmer*\" OR \"crop-livestock farmer*\") OR (fisher* OR \"small-scale fisher*\" OR \"small scale fisher*\" OR fisherfolk OR \"artisanal fisher*\" OR \"aquaculture producer*\" OR \"fish farmer*\" OR \"shrimp farmer*\") OR (\"agroforestry farmer*\" OR \"agroforestry producer*\" OR \"tree crop farmer*\" OR \"fruit grower*\" OR \"forest farmer*\" OR silvopastoral OR \"silvo-pastoral\" OR \"tree-livestock farmer*\") OR (women OR female* OR \"women farmer*\" OR \"female farmer*\" OR youth OR \"rural youth\" OR \"young farmer*\" OR \"young producer*\" OR adolescent* OR \"landless farmer*\" OR \"tenant farmer*\" OR sharecropper* OR \"contract farmer*\" OR \"Indigenous Peoples\" OR \"indigenous communit*\" OR \"tribal communit*\" OR \"ethnic minorit*\" OR \"agricultural laborer*\" OR \"farm worker*\" OR \"seasonal worker*\" OR \"migrant farmworker*\"))) AND (((adapt* W/5 (practice* OR behav* OR decision* OR strateg* OR adjust* OR chang*) OR livelihood* OR \"coping strateg*\" OR \"coping capacit*\" OR uptake OR adoption OR participat* OR \"participatory process*\" OR \"adaptive management\" OR learning* OR \"learning process*\" OR \"feedback loop*\" OR \"feedback mechanism*\" OR (governance W/5 (adapt* OR climate))) OR (\"adaptive capacity\" OR (capacity W/3 (build* OR strengthen* OR expand* OR improv*)) OR (knowledge W/3 (adapt* OR climate OR resilience))) OR ((resilien* W/5 (outcome* OR capacity OR livelihood* OR improv* OR effect*)) OR (adapt* W/5 (outcome* OR impact* OR effect* OR capacity OR livelihood*)) OR (reduc* W/5 (risk OR \"climate risk*\" OR vulnerabilit* OR exposure*)) OR wellbeing OR \"well-being\") OR (livelihood* OR \"coping strateg*\" OR \"coping capacit*\" OR (income W/5 (stability OR variability OR loss*)) OR (yield W/5 (stability OR improved OR increased OR variability OR loss*))) OR (maladapt* OR \"maladaptive outcome*\" OR \"maladaptive adaptation\"))) AND ((((climate W/3 (change OR adapt* OR resilien* OR risk OR hazard* OR variability OR exposure* OR shock*)) OR \"climate-resilient*\" OR \"climate-smart agriculture\" OR CSA) OR ((extreme* W/3 (climate OR heat OR weather OR rainfall OR aridity)) OR heatwave* OR \"heat wave*\" OR \"heat stress\" OR frost OR \"cold spell\" OR \"heavy rainfall\" OR \"intense rainfall\" OR drought* OR \"water scarcity\" OR \"water stress\" OR \"aridity events\" OR \"dry spell\" OR flood* OR \"storm surge\" OR \"coastal erosion\" OR \"salinity intrusion\" OR \"saline intrusion\" OR cyclone* OR hurricane* OR typhoon* OR (wind W/3 (storm OR gust* OR intens*)) OR \"weather shock*\" OR disaster*))) AND (((agricultur* OR farm* OR crop* OR \"farming system*\" OR \"food production\" OR \"rainfed agriculture\" OR \"irrigated agriculture\" OR \"livestock rearing\" OR \"animal husbandry\" OR rangeland* OR fishery OR fisheries OR aquacultur* OR forestry OR agroforestry OR \"tree crop*\" OR silvopastoral OR \"silvo-pastoral\" OR \"crop-livestock system\" OR \"mixed crop-livestock\" OR \"mixed farming\" OR agroecolog* OR \"integrated farming system*\"))) AND (((indicator* OR metric* OR \"measurement framework*\" OR monitor* OR evaluat* OR assess* OR \"impact evaluation\" OR \"results-based management\" OR \"results based management\" OR \"M&E\" OR MEL OR effectiv* OR impact* OR (measur* W/5 (adapt* OR resilience OR outcome*)) OR index OR indices OR \"data collection\" OR survey* OR (participatory W/3 (monitoring OR method* OR assessment)) OR \"mixed methods\"))))",
+    "total_results": 9042,
+    "timestamp_utc": "2025-12-31T22:49:45Z",
+    "error": null,
+    "rate_headers_last": {
+      "X-RateLimit-Limit": "20000",
+      "X-RateLimit-Remaining": "19875",
+      "X-RateLimit-Reset": "1767777119"
+    }
+  }
+}

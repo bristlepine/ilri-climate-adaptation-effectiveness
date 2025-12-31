@@ -1,0 +1,15 @@
+name: ilri01
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - requests
+  - pandas
+  - pyyaml
+  - tqdm
+  - python-dotenv
+  - rich
+  - matplotlib
+  - pip:
+      - typer>=0.9
