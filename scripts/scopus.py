@@ -61,7 +61,7 @@ SKIP_EXISTING_STEP1 = 1   # if cached counts exist and query unchanged, don't ca
 USE_POST_FOR_SEARCH = 1   # avoids 413 for long queries
 COUNT_PER_PAGE = 1        # count-only requests
 SLEEP_S = 0.10
-VIEW_STEP1 = "STANDARD"   # counts only
+VIEW = "STANDARD"
 
 
 # Step 2 controls
@@ -74,7 +74,6 @@ SKIP_EXISTING_STEP2 = 1       # Step 2: if outputs already exist, skip (delete o
 DEEP_PAGING_LIMIT = 5000
 PUBYEAR_MIN = 1990
 PUBYEAR_MAX = 2025
-VIEW_STEP2 = "STANDARD"   # retrieval (try to include abstracts/keywords)
 
 # Benchmark controls
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -180,10 +179,10 @@ def _request_with_retries(
 def scopus_count_only(auth: ScopusAuth, query: str, count_per_page: int = 1) -> Tuple[int, dict]:
     """Return (totalResults, meta) without retrieving records."""
     headers = _headers(auth)
-    meta = {"query": query, "count_per_page": count_per_page, "view": VIEW_STEP1, "rate_headers_last": {}}
+    meta = {"query": query, "count_per_page": count_per_page, "view": VIEW, "rate_headers_last": {}}
 
     with requests.Session() as session:
-        params = {"query": query, "start": "0", "count": str(count_per_page), "view": VIEW_STEP1}
+        params = {"query": query, "start": "0", "count": str(count_per_page), "view": VIEW}
         method = "POST" if USE_POST_FOR_SEARCH else "GET"
         data, rate = _request_with_retries(session, method, SCOPUS_SEARCH_URL, headers, params)
         meta["rate_headers_last"] = rate
@@ -195,61 +194,26 @@ def scopus_count_only(auth: ScopusAuth, query: str, count_per_page: int = 1) -> 
 
 def _extract_entry_row(e: dict) -> dict:
     """
-    Scopus Search API entry fields.
-
-    NOTE:
-      - If you run Step 2 with view=COMPLETE, Scopus may include:
-          * dc:description (often the abstract)
-          * authkeywords
-      - Some records will still have missing abstracts/keywords.
+    Scopus Search API entry fields (view=STANDARD) — metadata only.
+    Abstracts are NOT included here (those come from Abstract Retrieval API).
     """
     dcid = e.get("dc:identifier")
-    scopus_id = (
-        dcid.split(":", 1)[1].strip()
-        if isinstance(dcid, str) and dcid.startswith("SCOPUS_ID:")
-        else None
-    )
+    scopus_id = dcid.split(":", 1)[1].strip() if isinstance(dcid, str) and dcid.startswith("SCOPUS_ID:") else None
 
     doi = e.get("prism:doi")
     doi = doi.strip() if isinstance(doi, str) else None
 
-    # Abstract (often available when view=COMPLETE)
-    abstract = e.get("dc:description")
-    abstract = abstract.strip() if isinstance(abstract, str) else None
-
-    # Author keywords can come as list or string depending on response
-    authkw = e.get("authkeywords")
-    if isinstance(authkw, list):
-        authkeywords = "; ".join([str(x).strip() for x in authkw if str(x).strip()]) or None
-    elif isinstance(authkw, str):
-        authkeywords = authkw.strip() or None
-    else:
-        authkeywords = None
-
-    # Some extra fields that are often handy for screening/triage
-    pubyear = e.get("prism:coverDate")
-    # (keep coverDate as-is; you can parse year later if needed)
-
     return {
-        # Core identifiers
-        "eid": e.get("eid"),
-        "scopus_id": scopus_id,
-        "doi": doi or None,
-
-        # Bibliographic
         "title": e.get("dc:title"),
-        "abstract": abstract,
-        "authkeywords": authkeywords,
         "coverDate": e.get("prism:coverDate"),
         "publicationName": e.get("prism:publicationName"),
-        "aggregationType": e.get("prism:aggregationType"),   # e.g., Journal, Book, Conference Proceeding
-        "subtypeDescription": e.get("subtypeDescription"),   # e.g., Article, Review (if present)
-
-        # Impact / links
+        "doi": doi or None,
+        "eid": e.get("eid"),
+        "scopus_id": scopus_id,
         "citedby_count": e.get("citedby-count"),
-        "openaccessFlag": e.get("openaccessFlag"),
         "prism_url": e.get("prism:url"),
     }
+
 
 def _build_queries(cfg: dict) -> Tuple[Dict[str, str], Dict[str, str], str]:
     """
@@ -483,17 +447,9 @@ def scopus_retrieve_stream_to_csv_start(
     retrieved = 0
     total_reported = None
 
-    # ---- coverage counters (per-slice) ----
-    n_with_abstract = 0
-    n_with_authkeywords = 0
-    n_with_doi = 0
-    n_with_title = 0
-    n_with_coverdate = 0
-    n_with_pubname = 0
-
     meta = {
         "query": query,
-        "view": VIEW_STEP2,
+        "view": VIEW,
         "count_per_page": count_per_page,
         "sleep_s": sleep_s,
         "max_results": max_results,
@@ -514,7 +470,7 @@ def scopus_retrieve_stream_to_csv_start(
                 "query": query,
                 "start": str(retrieved),
                 "count": str(count_per_page),
-                "view": VIEW_STEP2,
+                "view": VIEW,
             }
 
             data, rate = _request_with_retries(session, method, SCOPUS_SEARCH_URL, headers, params)
@@ -538,22 +494,6 @@ def scopus_retrieve_stream_to_csv_start(
                 break
 
             rows = [_extract_entry_row(e) for e in entries]
-
-            # ---- update counters from rows (no extra API calls) ----
-            for r in rows:
-                if r.get("abstract"):
-                    n_with_abstract += 1
-                if r.get("authkeywords"):
-                    n_with_authkeywords += 1
-                if r.get("doi"):
-                    n_with_doi += 1
-                if r.get("title"):
-                    n_with_title += 1
-                if r.get("coverDate"):
-                    n_with_coverdate += 1
-                if r.get("publicationName"):
-                    n_with_pubname += 1
-
             df = pd.DataFrame(rows)
 
             header_needed = not os.path.exists(out_csv) or os.path.getsize(out_csv) == 0
@@ -583,16 +523,6 @@ def scopus_retrieve_stream_to_csv_start(
     meta["ended_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     meta["retrieved_rows"] = int(retrieved)
     meta["total_reported_by_scopus"] = int(total_reported or 0)
-
-    # ---- attach coverage stats ----
-    meta["coverage"] = {
-        "with_title": int(n_with_title),
-        "with_coverDate": int(n_with_coverdate),
-        "with_publicationName": int(n_with_pubname),
-        "with_doi": int(n_with_doi),
-        "with_abstract": int(n_with_abstract),
-        "with_authkeywords": int(n_with_authkeywords),
-    }
 
     return int(total_reported or 0), int(retrieved), meta
 
@@ -756,15 +686,7 @@ def step2_retrieve_total(auth: ScopusAuth) -> None:
         if SKIP_EXISTING_STEP2 and os.path.exists(out_csv) and os.path.getsize(out_csv) > 0:
             print(f"[step2] SKIP {tag} (exists): {out_csv}")
             slice_csvs.append(out_csv)
-            # try to load existing meta so coverage rollup stays correct
-            if os.path.exists(out_meta) and os.path.getsize(out_meta) > 0:
-                try:
-                    with open(out_meta, "r", encoding="utf-8") as f:
-                        slice_metas.append(json.load(f) or {})
-                except Exception:
-                    pass
             continue
-
 
         print(f"\n[step2] RETRIEVE {tag} (expected {slice_total:,})")
         total_reported, retrieved, meta = scopus_retrieve_stream_to_csv_start(
@@ -838,28 +760,6 @@ def step2_retrieve_total(auth: ScopusAuth) -> None:
     print(f"\n[step2] Combining slice CSVs -> {final_csv}")
     combined_rows = _concat_csvs(slice_csvs, final_csv)
 
-    # ---- Roll up coverage across slices ----
-    cov_total = {
-        "with_title": 0,
-        "with_coverDate": 0,
-        "with_publicationName": 0,
-        "with_doi": 0,
-        "with_abstract": 0,
-        "with_authkeywords": 0,
-    }
-    for m in slice_metas:
-        cov = (m or {}).get("coverage") or {}
-        for k in cov_total.keys():
-            cov_total[k] += int(cov.get(k) or 0)
-
-    # Print a quick summary to terminal
-    denom = combined_rows if combined_rows else 0
-    if denom:
-        print("\n[step2] Coverage summary (combined):")
-        print(f"  - with_abstract:     {cov_total['with_abstract']:,}  ({cov_total['with_abstract']/denom:.1%})")
-        print(f"  - with_authkeywords: {cov_total['with_authkeywords']:,}  ({cov_total['with_authkeywords']/denom:.1%})")
-        print(f"  - with_doi:          {cov_total['with_doi']:,}  ({cov_total['with_doi']/denom:.1%})")
-
     meta_out = {
         "base_total_reported_by_scopus": int(base_total),
         "planned_total_across_slices": int(planned_total),
@@ -872,7 +772,6 @@ def step2_retrieve_total(auth: ScopusAuth) -> None:
         "max_results_total": MAX_RESULTS_TOTAL,
         "timestamp_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "slice_metas": slice_metas,
-        "coverage_combined": cov_total,
     }
     final_meta = os.path.join(STEP2_DIR, STEP2_TOTAL_META_JSON)
     with open(final_meta, "w", encoding="utf-8") as f:
