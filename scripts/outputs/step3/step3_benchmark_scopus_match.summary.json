@@ -1,0 +1,12 @@
+{
+  "benchmark_csv": "C:\\brc\\ilri-climate-adaptation-effectiveness\\scripts\\Benchmark List - List.csv",
+  "step2_scopus_csv": "C:\\brc\\ilri-climate-adaptation-effectiveness\\scripts\\outputs\\step2\\step2_total_records.csv",
+  "output_match_csv": "C:\\brc\\ilri-climate-adaptation-effectiveness\\scripts\\outputs\\step3\\step3_benchmark_scopus_match.csv",
+  "benchmark_rows_total": 235,
+  "benchmark_rows_with_doi": 103,
+  "benchmark_rows_missing_doi": 132,
+  "matched_rows_by_doi": 17,
+  "hit_rate_overall": 0.07234042553191489,
+  "hit_rate_among_rows_with_doi": 0.1650485436893204,
+  "timestamp_utc": "2026-01-01T00:51:14Z"
+}
