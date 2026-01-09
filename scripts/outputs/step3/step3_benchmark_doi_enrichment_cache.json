@@ -1,0 +1,926 @@
+{
+  "c52a6119ad5f92880df8620dad83e5f6d45bd8c2367fc43424690be444e78034": {
+    "doi": "https://doi.org/10.18356/d6cb6489-en",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Tracking adaptation",
+    "needs_review": false
+  },
+  "1fd17f2aa559d8f6db9651573b80d767131f42ffea369218adeb7977e08e2a51": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "93d37c8cb8f60c4cab53801c1bba9e33d97db50b3ec6e7cdd41bd9eae7c3a787": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "283bbd76076455c12bf0fd694a60bde01917fe259694c46b4f2d9ddecfce0946": {
+    "doi": "https://doi.org/10.31899/rh14.1112",
+    "doi_source": "crossref",
+    "doi_score": 0.6502463054187192,
+    "matched_title": "Strengthening social and behavior change monitoring and evaluation for family planning in Francophone West Africa",
+    "needs_review": true
+  },
+  "26c79a948144b959c798f22939ca678317d93a86edd1d0316e1c3da421b5010f": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "1d8b84ea0deec33b4dbf9e5a23137d93c7b76d0fcfe07b1dc5989c98a0935305": {
+    "doi": "https://doi.org/10.1016/j.cliser.2018.06.001",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Do climate services make a difference? A review of evaluation methodologies and practices to assess the value of climate information services for farmers: Implications for Africa",
+    "needs_review": false
+  },
+  "955dc5ea74478993a6118a7e9befac58d775779093625cb8cefa522b71f42c17": {
+    "doi": "https://doi.org/10.1002/wcc.586",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Evaluating agricultural weather and climate services in Africa: Evidence, methods, and a learning agenda",
+    "needs_review": false
+  },
+  "53818d8f745bdc4675d18513b29979d1e89eb0ed96c24aa5cbf97ef959c694d6": {
+    "doi": "https://doi.org/10.1007/s00267-018-1113-7",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farmer Perceptions of Climate Change, Observed Trends and Adaptation of Agriculture in Pakistan",
+    "needs_review": false
+  },
+  "cd4a8ece8996495f88c6ea592e5cbf00ccb5f5a45c87226b214dd583127bd565": {
+    "doi": "https://doi.org/10.1016/j.scitotenv.2015.11.125",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate change vulnerability, adaptation and risk perceptions at farm level in Punjab, Pakistan",
+    "needs_review": false
+  },
+  "6d42db40f23426ef17bf5a4ccc11a8c84bef18392510f3f1ca1ca1e4a5fa0734": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2004.12.005",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Successful adaptation to climate change across scales",
+    "needs_review": false
+  },
+  "0e0e17660a31197f791c42ec5371f2f29792a36644c088a07fa9b9d8081d5312": {
+    "doi": "https://doi.org/10.1007/s10584-008-9520-z",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Are there social limits to adaptation to climate change?",
+    "needs_review": false
+  },
+  "87d6e96edaa472834cac723a3a6134eaee0e423d764577dce716458e35c89873": {
+    "doi": "https://doi.org/10.1186/s40068-016-0065-2",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Factors affecting farmers’ coping and adaptation strategies to perceived trends of declining rainfall and crop productivity in the central Rift valley of Ethiopia",
+    "needs_review": false
+  },
+  "74731e7300e6e4b07ea4c63c85137c3cb058ca07b0a68271d3bc1dd7d014c39e": {
+    "doi": "https://doi.org/10.1016/j.landusepol.2021.105295",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate change risk perceptions and agricultural adaptation strategies in vulnerable riverine char islands of Bangladesh",
+    "needs_review": false
+  },
+  "087b26f3c3fa8d26fa08830fd25e71dc3410baf73d8b3aecd4133fc011d7f660": {
+    "doi": "https://doi.org/10.1016/j.ecolecon.2014.07.025",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate change and farm-level adaptation decisions and strategies in drought-prone and groundwater-depleted areas of Bangladesh: an empirical investigation",
+    "needs_review": false
+  },
+  "3c8a7821a604eb430b8650be4a9e5ed3ed898abec65364f8292cbdacd45c549a": {
+    "doi": "https://doi.org/10.1016/j.landusepol.2019.104430",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Adoption of alternate wetting and drying (AWD) irrigation as a water-saving technology in Bangladesh: Economic and environmental considerations",
+    "needs_review": false
+  },
+  "32893b2598fced9ce09c86d044ab8aace712a8a3596558b65105ee688157c117": {
+    "doi": "https://doi.org/10.1016/j.envdev.2017.06.006",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Determinants of smallholder farmers' choice of coping and adaptation strategies to climate change and variability in the central highlands of Ethiopia",
+    "needs_review": false
+  },
+  "2140f82fd9d9954b5e0ca7e53e003d595244331a07026904683e7c5b6de0d63b": {
+    "doi": "https://doi.org/10.1016/j.crm.2016.12.001",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Assessing farmer use of climate change adaptation practices and impacts on food security and poverty in Pakistan",
+    "needs_review": false
+  },
+  "46402de9bff6d81086208a597310f4eb8f3bfb3588eb12072df741877aec1def": {
+    "doi": "https://doi.org/10.1016/j.ecolecon.2011.07.004",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "The effect of ambiguous risk, and coordination on farmers' adaptation to climate change — A framed field experiment",
+    "needs_review": false
+  },
+  "d2d7f6497ef2596aaf413179a9874b4ee12cd5f43bba02cd59b8208b7534cf81": {
+    "doi": "https://doi.org/10.1186/s40066-017-0144-2",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Determinants of smallholder farmers’ decision to adopt adaptation options to climate change and variability in the Muger Sub basin of the Upper Blue Nile basin of Ethiopia",
+    "needs_review": false
+  },
+  "1a35e86507ac56e02a85bbd27c70551b679032f680feaf5707edb575f1d670da": {
+    "doi": "https://doi.org/10.3390/land5030019",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "The Quiet Rise of Medium-Scale Farms in Malawi",
+    "needs_review": false
+  },
+  "27d679c8c09a05daec54e564d8353dc86e5afdea6e543556144925c659bb88de": {
+    "doi": "https://doi.org/10.1080/17565529.2014.951013",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Barriers to climate change adaptation: evidence from northeast Ghana in the context of a systematic literature review",
+    "needs_review": false
+  },
+  "bdd19dab4ddd64a0c59dd1f963622d817f1f4cb25ff6e2aa3fe0bb52e58e77cd": {
+    "doi": "https://doi.org/10.4067/s0718-52862011000200004",
+    "doi_source": "crossref",
+    "doi_score": 0.8465116279069768,
+    "matched_title": "The influence of size on cost behaviour associated with tactical and operational flexibility",
+    "needs_review": true
+  },
+  "2c226711eda1ce512b9b0f172edd759429c8fc35cfa094e30ff470ed2dd5e5d9": {
+    "doi": "https://doi.org/10.1002/jsfa.6452",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Determinants of climate change adaptation strategies used by fish farmers in Epe Local Government Area of Lagos State, Nigeria",
+    "needs_review": false
+  },
+  "cac9c527f25f1244004d0214747787478b7e1c83f8d3a369a512e17e250c86a7": {
+    "doi": "https://doi.org/10.1007/s10668-018-0150-y",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Determinants in the adoption of climate change adaptation strategies: evidence from rainfed-dependent smallholder farmers in north-central Ethiopia (Woleka sub-basin)",
+    "needs_review": false
+  },
+  "97b4fa95f4dcec30870c6738da3819ea45caee43e59183380773387d61058a16": {
+    "doi": "https://doi.org/10.1007/s12571-016-0571-0",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "What determines farmers’ adaptive capacity? Empirical evidence from Malawi",
+    "needs_review": false
+  },
+  "761d7a9a1c4d8b47b202cd63270e2880ef18ea4687c316baf5449671baa1a9ab": {
+    "doi": "https://doi.org/10.1007/s11069-014-1149-9",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Determinants of farmers’ choice of coping and adaptation measures to the drought hazard in northwest Balochistan, Pakistan",
+    "needs_review": false
+  },
+  "ada89f4680181a06a2d9a9af2ad9c4eec291e99a7446e8abfa93c21e3b00e4d6": {
+    "doi": "https://doi.org/10.1016/s0165-1765(03)00091-0",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Can unobserved heterogeneity in farmer ability explain the inverse relationship between farm size and productivity",
+    "needs_review": false
+  },
+  "69b22378363f14fc3ff4ba63de3ce8f20a161c1dc0e32cabaa3a410ca1724749": {
+    "doi": "https://doi.org/10.1175/2010bams2906.1",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Are We Successfully Adapting Science to Climate Change?",
+    "needs_review": false
+  },
+  "929a0d05f2a6dcdd12de11ab1c72e0e43008c8de991db03e4e1b1927d432c95f": {
+    "doi": "https://doi.org/10.1016/j.jenvman.2019.109456",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Understanding smallholder farmers’ adaptation behaviors through climate change beliefs, risk perception, trust, and psychological distance: Evidence from wheat growers in Iran",
+    "needs_review": false
+  },
+  "c276fe3b1f054efdfd47ff91f3f40ff1e989ffcc0e9a7c8192a245feefd7925b": {
+    "doi": "https://doi.org/10.54386/jam.v9i2.1119",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "A suggested index for assessment of vulnerability of a location to climate change",
+    "needs_review": false
+  },
+  "c85d6e0f63ed6eb8886451f69cbd403fe868861b6052787a41d3dbea5a844e50": {
+    "doi": "https://doi.org/10.1111/j.1468-0297.2006.01115.x",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Social Networks and Technology Adoption in Northern Mozambique",
+    "needs_review": false
+  },
+  "df87a554e8cbbc647b03162f31893ad8bda89031e44aa9007cae1a18185935df": {
+    "doi": "https://doi.org/10.1086/260132",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Size, Productivity, and Returns to Scale: An Analysis of Farm-Level Data in Indian Agriculture",
+    "needs_review": false
+  },
+  "ca283b45bc0321cabd50e6da65cc38dfe10693c3567af3c87f6f752ef2950f48": {
+    "doi": "https://doi.org/10.1016/j.ecolecon.2012.11.024",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climatic impacts across agricultural crop yield distributions: An application of quantile regression on rice crops in Andhra Pradesh, India",
+    "needs_review": false
+  },
+  "75b8ce27b0d445c55f491544820915c6bfc00afff722603ec3d086b933f6ee00": {
+    "doi": "https://doi.org/10.4314/ejesm.v5i4.s21",
+    "doi_source": "crossref",
+    "doi_score": 0.6049046321525886,
+    "matched_title": "Productive Safety Nets Program and Household Level Graduation in Drought-Prone Areas of the Amhara Region of Ethiopia: A Case Study in &lt;em&gt;Lay Gaint&lt;/em&gt; District",
+    "needs_review": true
+  },
+  "1d8c8aed323ebf307bbe78e597ba10deec7133cdf350a27a5c22bbf131129f7a": {
+    "doi": "https://doi.org/10.1186/s40066-017-0100-1",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Smallholder farmers’ adaptation to climate change and determinants of their adaptation decisions in the Central Rift Valley of Ethiopia",
+    "needs_review": false
+  },
+  "d9eb0187e9273530f8130a45e54255ec81094e6d968da5d8252bdb16b064e0b6": {
+    "doi": "https://doi.org/10.5539/sar.v2n3p107",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Knowledge, Perception and Adaptation Strategies to Climate Change Among Farmers of Central State Nigeria",
+    "needs_review": false
+  },
+  "39365c8f54ee626bb120179759746a3d49efd7ca2e07b4886f0e5e249157749d": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2011.11.012",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Can farmers’ adaptation to climate change be explained by socio-economic household-level variables?",
+    "needs_review": false
+  },
+  "d54926fa040375b088b911ac03fceb1d78d0ea9050b1c4953b4de7fc33122e0f": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2010.09.012",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Are we adapting to climate change?",
+    "needs_review": false
+  },
+  "8ab6ad075bdcf263c9dda5e58dd2b4842ff542d771e01eabe5d06b5319b51814": {
+    "doi": "https://doi.org/10.1080/17565529.2013.789791",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Agricultural adaptation to climate change: observations from the Mid-Hills of Nepal",
+    "needs_review": false
+  },
+  "5abca654e801b59a599c9b7c91b2a719f4eccbf8a35e04c3826acbed456c2327": {
+    "doi": "https://doi.org/10.2307/1236943",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Representation of Farmers' Behavior under Uncertainty with a Focus-Loss Constraint",
+    "needs_review": false
+  },
+  "9b5ae4309c77ba778a28c08c97e000bc6944f36365bf78272745f72dbc38dca4": {
+    "doi": "https://doi.org/10.1016/j.envsci.2008.11.002",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Adaptation to climate change in Ethiopia and South Africa: options and constraints",
+    "needs_review": false
+  },
+  "1b5bac2fa5dacf5f90afa00b2c0d70ff614de522c1af50e5b7ef98522299f35b": {
+    "doi": "https://doi.org/10.1016/j.jenvman.2012.10.036",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Adapting agriculture to climate change in Kenya: Household strategies and determinants",
+    "needs_review": false
+  },
+  "6a56ad6d110e0149b26cea48640ad33d11aea36789317bb5b8bac76a196a7a10": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "70c8791ec915b84a20e086ae673de6da761fed23745cd82f87071571e4b6f5a9": {
+    "doi": "https://doi.org/10.1093/oxfordjournals.oep.a041621",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "IDENTIFICATION OF THE INVERSE RELATIONSHIP BETWEEN FARM SIZE AND PRODUCTIVITY: AN EMPIRICAL ANALYSIS OF PEASANT AGRICULTURAL PRODUCTION",
+    "needs_review": false
+  },
+  "4b9b63cd0c8a262ee08e06144a3ba469127f7c1c5d2238927cc0534806bab6dc": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "004d0899691de93781e66e4ea1e1366ba6d9dd70b6a9f6e16baa40b9e962e787": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "0b8ca36da463ce954077719ad00aa00b0d521933b11b651b3299887eb1f793b2": {
+    "doi": "https://doi.org/10.1007/978-1-4614-6431-0_6-3",
+    "doi_source": "crossref",
+    "doi_score": 0.6433566433566433,
+    "matched_title": "Media Framing of Climate Change Mitigation and Adaptation",
+    "needs_review": true
+  },
+  "60e005f9491a42b6feaa607121fdfc1e809f2f46847e86decc7c73cb450225ae": {
+    "doi": "https://doi.org/10.1038/s41558-017-0065-x",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Building adaptive capacity to climate change in tropical coastal communities",
+    "needs_review": false
+  },
+  "18cf3f7ab355f7b9bde704f16b3fd37bc76e997e637c9496788120884154e4ef": {
+    "doi": "https://doi.org/10.1016/j.envsci.2014.04.002",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Understanding farmers’ adaptation intention to climate change: A structural equation modelling study in the Mekong Delta, Vietnam",
+    "needs_review": false
+  },
+  "964df452608329545c0b5f6c3c23417c6bc4e247bcf3fa9f3c9a527a0c842fe6": {
+    "doi": "https://doi.org/10.1007/s10113-014-0676-y",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Behavioural barriers in response to climate change in agricultural communities: an example from Kenya",
+    "needs_review": false
+  },
+  "dec33125151d9812b7f3e243386478eee52cea205a0f98924ffe44e7db11c50d": {
+    "doi": "https://doi.org/10.1017/s0021859610000687",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Perception of and adaptation to climate change by farmers in the Nile basin of Ethiopia",
+    "needs_review": false
+  },
+  "49a6835a00630fb52cee54678d389d1a8e6b22e1876c11b3c7ef4a6720cd089b": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2009.01.002",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Determinants of farmers’ choice of adaptation methods to climate change in the Nile Basin of Ethiopia",
+    "needs_review": false
+  },
+  "8cd44c6313c51ec6a350a405b1a7f25b8b2cf4c1dabc210cf9c33dd62d29b888": {
+    "doi": "https://doi.org/10.1007/s10584-020-02684-8",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate change adaptation strategies, productivity and sustainable food security in southern Mali",
+    "needs_review": false
+  },
+  "c25c87d36281fe0a160b433f85047dd37f904123dc128ca542cb2e24654346e9": {
+    "doi": "https://doi.org/10.1016/j.geoforum.2019.05.019",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Caring for the future: Climate change and intergenerational responsibility in China and the UK",
+    "needs_review": false
+  },
+  "b53dd5a10e7992b84c99cac97bd7c5394c56ef8ebb2959cb1b35637862e16509": {
+    "doi": "https://doi.org/10.1007/s10584-018-2320-1",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Risk perception and decision-making: do farmers consider risks from climate change?",
+    "needs_review": false
+  },
+  "89c4d24d22d4c20088b175f15632a2d799f054d11ae0a67004a9c65ab7a859f1": {
+    "doi": "https://doi.org/10.4337/9781800371491",
+    "doi_source": "crossref",
+    "doi_score": 0.6666666666666666,
+    "matched_title": "Research Handbook on Climate Change Adaptation Law",
+    "needs_review": true
+  },
+  "f5dbd618e680f863736640cbe4e09a63712f97fdacbe26dff008d87fc956a591": {
+    "doi": "https://doi.org/10.5751/es-05732-180340",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "How to Track Adaptation to Climate Change: A Typology of Approaches for National-Level Application",
+    "needs_review": false
+  },
+  "274539f230ffaed29d08a334d078b8402d84414e0d326c3c36652792c0f90751": {
+    "doi": "https://doi.org/10.1086/601447",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Learning by Doing and Learning from Others: Human Capital and Technical Change in Agriculture",
+    "needs_review": false
+  },
+  "8d0bbcbb9edfb2622634d4f57bff0359e268598d99554506563fae71f7ce3e83": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2006.05.002",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Vulnerability: A generally applicable conceptual framework for climate change research",
+    "needs_review": false
+  },
+  "8309dce9512e20f299188aa41ab061e336cd2d7d364373f0862e5ddaabfc0422": {
+    "doi": "https://doi.org/10.3390/sci1030057",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Perception to Adaptation of Climate Change in Nepal: An Empirical Analysis Using Multivariate Probit Model",
+    "needs_review": false
+  },
+  "b1b497b7f614d982097eedee379b6f0e2a10c21b3c67b39ecbc8c691fd734ca9": {
+    "doi": "https://doi.org/10.1007/s00267-013-0039-3",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farm Level Adaptation to Climate Change: The Case of Farmer’s in the Ethiopian Highlands",
+    "needs_review": false
+  },
+  "75c706c2f641c629e0e83d2223052774631410caaedd72193486df7d8b6598a2": {
+    "doi": "https://doi.org/10.1007/s00267-014-0415-7",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farmers Prone to Drought Risk: Why Some Farmers Undertake Farm-Level Risk-Reduction Measures While Others Not?",
+    "needs_review": false
+  },
+  "38b9cae55c1db2b482590d4eeee3fd36100a81e8bcaa94905f9c2b5e8103e8ad": {
+    "doi": "https://doi.org/10.3390/su11247224",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate Change Impact, Adaptation, and Mitigation in Temperate Grazing Systems: A Review",
+    "needs_review": false
+  },
+  "521ebc47fdb8907b0dcc3ad977838052c0f83d8b0f811a9d08e2c73ed416256b": {
+    "doi": "https://doi.org/10.3390/sci2040087",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Perception to Adaptation of Climate Change in Nepal: An Empirical Analysis Using Multivariate Probit Model",
+    "needs_review": false
+  },
+  "2aa3693280233e93a3c5a0bf45bdfedb89eae4aac4b6d4c3aad338c22cab4a19": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "718ca503b93df325515c51b8af9d668f65debd0e29c0c5f9f285cb651b5953f9": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "d20deb39f04ff34242a2a20134b350b7ab8ea0ea1ce66cdf234bbfcc4df7cd50": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2005.01.002",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Adaptive capacity and human cognition: The process of individual adaptation to climate change",
+    "needs_review": false
+  },
+  "52a50cc351f17981bdbdfe67e6bb22ec44a235da17605ae3de59ea593b6adc75": {
+    "doi": "https://doi.org/10.1007/s11069-005-8604-6",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "People at Risk of Flooding: Why Some Residents Take Precautionary Action While Others Do Not",
+    "needs_review": false
+  },
+  "e3c0345a52a1e34ec4a2babe57df79d3eb88d8aa2aa4082568edc617ace3c7d8": {
+    "doi": "https://doi.org/10.1016/j.jclepro.2020.125332",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Local farmer’s perception and adaptive behavior toward climate change",
+    "needs_review": false
+  },
+  "79945eaa9ba8d8509fb5ab403ddb5e88c1976cffc6376528896e25b773eef27a": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2008.11.002",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "The Livelihood Vulnerability Index: A pragmatic approach to assessing risks from climate variability and change—A case study in Mozambique",
+    "needs_review": false
+  },
+  "581bc713bcc359529c145c6e00656d2917eb0c5d240ec12b3361694246f788b9": {
+    "doi": "https://doi.org/10.1163/9789004322714_cclc_2022-0258-0930",
+    "doi_source": "crossref",
+    "doi_score": 0.6923076923076923,
+    "matched_title": "Climate Change 2022: Impacts, Adaptation and Vulnerability",
+    "needs_review": true
+  },
+  "8661e3213dadb92d3625f9d5f33fcd773717b742181ad8f6f2a08919063344c0": {
+    "doi": "https://doi.org/10.1016/j.eap.2016.01.001",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate perception and flood mitigation cooperation: A Bangladesh case study",
+    "needs_review": false
+  },
+  "3b046ac35ec8d3fc4209e3512d8fd83cf9ffbd98943f659f77954ac941474160": {
+    "doi": "https://doi.org/10.1111/agec.12308",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Africa's changing farm size distribution patterns: the rise of medium‐scale farms",
+    "needs_review": false
+  },
+  "f5759d28fa5af78ac0c5843df86856cd47ebd5e66ef1a047535aebdbe1191cb4": {
+    "doi": "https://doi.org/10.1016/j.landusepol.2015.04.028",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farmers’ risk preferences and their climate change adaptation strategies in the Yongqiao District, China",
+    "needs_review": false
+  },
+  "6e4e817842c2007de939abb2b495714575aad897fb4a25ace616e0e817d598dd": {
+    "doi": "https://doi.org/10.1007/s10584-013-0700-0",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farmer beliefs and concerns about climate change and attitudes toward adaptation and mitigation: Evidence from Iowa",
+    "needs_review": false
+  },
+  "c868d9e2f946f82ebb39b437590e1ebe1ba9648cfb0b9aafc98fc9ab81586593": {
+    "doi": "https://doi.org/10.1016/j.landusepol.2017.02.026",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farm-level adaptation to climate change in Western Bangladesh: An analysis of adaptation dynamics, profitability and risks",
+    "needs_review": false
+  },
+  "4495a73272cbc760970d36e67119e9725e8b31b320b978872dd169f5eda0c351": {
+    "doi": "https://doi.org/10.1007/s12571-018-0805-4",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Why are farmers keeping cultivatable lands fallow even though there is food scarcity in Nepal?",
+    "needs_review": false
+  },
+  "9524f20142000aa0cb0e8225a95a8c0cb9409d50c22fe4ffafeb11f50dd8aed3": {
+    "doi": "https://doi.org/10.1016/j.envsci.2019.08.006",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Derivation of a climate change adaptation index and assessing determinants and barriers to adaptation among farming households in Nepal",
+    "needs_review": false
+  },
+  "cbe2fc562ce561e6e27bcaabf608c6b119b7adcff27621019d892ecf9c781a03": {
+    "doi": "https://doi.org/10.1007/s10668-017-0050-6",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Impact of community-based organizations on climate change adaptation in agriculture: empirical evidence from Nepal",
+    "needs_review": false
+  },
+  "5fe4ef4164bd3bd04b7792e83970ec6b91383b94ff340f4d5f03f1ce0570f3a2": {
+    "doi": "https://doi.org/10.1016/j.ecolecon.2017.08.006",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farmers' Adaptation to Climate Change, Its Determinants and Impacts on Rice Yield in Nepal",
+    "needs_review": false
+  },
+  "b23dba937b57349de10282b56aff1f95fedf2f001cdbd9926627d7708ff4b1f8": {
+    "doi": "https://doi.org/10.1007/s10584-018-2214-2",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate change adaptation strategies and food productivity in Nepal: a counterfactual analysis",
+    "needs_review": false
+  },
+  "83e052b557b5c91eddda12f425b80edd7c65bcc3dc15b90ebb7fbb88b7fc6523": {
+    "doi": "https://doi.org/10.1007/s10584-018-2168-4",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Do climate change adaptation practices improve technical efficiency of smallholder farmers? Evidence from Nepal",
+    "needs_review": false
+  },
+  "c090f6bdb6190fa78f23703f63d0f0f65e6f73b9f2727ffb6dfb597ec64923d0": {
+    "doi": "https://doi.org/10.1163/9789004304987_022",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farmers’ Preferences Regarding Ownership and Land Tenure in Post-Mao China: Unexpected Evidence from Eight Counties",
+    "needs_review": false
+  },
+  "6e1ed1f1311df5181b7784f6dca0e866470bf152b833c31140f58c875810314d": {
+    "doi": "https://doi.org/10.1007/s11027-013-9491-x",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "How are we adapting to climate change? A global assessment",
+    "needs_review": false
+  },
+  "eb19a381912c03e2deed92240af0ef9a505ea2dc51bd8488952ea5d3dab726e0": {
+    "doi": "https://doi.org/10.1596/1813-9450-4308",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "The Perception Of And Adaptation To Climate Change In Africa",
+    "needs_review": false
+  },
+  "bab6a54e34a72f50bfc989699d258512bf964c3218ddd389e1983f8c11b6fbf3": {
+    "doi": "https://doi.org/10.1007/s10113-010-0137-1",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Adapting cropping systems to climate change in Nepal: a cross-regional study of farmers’ perception and practices",
+    "needs_review": false
+  },
+  "8580ce5b84afa5d9aeac7e01e8334ec0093757e82c3b379019557511fe01ce84": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "e00a60861421a7c969e972f47ed6af2edcd0297c6861726e069196ca02aa9e46": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "dc8200fd0bcdaaa5e0ca3da855517cfea6ccd721693570d272a54079df73e29a": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "4299f3108382d9b645fba1c2cdc89b713b0d0c8f60042b4501377c70f7f2b77e": {
+    "doi": "https://doi.org/10.1126/science.aaw9256",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Measuring the success of climate change adaptation and mitigation in terrestrial ecosystems",
+    "needs_review": false
+  },
+  "04b1b756fc0cdbc55677dde8f5480bddcc72498d720bcff6089fef57c5c3131b": {
+    "doi": "https://doi.org/10.3390/su11051303",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Understanding Farmers’ Behavior towards Sustainable Practices and Their Perceptions of Risk",
+    "needs_review": false
+  },
+  "9a8fedf6824e19f2c29acf91fe42bd7a51c40b341bd10751701b0433a204d557": {
+    "doi": "https://doi.org/10.3390/w7094593",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farmers’ Perceptions about Adaptation Practices to Climate Change and Barriers to Adaptation: A Micro-Level Study  in Ghana",
+    "needs_review": false
+  },
+  "375b09585536ada00cbcefc01fcd780541b70465e6c33a0b055eaa0bf14019e0": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2012.01.001",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farm-scale adaptation and vulnerability to environmental stresses: Insights from winegrowing in Northern California",
+    "needs_review": false
+  },
+  "cb1bae15669f9891abaa70e7409036238c84122b1ab2e5d440666f9981212c72": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2013.08.005",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Perceptions and responses to climate policy risks among California farmers",
+    "needs_review": false
+  },
+  "d552e76fa030f348a8d0eea275fae7754b779e1c1390f8adf3258bf57c5c3514": {
+    "doi": "https://doi.org/10.1002/ldr.771",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Impacts of land fragmentation on input use, crop yield and production efficiency in the mountains of Nepal",
+    "needs_review": false
+  },
+  "eb7dff756660821870189604d5b9e7ba2d8567222a39201fb6b8e5e82cda495a": {
+    "doi": "https://doi.org/10.1016/j.ecolind.2019.105863",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate change vulnerability and adaptation strategies for smallholder farmers in Yangi Qala District, Takhar, Afghanistan",
+    "needs_review": false
+  },
+  "178b260b1fa4954e7e02328152a5660b4ac792b7ecd2d5e01509e284451c3224": {
+    "doi": "https://doi.org/10.1007/s10584-017-1983-3",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Adaptation pathways: ecoregion and land ownership influences on climate adaptation decision-making in forest management",
+    "needs_review": false
+  },
+  "6d068ce18dd609ece914c4524989f5f7270ae30a43723b63eff01d5e43420329": {
+    "doi": "https://doi.org/10.1016/j.ecolecon.2014.12.010",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "The determinants of private flood mitigation measures in Germany — Evidence from a nationwide survey",
+    "needs_review": false
+  },
+  "fb858e7c0b8ea0fb4cb215553a6a16504efce578e2acd428be9ec3e746684a3d": {
+    "doi": "https://doi.org/10.1111/jfr3.12699",
+    "doi_source": "crossref",
+    "doi_score": 0.7807486631016043,
+    "matched_title": "Determinants of flood adaptation: Parametric and semiparametric assessment",
+    "needs_review": true
+  },
+  "55cf21c276dbaed7e8eb8c20599382105ef4cdf1a5e2df669e602cb3780ea010": {
+    "doi": "https://doi.org/10.1016/j.landusepol.2019.03.030",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Scale-appropriate mechanization impacts on productivity among smallholders: Evidence from rice systems in the mid-hills of Nepal",
+    "needs_review": false
+  },
+  "13fc3b4a6011e1060c8fd41b86f5534f8e25106f7fc127c75f1ec2a01e507c9e": {
+    "doi": "https://doi.org/10.1007/s10113-012-0359-5",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Determinants of adaptation practices to climate change by Chepang households in the rural Mid-Hills of Nepal",
+    "needs_review": false
+  },
+  "421500d734617a6ee757cc4e8085e6a180b01fa97fd99467e0cc5867687492fb": {
+    "doi": "https://doi.org/10.1007/s10584-012-0491-8",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climatic impacts on crop yield and its variability in Nepal: do they vary across seasons and altitudes?",
+    "needs_review": false
+  },
+  "214ef7fec67b6fcdb8746d8ada24e5b050a655a064954987a01a2da601dff777": {
+    "doi": "https://doi.org/10.1007/s11027-012-9366-6",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "The role of uncertainty in climate change adaptation strategies—A Danish water management example",
+    "needs_review": false
+  },
+  "bff8c0d87008dbb5293b4b8fb68765c074966843abc7df36de8c34df551ccbb6": {
+    "doi": "https://doi.org/10.1177/003072709602500204",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Sustainable Agricultural Development for Small Farmers in Nepal: Myth or Reality?",
+    "needs_review": false
+  },
+  "3a073f1b3bc89d76544737cc77f346bffc7395a8ac107e64d0a85909b0209b69": {
+    "doi": "https://doi.org/10.1007/s10584-007-9242-7",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Analysis of farm performance in Europe under different climatic and management conditions to improve understanding of adaptive capacity",
+    "needs_review": false
+  },
+  "960f224d9fd62f4920a6966a6f61777fb1687c3a214807a789cee6eb8651da94": {
+    "doi": "https://doi.org/10.1016/j.envsci.2014.07.008",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farm level adaptation decisions to face climatic change and variability: Evidence from Central Chile",
+    "needs_review": false
+  },
+  "85ee91652e2c3253d42c4d69847df3ef347ef5fa5d4e276fd1632bbf6708f002": {
+    "doi": "https://doi.org/10.1016/j.jenvman.2012.07.015",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "The influence of cognitive processes on rural landholder responses to climate change",
+    "needs_review": false
+  },
+  "084b7e902683db998333323349c76ac138ca600eab06212329c765737d9ae28d": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "38989afa4bc7338cfe032d94f433b5b0d3a8de740ca2b826f06dbae7962c1812": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "a4206e224411d0b2761df9b569eace5c433020c947ad5b1aabc85a3eddad3c4c": {
+    "doi": "https://doi.org/10.1007/978-3-319-15946-1_2",
+    "doi_source": "crossref",
+    "doi_score": 0.7543859649122807,
+    "matched_title": "The Theory of the Micro-behavioral Economics of Global Warming",
+    "needs_review": true
+  },
+  "12a75a3b212195770b72c219dd5596231ef85acd26c2b4276bcf7e7859c3f969": {
+    "doi": "https://doi.org/10.1007/s10584-019-02418-5",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate change in Nepal: a comprehensive analysis of instrumental data and people’s perceptions",
+    "needs_review": false
+  },
+  "65135fee310f8eca374243970b03376654a1b678ac6b4c9a93950a951cdf87e2": {
+    "doi": "https://doi.org/10.1016/j.landusepol.2016.03.026",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "The geography of Zambia’s customary land: Assessing the prospects for smallholder development",
+    "needs_review": false
+  },
+  "0614084bc3a4c57fda73c3e13f6f38cc7c3bcbda18c55df9ae9fd2d9fcae548a": {
+    "doi": "https://doi.org/10.1016/j.envsci.2019.10.007",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Adaptation and development pathways for different types of farmers",
+    "needs_review": false
+  },
+  "7dcaec6230fdca410491575acd7a3218629be5e386e29379088460d2165a5880": {
+    "doi": "https://doi.org/10.1111/joac.12369",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Experiments in farmers' collectives in Eastern India and Nepal: Process, benefits, and challenges",
+    "needs_review": false
+  },
+  "f118e07e12d50e125a41983de76696559cf81b066e2b15dfc1d1a159bb061ef5": {
+    "doi": "https://doi.org/10.1007/s11027-011-9325-7",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate change and agricultural technology adoption: the case of drought tolerant maize in rural Nigeria",
+    "needs_review": false
+  },
+  "3577145b42571ea8e3d905bd36ce991be70a22dbbceea4cf4368adc5e73db965": {
+    "doi": "https://doi.org/10.1007/978-981-32-9648-0_12",
+    "doi_source": "crossref",
+    "doi_score": 0.6521739130434783,
+    "matched_title": "Agricultural Diversification in Nepal",
+    "needs_review": true
+  },
+  "194489082b65259bec7463a379f3206ad5173636107fab588baa99269166b7ef": {
+    "doi": "https://doi.org/10.1007/s10584-006-9205-4",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Adaptation to climate change and variability: farmer responses to intra-seasonal precipitation trends in South Africa",
+    "needs_review": false
+  },
+  "182b058d4f29e2b2da1ddbc9e63752780681b4ae22b8d480ed8e735f1b9e369f": {
+    "doi": "https://doi.org/10.1002/wcc.565",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Explaining differential vulnerability to climate change: A social science review",
+    "needs_review": false
+  },
+  "2fb0991a2811d0b9eeb202418e0ee1bf20bc55d5af0d322819d993533961b752": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2010.05.001",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Observed adaptation to climate change: UK evidence of transition to a well-adapting society",
+    "needs_review": false
+  },
+  "2c858155da29a40cbfe83e4d5c237a16595c3bf8648727ffd451714aa704960c": {
+    "doi": "https://doi.org/10.3390/su11123291",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Is Technical Efficiency Affected by Farmers’ Preference for Mitigation and Adaptation Actions against Climate Change? A Case Study in Northwest Mexico",
+    "needs_review": false
+  },
+  "b26d1debd4ec14b5dd69ead173d5f0be027fafab21554b80d36aeeed8d66c462": {
+    "doi": "https://doi.org/10.1016/j.landusepol.2017.10.023",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Determinants of farmers’ adaptation to climate change in agricultural production in the central region of Vietnam",
+    "needs_review": false
+  },
+  "bf1dad0b87d7a1d42e82110d20eb9acb4139d1ad2beb5b7332d6c4b6f57cbdbe": {
+    "doi": "https://doi.org/10.3390/cli2040223",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Factors Affecting Farmers’ Adaptation Strategies to Environmental Degradation and Climate Change Effects: A Farm Level Study in Bangladesh",
+    "needs_review": false
+  },
+  "02dfcfca9f47cfa41ebba1040b264f41d0cfe75741abc6cb0b3f4aaf4204dd62": {
+    "doi": "https://doi.org/10.1007/s10661-019-7651-5",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Assessing farmers’ perspectives on climate change for effective farm-level adaptation measures in Khyber Pakhtunkhwa, Pakistan",
+    "needs_review": false
+  },
+  "96ee61446344481fcdaee5e43d9b795279fb59691370b25d3efd37e7824e5f28": {
+    "doi": "https://doi.org/10.1007/s10113-012-0323-4",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Adaptation to climate change and other stressors among commercial and small-scale South African farmers",
+    "needs_review": false
+  },
+  "78ee9a49f7edbaeb7d79514b11a0d695415cd3b7efdb457e578edba06a2a605b": {
+    "doi": "https://doi.org/10.1016/j.gloenvcha.2013.12.011",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Smallholder farmer cropping decisions related to climate variability across multiple regions",
+    "needs_review": false
+  },
+  "7659f83e705d35611c7a149929690a794054c3b557aa54b555d3a628246b6a84": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "f50b8456497616da776ae66e8ed5f14dc745a30b2527debbcba452fd8d9fcfc4": {
+    "doi": "https://doi.org/10.1007/s11027-011-9352-4",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Water resources management strategy for adaptation to droughts in China",
+    "needs_review": false
+  },
+  "f8f040dce70914466f043253ea038cc1861a46667d344688d7de982c5a283aca": {
+    "doi": "https://doi.org/10.3390/socsci7030033",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Can Social Capital influence Smallholder Farmers’ Climate-Change Adaptation Decisions? Evidence from Three Semi-Arid Communities in Burkina Faso, West Africa",
+    "needs_review": false
+  },
+  "9349222f178f757f44fbe950ef23581e25237b9aae224baa7050663939d913fc": {
+    "doi": "https://doi.org/10.1007/s10113-013-0443-5",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "The perception of and adaptation to climate variability/change in Ghana by small-scale and commercial farmers",
+    "needs_review": false
+  },
+  "3d2917973c4e24a92aa9bdd1f1bad592c290aeace7978acad2f94a58b26f86ed": {
+    "doi": "https://doi.org/10.1111/gec3.12121",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Gender and Climate Change Adaptation in Agrarian Settings: Current Thinking, New Directions, and Research Frontiers",
+    "needs_review": false
+  },
+  "fd63f7c29de3406eab2d1190706f8933d18f8cc0883a27ff9d5ea53301218334": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  },
+  "c6a37e586ad307fe45c3e7f58ab32975afb457551d6138fd65af9c14210b6ccb": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false
+  }
+}

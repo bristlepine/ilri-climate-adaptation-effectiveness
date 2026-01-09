@@ -1,0 +1,31 @@
+# Eligibility Criteria for Climate Adaptation Effectiveness Review
+# Referenced in Step 5 (Eligibility Check)
+
+hard_filters:
+  min_year: 2005
+
+criteria:
+  1_population:
+    name: "POPULATION (Smallholders)"
+    include: "Must focus on Smallholder producers or households (crop, livestock, fisheries, forestry)."
+    exclude: "Large-scale commercial agriculture, agribusiness value chains without smallholder focus, or non-agricultural livelihoods."
+
+  2_concept:
+    name: "CONCEPT (Adaptation)"
+    include: "Must assess adaptation processes or outcomes (e.g., resilience, risk reduction, adaptive capacity)."
+    exclude: "Mitigation ONLY (reducing emissions), or general development/agronomy without explicit climate risk framing."
+
+  3_context:
+    name: "CONTEXT (Ag + Climate Risk)"
+    include: "Agricultural settings explicitly exposed to climate hazards (drought, flood, variability, temperature rise)."
+    exclude: "Non-agricultural sectors, or studies that do not link agricultural issues to climate change/variability."
+
+  4_methodology:
+    name: "METHODOLOGY (Empirical Evidence)"
+    include: "Must provide empirical evidence (qualitative or quantitative) or scenario-based testing of an intervention or tool."
+    exclude: "Purely theoretical papers, conceptual frameworks without application, or review papers without primary data analysis."
+
+  5_geography:
+    name: "GEOGRAPHY (LMIC)"
+    include: "Must be conducted in Low- or Middle-Income Countries (LMICs) or the Global South."
+    exclude: "Exclusively High-Income / OECD countries (e.g., USA, UK, EU, Australia, Canada)."

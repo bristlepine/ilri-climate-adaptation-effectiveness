@@ -1,0 +1,158 @@
+{
+  "total": 235,
+  "initial_with_doi": 103,
+  "doi_enriched": 107,
+  "doi_needs_review_but_rejected": 9,
+  "missing": 25,
+  "by_type": {
+    "Peer": 228,
+    "Grey": 7
+  },
+  "by_identified_via": {
+    "Stakeholder - Pankaj Koirala": 209,
+    "Online Search": 10,
+    "Stakeholder - Graham Clarkson": 5,
+    "IPCC_AR6_WGII_Chapter17 - Decision-Making Options for Managing Risk": 4,
+    "IPCC_AR6_WGII_Chapter5 - Food, Fibre and Other Ecosystem Products": 3,
+    "IPCC_AR6_WGII_Chapter8 - Poverty, Livelihoods and Sustainable Development": 3,
+    "From stakeholder ntoes": 1
+  },
+  "identified_via_doi_coverage": [
+    {
+      "identified_via": "From stakeholder ntoes",
+      "total": 1,
+      "with_doi": 1,
+      "pct_with_doi": 1.0
+    },
+    {
+      "identified_via": "IPCC_AR6_WGII_Chapter17 - Decision-Making Options for Managing Risk",
+      "total": 4,
+      "with_doi": 2,
+      "pct_with_doi": 0.5
+    },
+    {
+      "identified_via": "IPCC_AR6_WGII_Chapter5 - Food, Fibre and Other Ecosystem Products",
+      "total": 3,
+      "with_doi": 3,
+      "pct_with_doi": 1.0
+    },
+    {
+      "identified_via": "IPCC_AR6_WGII_Chapter8 - Poverty, Livelihoods and Sustainable Development",
+      "total": 3,
+      "with_doi": 1,
+      "pct_with_doi": 0.333
+    },
+    {
+      "identified_via": "Online Search",
+      "total": 10,
+      "with_doi": 10,
+      "pct_with_doi": 1.0
+    },
+    {
+      "identified_via": "Stakeholder - Graham Clarkson",
+      "total": 5,
+      "with_doi": 3,
+      "pct_with_doi": 0.6
+    },
+    {
+      "identified_via": "Stakeholder - Pankaj Koirala",
+      "total": 209,
+      "with_doi": 190,
+      "pct_with_doi": 0.909
+    }
+  ],
+  "doi_flow_by_type": [
+    {
+      "type": "Grey",
+      "total": 7,
+      "initial_with_doi": 0,
+      "doi_given": 0,
+      "doi_enriched": 1,
+      "doi_rejected": 1,
+      "final_with_doi": 1,
+      "final_missing": 6
+    },
+    {
+      "type": "Peer",
+      "total": 228,
+      "initial_with_doi": 103,
+      "doi_given": 103,
+      "doi_enriched": 106,
+      "doi_rejected": 8,
+      "final_with_doi": 209,
+      "final_missing": 19
+    }
+  ],
+  "doi_flow_by_identified_via": [
+    {
+      "identified_via": "From stakeholder ntoes",
+      "total": 1,
+      "initial_with_doi": 1,
+      "doi_given": 1,
+      "doi_enriched": 0,
+      "doi_rejected": 0,
+      "final_with_doi": 1,
+      "final_missing": 0
+    },
+    {
+      "identified_via": "IPCC_AR6_WGII_Chapter17 - Decision-Making Options for Managing Risk",
+      "total": 4,
+      "initial_with_doi": 0,
+      "doi_given": 0,
+      "doi_enriched": 2,
+      "doi_rejected": 1,
+      "final_with_doi": 2,
+      "final_missing": 2
+    },
+    {
+      "identified_via": "IPCC_AR6_WGII_Chapter5 - Food, Fibre and Other Ecosystem Products",
+      "total": 3,
+      "initial_with_doi": 3,
+      "doi_given": 3,
+      "doi_enriched": 0,
+      "doi_rejected": 0,
+      "final_with_doi": 3,
+      "final_missing": 0
+    },
+    {
+      "identified_via": "IPCC_AR6_WGII_Chapter8 - Poverty, Livelihoods and Sustainable Development",
+      "total": 3,
+      "initial_with_doi": 0,
+      "doi_given": 0,
+      "doi_enriched": 1,
+      "doi_rejected": 0,
+      "final_with_doi": 1,
+      "final_missing": 2
+    },
+    {
+      "identified_via": "Online Search",
+      "total": 10,
+      "initial_with_doi": 10,
+      "doi_given": 10,
+      "doi_enriched": 0,
+      "doi_rejected": 0,
+      "final_with_doi": 10,
+      "final_missing": 0
+    },
+    {
+      "identified_via": "Stakeholder - Graham Clarkson",
+      "total": 5,
+      "initial_with_doi": 2,
+      "doi_given": 2,
+      "doi_enriched": 1,
+      "doi_rejected": 0,
+      "final_with_doi": 3,
+      "final_missing": 2
+    },
+    {
+      "identified_via": "Stakeholder - Pankaj Koirala",
+      "total": 209,
+      "initial_with_doi": 87,
+      "doi_given": 87,
+      "doi_enriched": 103,
+      "doi_rejected": 8,
+      "final_with_doi": 190,
+      "final_missing": 19
+    }
+  ]
+}

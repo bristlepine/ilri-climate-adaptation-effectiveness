@@ -11,5 +11,7 @@ dependencies:
   - python-dotenv
   - rich
   - matplotlib
+  - seaborn      # Added for Step 6 Heatmaps
+  - openpyxl     # Added for Step 6 Excel Export
   - pip:
       - typer>=0.9
