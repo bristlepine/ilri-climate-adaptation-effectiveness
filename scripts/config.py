@@ -13,12 +13,12 @@ import os
 # Which steps to run (0/1)
 # -----------------------------
 run_step1 = 0  # Count records (sanity check)
-run_step2 = 0  # Retrieve IDs from Scopus
+run_step2 = 1  # Retrieve IDs from Scopus
 run_step3 = 0  # Match/Enrich Benchmark DOIs
 run_step4 = 0  # Fetch Abstracts (APIs + Scraping)
 run_step5 = 0  # Eligibility Check (AI Screen)
 run_step6 = 0  # Visualization (HTML Heatmap)
-run_step7 = 1  # Benchmark Check (Stacked Bar Analysis) <--- Enabled
+run_step7 = 0  # Benchmark Check (Stacked Bar Analysis) <--- Enabled
 
 # optional convenience list
 runsteps = [i for i, flag in enumerate([run_step1, run_step2, run_step3, run_step4, run_step5, run_step6, run_step7], start=1) if flag]

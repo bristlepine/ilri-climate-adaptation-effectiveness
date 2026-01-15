@@ -1,12 +1,18 @@
 {
   "total_rows": 210,
-  "ok": 206,
-  "failed": 4,
+  "cached_ok": 203,
+  "cached_failed_skipped": 0,
+  "fresh_ok": 3,
+  "fresh_failed": 4,
+  "ok_total": 206,
+  "failed_total": 4,
   "ok_by_source": {
     "elsevier_api": 95,
     "openalex": 31,
     "semantic_scholar": 38,
     "landing_meta": 42
   },
-  "timestamp_utc": "2026-01-09T19:52:25Z"
+  "cache_ttl_days": 30,
+  "force_refresh": false,
+  "timestamp_utc": "2026-01-15T22:58:25Z"
 }

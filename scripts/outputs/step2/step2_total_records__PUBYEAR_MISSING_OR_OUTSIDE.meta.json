@@ -6,16 +6,16 @@
   "max_results": null,
   "rate_headers_last": {
     "X-RateLimit-Limit": "20000",
-    "X-RateLimit-Remaining": "19604",
+    "X-RateLimit-Remaining": "19228",
     "X-RateLimit-Reset": "1768552208"
   },
-  "started_utc": "2026-01-09T20:49:27Z",
-  "total_reported_by_scopus": 87,
-  "ended_utc": "2026-01-09T20:49:38Z",
-  "retrieved_rows": 87,
+  "started_utc": "2026-01-15T22:42:28Z",
+  "total_reported_by_scopus": 98,
+  "ended_utc": "2026-01-15T22:42:38Z",
+  "retrieved_rows": 98,
   "slice_tag": "PUBYEAR_MISSING_OR_OUTSIDE",
   "slice_pubyear_start": null,
   "slice_pubyear_end": null,
-  "expected_total_from_planner": 87,
-  "timestamp_utc": "2026-01-09T20:49:38Z"
+  "expected_total_from_planner": 98,
+  "timestamp_utc": "2026-01-15T22:42:38Z"
 }
