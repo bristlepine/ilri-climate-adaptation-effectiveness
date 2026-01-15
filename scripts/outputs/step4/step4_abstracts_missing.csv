@@ -1,7 +1,7 @@
-doi,title,type,identified_via,last_source_attempted,fetch_status,error
-10.1890/1051-0761(1997)007,"The relationship between land-use change and climate change. Ecological applications, 7, 753–769. doi:10.1890/1051-0761(1997)007[0753:trbluc]2.0.co;2",Peer,Stakeholder - Pankaj Koirala,semantic_scholar,no_abstract,"HTTP 404: {""error"":""Paper with id DOI:10.1890/1051-0761(1997)007 not found""}
+doi_clean,title_benchmark,last_source_attempted,fetch_status,error
+10.1890/1051-0761(1997)007,"The relationship between land-use change and climate change. Ecological applications, 7, 753–769. doi:10.1890/1051-0761(1997)007[0753:trbluc]2.0.co;2",semantic_scholar,no_abstract,"HTTP 404: {""error"":""Paper with id DOI:10.1890/1051-0761(1997)007 not found""}
 "
-10.2307/1239629,"Farmers' expectations, risk aversion, and market equilibrium under risk. American journal of agricultural economics, 59, 204–209. doi:10.2307/1239629",Peer,Stakeholder - Pankaj Koirala,semantic_scholar,no_abstract,HTTP 403
-10.1163/9789004304987_022,Farmers’ preferences regarding ownership and land tenure in post-Mao China: Unexpected evidence from eight counties. In Chinese economic history since 1949 (pp. 469–502). Brill.,Peer,Stakeholder - Pankaj Koirala,semantic_scholar,no_abstract,"HTTP 404: {""error"":""Paper with id DOI:10.1163/9789004304987_022 not found""}
+10.2307/1239629,"Farmers' expectations, risk aversion, and market equilibrium under risk. American journal of agricultural economics, 59, 204–209. doi:10.2307/1239629",semantic_scholar,no_abstract,HTTP 403
+10.1163/9789004304987_022,Farmers’ preferences regarding ownership and land tenure in post-Mao China: Unexpected evidence from eight counties. In Chinese economic history since 1949 (pp. 469–502). Brill.,semantic_scholar,no_abstract,"HTTP 404: {""error"":""Paper with id DOI:10.1163/9789004304987_022 not found""}
 "
-10.1016/j.gloenvcha.2012.12.009,"Land system architecture: Using land systems to adapt and mitigate global environmental change. Global environmental change, 23, 395–397. doi:10.1016/j.gloenvcha.2012.12.009",Peer,Stakeholder - Pankaj Koirala,semantic_scholar,no_abstract,no_abstract_found
+10.1016/j.gloenvcha.2012.12.009,"Land system architecture: Using land systems to adapt and mitigate global environmental change. Global environmental change, 23, 395–397. doi:10.1016/j.gloenvcha.2012.12.009",semantic_scholar,no_abstract,no_abstract_found

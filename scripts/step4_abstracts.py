@@ -22,7 +22,7 @@ import json
 import os
 import re
 import time
-from dataclasses import dataclass
+import csv
 from datetime import datetime, timezone, timedelta
 from html.parser import HTMLParser
 from typing import Optional, Tuple
@@ -53,31 +53,63 @@ DEFAULT_CROSSREF_WORKS_URL = "https://api.crossref.org/works/"
 DEFAULT_UNPAYWALL_URL = "https://api.unpaywall.org/v2/"
 
 DEFAULT_STEP4_SLEEP_S = 0.05
-DEFAULT_CACHE_TTL_DAYS = 30  # retry failures older than this; set None to never retry failures unless force_refresh
+DEFAULT_CACHE_TTL_DAYS = 30
 DEFAULT_FORCE_REFRESH = False
 
+# --- IMPORTANT: fixed output schema to prevent malformed CSV ---
+OUT_COLUMNS = [
+    # join keys / benchmark-provenance
+    "doi",
+    "doi_clean",
+    "record_key",
+    "citation_raw",
+    "title_benchmark",
+    "type",
+    "identified_via",
+    # fetched content
+    "title_fetched",
+    "abstract",
+    "landing_url",
+    # fetch bookkeeping
+    "fetch_status",
+    "source",
+    "status_code",
+    "error",
+    "fetched_utc",
+    "last_attempt_utc",
+    "fail_count",
+]
 
 def _now_dt_utc() -> datetime:
     return datetime.now(timezone.utc)
-
 
 def _parse_iso_utc(s: str) -> Optional[datetime]:
     if not isinstance(s, str) or not s.strip():
         return None
     try:
-        # expected format: YYYY-MM-DDTHH:MM:SSZ
         if s.endswith("Z"):
             s = s[:-1] + "+00:00"
         return datetime.fromisoformat(s).astimezone(timezone.utc)
     except Exception:
         return None
 
-
 def _doi_key(x: str) -> str:
     d = normalize_doi(x)
     d = (d or "").strip().rstrip(" .),;]}>")
     return d
 
+def _clean_cell(s: Optional[str]) -> str:
+    """
+    Make text CSV-safe and consistent:
+    - stringify
+    - collapse newlines/odd whitespace
+    """
+    if s is None:
+        return ""
+    s = str(s)
+    s = s.replace("\r", " ").replace("\n", " ")
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
 
 def _http_get_json(
     session: requests.Session,
@@ -104,12 +136,7 @@ def _http_get_json(
         code = int(m.group(1)) if m else None
         return None, msg, code
 
-
 def _build_openalex_abstract(inv: dict) -> Optional[str]:
-    """
-    OpenAlex returns abstract_inverted_index: {word: [positions]}
-    Reconstruct by placing words at their positions and joining.
-    """
     if not isinstance(inv, dict) or not inv:
         return None
 
@@ -140,13 +167,7 @@ def _build_openalex_abstract(inv: dict) -> Optional[str]:
     out = re.sub(r"\s+", " ", out).strip()
     return out or None
 
-
-def elsevier_article_fetch(
-    session: requests.Session,
-    auth: ScopusAuth,
-    base_url: str,
-    doi: str,
-) -> dict:
+def elsevier_article_fetch(session: requests.Session, auth: ScopusAuth, base_url: str, doi: str) -> dict:
     url = base_url.rstrip("/") + "/" + quote(doi, safe="")
     h = scopus_headers(auth)
     params = {"view": "META_ABS", "httpAccept": "application/json"}
@@ -157,20 +178,15 @@ def elsevier_article_fetch(
 
     title = find_first_str(data, ("dc:title", "title"))
     abst = find_first_str(data, ("dc:description", "ce:abstract", "abstract", "description"))
+    abst = strip_tags(abst) if abst else None
     return {
-        "title": title,
-        "abstract": strip_tags(abst) if abst else None,
+        "title_fetched": _clean_cell(title),
+        "abstract": _clean_cell(abst) if abst else "",
         "source": "elsevier_api",
         "status_code": 200,
     }
 
-
-def semantic_scholar_fetch(
-    session: requests.Session,
-    doi: str,
-    email: str | None,
-    base_url: str,
-) -> dict:
+def semantic_scholar_fetch(session: requests.Session, doi: str, email: str | None, base_url: str) -> dict:
     url = base_url.rstrip("/") + "/DOI:" + quote(doi, safe=":/")
     h = {"Accept": "application/json", "User-Agent": f"step4 ({email or 'no-email'})"}
     data, err, code = _http_get_json(session, url, headers=h, params={"fields": "title,abstract"})
@@ -179,19 +195,13 @@ def semantic_scholar_fetch(
         return {"error": err or "no_data", "status_code": code, "source": "semantic_scholar"}
 
     return {
-        "title": data.get("title"),
-        "abstract": (data.get("abstract") or "").strip() or None,
+        "title_fetched": _clean_cell(data.get("title")),
+        "abstract": _clean_cell((data.get("abstract") or "").strip()) if data.get("abstract") else "",
         "source": "semantic_scholar",
         "status_code": 200,
     }
 
-
-def openalex_fetch(
-    session: requests.Session,
-    doi: str,
-    email: str | None,
-    base_url: str,
-) -> dict:
+def openalex_fetch(session: requests.Session, doi: str, email: str | None, base_url: str) -> dict:
     url = base_url.rstrip("/") + "/https://doi.org/" + quote(doi, safe=":/")
     h = {"Accept": "application/json", "User-Agent": f"step4 ({email or 'no-email'})"}
     params = {"mailto": email} if email else {}
@@ -205,21 +215,16 @@ def openalex_fetch(
 
     loc = (data or {}).get("primary_location") or {}
     landing = loc.get("landing_page_url")
+
     return {
-        "title": data.get("title"),
-        "abstract": abst,
-        "landing_url": landing,
+        "title_fetched": _clean_cell(data.get("title")),
+        "abstract": _clean_cell(abst) if abst else "",
+        "landing_url": _clean_cell(landing) if landing else "",
         "source": "openalex",
         "status_code": 200,
     }
 
-
-def crossref_fetch(
-    session: requests.Session,
-    doi: str,
-    email: str | None,
-    base_url: str,
-) -> dict:
+def crossref_fetch(session: requests.Session, doi: str, email: str | None, base_url: str) -> dict:
     url = base_url.rstrip("/") + "/" + quote(doi)
     h = {"Accept": "application/json", "User-Agent": f"step4 ({email or 'no-email'})"}
     params = {"mailto": email} if email else {}
@@ -231,20 +236,15 @@ def crossref_fetch(
     msg = (data or {}).get("message") or {}
     title = (msg.get("title") or [None])[0]
     abst = msg.get("abstract")
+    abst = strip_tags(abst) if abst else None
     return {
-        "title": title,
-        "abstract": strip_tags(abst) if abst else None,
+        "title_fetched": _clean_cell(title),
+        "abstract": _clean_cell(abst) if abst else "",
         "source": "crossref",
         "status_code": 200,
     }
 
-
-def unpaywall_fetch(
-    session: requests.Session,
-    doi: str,
-    email: str | None,
-    base_url: str,
-) -> dict:
+def unpaywall_fetch(session: requests.Session, doi: str, email: str | None, base_url: str) -> dict:
     if not email:
         return {"error": "no_email", "status_code": None, "source": "unpaywall"}
 
@@ -256,8 +256,7 @@ def unpaywall_fetch(
         return {"error": err or "no_data", "status_code": code, "source": "unpaywall"}
 
     best = (data or {}).get("best_oa_location") or {}
-    return {"landing_url": best.get("url"), "source": "unpaywall", "status_code": 200}
-
+    return {"landing_url": _clean_cell(best.get("url")), "source": "unpaywall", "status_code": 200}
 
 class MetaParser(HTMLParser):
     def __init__(self):
@@ -273,14 +272,12 @@ class MetaParser(HTMLParser):
         if name and content:
             self.metas[name.lower()] = content
 
-
 def fetch_landing_abstract(session: requests.Session, url: str) -> dict:
     try:
         h = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                           "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
-        # Lightweight retry loop for HTML fetch (separate from request_with_retries to keep behavior explicit)
         backoff = 1.0
         last_status = None
         for _ in range(3):
@@ -298,8 +295,10 @@ def fetch_landing_abstract(session: requests.Session, url: str) -> dict:
         raw = r.text or ""
         raw_head = raw[:250000]
 
-        # 1) JSON-LD scripts
-        for match in re.finditer(r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>', raw_head, re.DOTALL | re.IGNORECASE):
+        for match in re.finditer(
+            r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>',
+            raw_head, re.DOTALL | re.IGNORECASE
+        ):
             blob = match.group(1).strip()
             if not blob:
                 continue
@@ -315,27 +314,28 @@ def fetch_landing_abstract(session: requests.Session, url: str) -> dict:
                 for k in ("description", "abstract"):
                     v = item.get(k)
                     if isinstance(v, str) and len(v) > 50:
-                        return {"abstract": strip_tags(v), "source": "landing_json_ld", "status_code": 200}
+                        return {
+                            "abstract": _clean_cell(strip_tags(v)),
+                            "source": "landing_json_ld",
+                            "status_code": 200
+                        }
 
-        # 2) meta tags
         p = MetaParser()
         p.feed(raw_head)
         for k in ("citation_abstract", "dc.description", "og:description", "description"):
             v = p.metas.get(k)
             if isinstance(v, str) and len(v) > 50:
-                return {"abstract": strip_tags(v), "source": "landing_meta", "status_code": 200}
+                return {
+                    "abstract": _clean_cell(strip_tags(v)),
+                    "source": "landing_meta",
+                    "status_code": 200
+                }
 
         return {"error": "no_abstract_found", "status_code": 200, "source": "landing_page"}
     except Exception as e:
         return {"error": str(e)[:300], "status_code": None, "source": "landing_page"}
 
-
-def _should_retry_cached_failure(
-    cached: dict,
-    *,
-    force_refresh: bool,
-    ttl_days: Optional[int],
-) -> bool:
+def _should_retry_cached_failure(cached: dict, *, force_refresh: bool, ttl_days: Optional[int]) -> bool:
     if force_refresh:
         return True
     if ttl_days is None:
@@ -345,6 +345,32 @@ def _should_retry_cached_failure(
         return True
     return (_now_dt_utc() - last) >= timedelta(days=int(ttl_days))
 
+def _write_chunk_csv(out_csv: str, rows: list[dict], wrote_header: bool) -> bool:
+    if not rows:
+        return wrote_header
+
+    df_out = pd.DataFrame(rows)
+
+    # Force stable schema (prevents ParserError later)
+    for c in OUT_COLUMNS:
+        if c not in df_out.columns:
+            df_out[c] = ""
+    df_out = df_out[OUT_COLUMNS].copy()
+
+    # Clean cells (esp. newlines) consistently
+    for c in df_out.columns:
+        df_out[c] = df_out[c].map(_clean_cell)
+
+    df_out.to_csv(
+        out_csv,
+        mode="a",
+        header=not wrote_header,
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+        quoting=csv.QUOTE_MINIMAL,
+    )
+    return True
 
 def step4_fetch_abstracts(config: dict) -> dict:
     load_dotenv()
@@ -372,18 +398,28 @@ def step4_fetch_abstracts(config: dict) -> dict:
     if not os.path.exists(in_csv):
         raise SystemExit(f"[step4] Missing input: {in_csv}")
 
-    df = pd.read_csv(in_csv)
+    # Read step3 robustly and as strings
+    df = pd.read_csv(in_csv, engine="python", dtype=str, keep_default_na=False, na_filter=False)
     if "doi" not in df.columns:
         raise SystemExit("[step4] Input missing required column: doi")
 
-    df["_doi_key"] = df["doi"].apply(lambda x: _doi_key(x) if pd.notna(x) else None)
-    df = df[df["_doi_key"].notna()].drop_duplicates(subset=["_doi_key"]).copy()
+    # Carry forward cleaned citation fields (these help downstream)
+    if "citation_raw" not in df.columns:
+        df["citation_raw"] = ""
+    if "record_key" not in df.columns:
+        df["record_key"] = ""
+    if "title" not in df.columns:
+        df["title"] = ""
+
+    df["doi_clean"] = df["doi"].apply(_doi_key)
+    df = df[df["doi_clean"].astype(str).str.len() > 0].drop_duplicates(subset=["doi_clean"]).copy()
 
     total = int(len(df))
     print(f"[step4] Processing {total} unique DOIs")
 
     cache: dict = load_json(cache_path, default={})
 
+    # rewrite output every run (cache prevents refetch)
     if os.path.exists(out_csv):
         os.remove(out_csv)
 
@@ -406,26 +442,36 @@ def step4_fetch_abstracts(config: dict) -> dict:
 
     with requests.Session() as session:
         for _, row in df.iterrows():
-            doi = row["_doi_key"]
+            doi = row["doi_clean"]
 
             base_rec = {
-                "doi": doi,
-                "title": row.get("title"),
-                "type": row.get("type"),
-                "identified_via": row.get("identified_via"),
-                "abstract": None,
-                "source": None,
+                "doi": _clean_cell(row.get("doi") or doi),
+                "doi_clean": doi,
+                "record_key": _clean_cell(row.get("record_key")),
+                "citation_raw": _clean_cell(row.get("citation_raw")),
+                "title_benchmark": _clean_cell(row.get("title")),
+                "type": _clean_cell(row.get("type")),
+                "identified_via": _clean_cell(row.get("identified_via")),
+
+                "title_fetched": "",
+                "abstract": "",
+                "landing_url": "",
+
                 "fetch_status": "no_abstract",
-                "landing_url": None,
-                "status_code": None,
-                "error": None,
-                "fetched_utc": None,
+                "source": "",
+                "status_code": "",
+                "error": "",
+                "fetched_utc": "",
+                "last_attempt_utc": "",
+                "fail_count": "",
             }
 
             cached = cache.get(doi)
+
+            # Use cached OK unless force_refresh
             if isinstance(cached, dict) and cached.get("fetch_status") == "ok" and not force_refresh:
-                out_rec = {**base_rec, **cached}
-                out_rec["fetched_utc"] = cached.get("fetched_utc") or cached.get("last_attempt_utc")
+                out_rec = dict(base_rec)
+                out_rec.update(cached)  # but we still force OUT_COLUMNS on write
                 stats["cached_ok"] += 1
                 src = out_rec.get("source") or "unknown"
                 stats["ok_by_source"][src] = stats["ok_by_source"].get(src, 0) + 1
@@ -433,23 +479,21 @@ def step4_fetch_abstracts(config: dict) -> dict:
                 chunk.append(out_rec)
                 pbar.update(1)
                 if len(chunk) >= 50:
-                    pd.DataFrame(chunk).to_csv(out_csv, mode="a", header=not wrote_header, index=False)
-                    wrote_header = True
+                    wrote_header = _write_chunk_csv(out_csv, chunk, wrote_header)
                     chunk = []
                 continue
 
+            # Skip cached failures until TTL says retry
             if isinstance(cached, dict) and cached.get("fetch_status") != "ok" and not _should_retry_cached_failure(
                 cached, force_refresh=force_refresh, ttl_days=cache_ttl_days
             ):
-                out_rec = {**base_rec, **cached}
-                out_rec["fetched_utc"] = None
+                out_rec = dict(base_rec)
+                out_rec.update(cached)
                 stats["cached_failed_skipped"] += 1
 
                 failed_records.append({
-                    "doi": doi,
-                    "title": out_rec.get("title"),
-                    "type": out_rec.get("type"),
-                    "identified_via": out_rec.get("identified_via"),
+                    "doi_clean": doi,
+                    "title_benchmark": out_rec.get("title_benchmark"),
                     "last_source_attempted": out_rec.get("source"),
                     "fetch_status": out_rec.get("fetch_status"),
                     "error": out_rec.get("error"),
@@ -458,8 +502,7 @@ def step4_fetch_abstracts(config: dict) -> dict:
                 chunk.append(out_rec)
                 pbar.update(1)
                 if len(chunk) >= 50:
-                    pd.DataFrame(chunk).to_csv(out_csv, mode="a", header=not wrote_header, index=False)
-                    wrote_header = True
+                    wrote_header = _write_chunk_csv(out_csv, chunk, wrote_header)
                     chunk = []
                 continue
 
@@ -473,6 +516,10 @@ def step4_fetch_abstracts(config: dict) -> dict:
                 if res.get("abstract"):
                     rec.update(res)
                     rec["fetch_status"] = "ok"
+                else:
+                    rec["source"] = res.get("source", "elsevier_api")
+                    rec["status_code"] = res.get("status_code") or ""
+                    rec["error"] = res.get("error") or ""
 
             if rec["fetch_status"] != "ok":
                 pbar.set_postfix_str("SemanticScholar")
@@ -481,22 +528,22 @@ def step4_fetch_abstracts(config: dict) -> dict:
                     rec.update(res)
                     rec["fetch_status"] = "ok"
                 else:
-                    rec["source"] = rec["source"] or res.get("source")
-                    rec["status_code"] = rec["status_code"] or res.get("status_code")
-                    rec["error"] = rec["error"] or res.get("error")
+                    rec["source"] = rec["source"] or res.get("source") or ""
+                    rec["status_code"] = rec["status_code"] or (res.get("status_code") or "")
+                    rec["error"] = rec["error"] or (res.get("error") or "")
 
             if rec["fetch_status"] != "ok":
                 pbar.set_postfix_str("OpenAlex")
                 res = openalex_fetch(session, doi, email, DEFAULT_OPENALEX_WORKS_URL)
                 if res.get("landing_url"):
-                    rec["landing_url"] = res.get("landing_url")
+                    rec["landing_url"] = res.get("landing_url") or rec["landing_url"]
                 if res.get("abstract"):
                     rec.update(res)
                     rec["fetch_status"] = "ok"
                 else:
-                    rec["source"] = rec["source"] or res.get("source")
-                    rec["status_code"] = rec["status_code"] or res.get("status_code")
-                    rec["error"] = rec["error"] or res.get("error")
+                    rec["source"] = rec["source"] or res.get("source") or ""
+                    rec["status_code"] = rec["status_code"] or (res.get("status_code") or "")
+                    rec["error"] = rec["error"] or (res.get("error") or "")
 
             if rec["fetch_status"] != "ok":
                 pbar.set_postfix_str("Crossref")
@@ -505,13 +552,13 @@ def step4_fetch_abstracts(config: dict) -> dict:
                     rec.update(res)
                     rec["fetch_status"] = "ok"
                 else:
-                    rec["source"] = rec["source"] or res.get("source")
-                    rec["status_code"] = rec["status_code"] or res.get("status_code")
-                    rec["error"] = rec["error"] or res.get("error")
+                    rec["source"] = rec["source"] or res.get("source") or ""
+                    rec["status_code"] = rec["status_code"] or (res.get("status_code") or "")
+                    rec["error"] = rec["error"] or (res.get("error") or "")
 
             if rec["fetch_status"] != "ok":
                 pbar.set_postfix_str("Landing")
-                landing = rec.get("landing_url")
+                landing = rec.get("landing_url") or ""
                 if not landing and email:
                     upw = unpaywall_fetch(session, doi, email, DEFAULT_UNPAYWALL_URL)
                     landing = upw.get("landing_url") or landing
@@ -525,9 +572,9 @@ def step4_fetch_abstracts(config: dict) -> dict:
                     rec["fetch_status"] = "ok"
                 else:
                     rec["landing_url"] = landing
-                    rec["source"] = rec["source"] or res.get("source")
-                    rec["status_code"] = rec["status_code"] or res.get("status_code")
-                    rec["error"] = rec["error"] or res.get("error")
+                    rec["source"] = rec["source"] or res.get("source") or ""
+                    rec["status_code"] = rec["status_code"] or (res.get("status_code") or "")
+                    rec["error"] = rec["error"] or (res.get("error") or "")
 
             # finalize + cache
             rec["last_attempt_utc"] = utc_now_iso()
@@ -536,19 +583,23 @@ def step4_fetch_abstracts(config: dict) -> dict:
                 stats["fresh_ok"] += 1
                 src = rec.get("source") or "unknown"
                 stats["ok_by_source"][src] = stats["ok_by_source"].get(src, 0) + 1
+                rec["fail_count"] = str((cached or {}).get("fail_count") or 0)
             else:
                 stats["fresh_failed"] += 1
-                rec["fail_count"] = int((cached or {}).get("fail_count") or 0) + 1
+                fail_count = int((cached or {}).get("fail_count") or 0) + 1
+                rec["fail_count"] = str(fail_count)
 
                 failed_records.append({
-                    "doi": doi,
-                    "title": rec.get("title"),
-                    "type": rec.get("type"),
-                    "identified_via": rec.get("identified_via"),
+                    "doi_clean": doi,
+                    "title_benchmark": rec.get("title_benchmark"),
                     "last_source_attempted": rec.get("source"),
                     "fetch_status": rec.get("fetch_status"),
                     "error": rec.get("error"),
                 })
+
+            # always keep cells clean
+            rec["abstract"] = _clean_cell(rec.get("abstract"))
+            rec["title_fetched"] = _clean_cell(rec.get("title_fetched"))
 
             cache[doi] = rec
 
@@ -556,8 +607,7 @@ def step4_fetch_abstracts(config: dict) -> dict:
             pbar.update(1)
 
             if len(chunk) >= 50:
-                pd.DataFrame(chunk).to_csv(out_csv, mode="a", header=not wrote_header, index=False)
-                wrote_header = True
+                wrote_header = _write_chunk_csv(out_csv, chunk, wrote_header)
                 chunk = []
                 save_json(cache_path, cache)
 
@@ -567,7 +617,7 @@ def step4_fetch_abstracts(config: dict) -> dict:
         pbar.close()
 
     if chunk:
-        pd.DataFrame(chunk).to_csv(out_csv, mode="a", header=not wrote_header, index=False)
+        wrote_header = _write_chunk_csv(out_csv, chunk, wrote_header)
 
     save_json(cache_path, cache)
 
@@ -589,6 +639,7 @@ def step4_fetch_abstracts(config: dict) -> dict:
         "cache_ttl_days": cache_ttl_days,
         "force_refresh": bool(force_refresh),
         "timestamp_utc": utc_now_iso(),
+        "out_columns": OUT_COLUMNS,
     }
     save_json(out_summary, summary)
 
@@ -599,18 +650,14 @@ def step4_fetch_abstracts(config: dict) -> dict:
 
     return {"status": "ok", "path": out_csv}
 
-
 def run(config: dict) -> dict:
     return step4_fetch_abstracts(config)
-
 
 def run_step4(config: dict) -> dict:
     return step4_fetch_abstracts(config)
 
-
 def main(config: dict | None = None) -> dict:
     return step4_fetch_abstracts(config or {})
-
 
 if __name__ == "__main__":
     step4_fetch_abstracts({})

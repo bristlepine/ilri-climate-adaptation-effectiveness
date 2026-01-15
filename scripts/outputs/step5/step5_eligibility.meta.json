@@ -1,37 +1,42 @@
 {
   "status": "completed",
-  "rows": 235,
-  "timestamp_utc": "2026-01-08T12:44:05Z",
+  "rows": 263,
+  "timestamp_utc": "2026-01-15T23:21:05Z",
   "criteria_breakdown": {
+    "final": {
+      "yes": 34,
+      "no": 157,
+      "unclear": 124
+    },
     "1_population": {
-      "yes": 81,
+      "yes": 84,
       "no": 41,
-      "unclear": 113
+      "unclear": 138
     },
     "2_concept": {
-      "yes": 108,
+      "yes": 110,
       "no": 37,
-      "unclear": 90
+      "unclear": 116
     },
     "3_context": {
-      "yes": 95,
-      "no": 37,
-      "unclear": 103
+      "yes": 97,
+      "no": 38,
+      "unclear": 128
     },
     "4_methodology": {
-      "yes": 127,
+      "yes": 130,
       "no": 40,
-      "unclear": 68
+      "unclear": 93
     },
     "5_geography": {
-      "yes": 100,
+      "yes": 103,
       "no": 22,
-      "unclear": 113
+      "unclear": 138
     }
   },
   "final_breakdown": {
-    "include": 32,
-    "exclude": 104,
-    "unclear": 99
+    "include": 34,
+    "exclude": 105,
+    "unclear": 124
   }
 }

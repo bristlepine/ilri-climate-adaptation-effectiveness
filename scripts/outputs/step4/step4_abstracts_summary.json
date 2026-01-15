@@ -1,9 +1,9 @@
 {
   "total_rows": 210,
-  "cached_ok": 203,
-  "cached_failed_skipped": 0,
-  "fresh_ok": 3,
-  "fresh_failed": 4,
+  "cached_ok": 206,
+  "cached_failed_skipped": 4,
+  "fresh_ok": 0,
+  "fresh_failed": 0,
   "ok_total": 206,
   "failed_total": 4,
   "ok_by_source": {
@@ -14,5 +14,24 @@
   },
   "cache_ttl_days": 30,
   "force_refresh": false,
-  "timestamp_utc": "2026-01-15T22:58:25Z"
+  "timestamp_utc": "2026-01-15T23:18:04Z",
+  "out_columns": [
+    "doi",
+    "doi_clean",
+    "record_key",
+    "citation_raw",
+    "title_benchmark",
+    "type",
+    "identified_via",
+    "title_fetched",
+    "abstract",
+    "landing_url",
+    "fetch_status",
+    "source",
+    "status_code",
+    "error",
+    "fetched_utc",
+    "last_attempt_utc",
+    "fail_count"
+  ]
 }
