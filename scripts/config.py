@@ -16,8 +16,8 @@ run_step1 = 0  # Count records (sanity check)
 run_step2 = 0  # Retrieve IDs from Scopus
 run_step3 = 0  # Match/Enrich Benchmark DOIs
 run_step4 = 0  # Fetch Abstracts (APIs + Scraping)
-run_step5 = 1  # Eligibility Check (AI Screen)
-run_step6 = 0  # Visualization (HTML Heatmap)
+run_step5 = 0  # Eligibility Check (AI Screen)
+run_step6 = 1  # Visualization (HTML Heatmap)
 run_step7 = 0  # Benchmark Check (Stacked Bar Analysis) <--- Enabled
 
 # optional convenience list

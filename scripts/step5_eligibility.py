@@ -224,7 +224,6 @@ def step5_check_eligibility(config: dict) -> dict:
     df3 = pd.read_csv(step3_csv)
     df4 = pd.read_csv(step4_csv)
 
-    # Normalize DOI
     df3["doi_clean"] = df3.get("doi", pd.Series([""] * len(df3))).apply(_normalize_doi)
     if "doi_clean" in df4.columns:
         df4["doi_clean"] = df4["doi_clean"].apply(_normalize_doi)
@@ -236,18 +235,18 @@ def step5_check_eligibility(config: dict) -> dict:
     merged = merged[merged["doi_clean"] != ""].copy()
     merged["abstract"] = merged.get("abstract", pd.Series([""] * len(merged))).fillna("").astype(str)
 
-    # Dedupe input rows on DOI (keep the one with longest abstract)
     merged["_abs_len"] = merged["abstract"].astype(str).str.len()
-    merged = merged.sort_values(by=["doi_clean", "_abs_len"], ascending=[True, False]).drop_duplicates(subset=["doi_clean"], keep="first")
+    merged = (
+        merged.sort_values(by=["doi_clean", "_abs_len"], ascending=[True, False])
+        .drop_duplicates(subset=["doi_clean"], keep="first")
+    )
     merged = merged.drop(columns=["_abs_len"]).copy()
 
-    # Resume cache: read + rewrite JSONL deduped by doi
     last_by_doi = _load_jsonl_last_by_doi(out_jsonl)
     if os.path.exists(out_jsonl):
         _rewrite_jsonl(out_jsonl, last_by_doi)
     processed_dois = set(last_by_doi.keys())
 
-    # Ensure Ollama is up
     try:
         requests.get(OLLAMA_URL.replace("/api/generate", ""), timeout=5)
     except Exception:
@@ -268,29 +267,38 @@ def step5_check_eligibility(config: dict) -> dict:
                 title_cand = str(row.get("title_fetched") or row.get("title_benchmark") or row.get("title") or "")
                 abstract = str(row.get("abstract") or "")
 
+                year_val = None
+                year_source = ""
+                y_in = row.get("year", None)
+                ys_in = row.get("year_source", None)
+                try:
+                    y_int = int(str(y_in).strip()) if str(y_in).strip() not in ("", "nan", "none") else None
+                except Exception:
+                    y_int = None
+                if y_int:
+                    year_val = y_int
+                    year_source = str(ys_in or "").strip() or "carried_forward"
+                else:
+                    year_val = _get_year_from_text(str(row.get("citation_raw") or title_cand))
+                    year_source = "parsed_from_text" if year_val else ""
+
                 rec = {
                     "run_signature": sig,
                     "timestamp_utc": _now_utc(),
                     "doi": doi,
                     "doi_clean": doi,
-
-                    # for manual review in ONE file
                     "record_key": str(row.get("record_key") or ""),
                     "citation_raw": str(row.get("citation_raw") or ""),
-
-                    # keep titles for traceability
                     "title_best": title_cand,
                     "title_benchmark": str(row.get("title_benchmark") or ""),
                     "title_fetched": str(row.get("title_fetched") or ""),
-
                     "abstract": abstract,
-                    "year": _get_year_from_text(str(row.get("citation_raw") or title_cand)),
+                    "year": year_val,
+                    "year_source": year_source,
                     "hard_filter_status": "pass",
                     "final_decision": "pending",
                 }
 
-
-                # Hard filters
                 skip = False
                 skip_reason = ""
                 if rec["year"] and int(rec["year"]) < min_year:
@@ -309,7 +317,6 @@ def step5_check_eligibility(config: dict) -> dict:
                     pbar.update(1)
                     continue
 
-                # AI call
                 llm_resp = call_ollama(session, title_cand, abstract, criteria_text, model)
                 try:
                     data = json.loads(llm_resp)
@@ -347,12 +354,10 @@ def step5_check_eligibility(config: dict) -> dict:
 
     pbar.close()
 
-    # Compile outputs (deduped by doi)
     print("[Step 5] Compiling stats...")
     last_by_doi = _load_jsonl_last_by_doi(out_jsonl)
     df_final = pd.DataFrame(list(last_by_doi.values()))
 
-    # Backfill manual-review fields from Step 4 (authoritative for citation + abstract metadata)
     lk = df4[
         [
             "doi_clean",
@@ -362,6 +367,8 @@ def step5_check_eligibility(config: dict) -> dict:
             "title_fetched",
             "type",
             "identified_via",
+            "year",
+            "year_source",
             "abstract",
             "landing_url",
             "fetch_status",
@@ -375,7 +382,7 @@ def step5_check_eligibility(config: dict) -> dict:
     ].copy()
 
     lk["doi_clean"] = lk["doi_clean"].fillna("").astype(str).str.strip().str.lower()
-    lk = lk.rename(columns={"doi_clean": "doi"})  # join key matches df_final["doi"]
+    lk = lk.rename(columns={"doi_clean": "doi"})
 
     df_final["doi"] = df_final.get("doi", "").fillna("").astype(str).str.strip().str.lower()
 
@@ -383,7 +390,6 @@ def step5_check_eligibility(config: dict) -> dict:
 
     df_final = df_final.merge(lk, on="doi", how="left", suffixes=("", "_step4"))
 
-    # For each field, prefer existing df_final value; otherwise fill from step4
     for c in [
         "doi",
         "record_key",
@@ -392,6 +398,8 @@ def step5_check_eligibility(config: dict) -> dict:
         "title_fetched",
         "type",
         "identified_via",
+        "year",
+        "year_source",
         "abstract",
         "landing_url",
         "fetch_status",
@@ -409,20 +417,31 @@ def step5_check_eligibility(config: dict) -> dict:
             else:
                 df_final[c] = df_final[sc]
             df_final = df_final.drop(columns=[sc])
+    
+    if "year" in df_final.columns:
+        df_final["year"] = pd.to_numeric(df_final["year"], errors="coerce").astype("Int64")
 
-    # Ensure doi_clean exists consistently
-    df_final["doi_clean"] = df_final.get("doi_clean", pd.Series([None] * len(df_final))).fillna(df_final["doi"]).astype(str).str.strip().str.lower()
+    if "status_code" in df_final.columns:
+        df_final["status_code"] = pd.to_numeric(df_final["status_code"], errors="coerce").astype("Int64")
 
-    # Fill NaNs
+    df_final["doi_clean"] = (
+        df_final.get("doi_clean", pd.Series([None] * len(df_final)))
+        .fillna(df_final["doi"])
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
     if not df_final.empty:
         for c in [c for c in df_final.columns if c.endswith("_decision")]:
             df_final[c] = df_final[c].fillna("unclear_skipped")
         for c in [c for c in df_final.columns if c.endswith("_quote")]:
             df_final[c] = df_final[c].fillna("")
         for c in [c for c in df_final.columns if c.endswith("_verified")]:
-            df_final[c] = df_final[c].apply(lambda x: bool(x) if isinstance(x, bool) else str(x).strip().lower() in ("true", "1", "yes"))
+            df_final[c] = df_final[c].apply(
+                lambda x: bool(x) if isinstance(x, bool) else str(x).strip().lower() in ("true", "1", "yes")
+            )
 
-    # ---- FIX #1: exclude final_decision from criteria breakdown ----
     crit_decision_cols = [c for c in df_final.columns if c.endswith("_decision") and c != "final_decision"]
 
     stats = {
@@ -435,7 +454,6 @@ def step5_check_eligibility(config: dict) -> dict:
     }
 
     if not df_final.empty:
-        # Criteria breakdown
         for col in crit_decision_cols:
             crit_name = col.replace("_decision", "")
             s = df_final[col].map(_classify_decision)
@@ -444,7 +462,6 @@ def step5_check_eligibility(config: dict) -> dict:
             unclear = int((s == "unclear").sum())
             stats["criteria_breakdown"][crit_name] = {"yes": yes, "no": no, "unclear": unclear}
 
-        # Final breakdown (never double counts)
         fc = df_final["final_decision"].astype(str).str.lower().value_counts()
         unc_total = sum(int(fc.get(k, 0)) for k in fc.keys() if str(k).startswith("unclear"))
         stats["final_breakdown"] = {
@@ -456,7 +473,6 @@ def step5_check_eligibility(config: dict) -> dict:
     with open(out_meta, "w", encoding="utf-8") as f:
         json.dump(stats, f, indent=2, ensure_ascii=False)
 
-    # Wide CSV
     base_cols = [
         "doi",
         "doi_clean",
@@ -477,23 +493,26 @@ def step5_check_eligibility(config: dict) -> dict:
         "last_attempt_utc",
         "fail_count",
         "year",
+        "year_source",
         "final_decision",
         "hard_filter_status",
         "run_signature",
         "timestamp_utc",
     ]
 
-    extra_cols = sorted([
-        c for c in df_final.columns
-        if (c.endswith("_decision") or c.endswith("_quote") or c.endswith("_verified"))
-        and c != "final_decision"
-    ])    
+    extra_cols = sorted(
+        [
+            c
+            for c in df_final.columns
+            if (c.endswith("_decision") or c.endswith("_quote") or c.endswith("_verified"))
+            and c != "final_decision"
+        ]
+    )
     cols = [c for c in base_cols + extra_cols if c in df_final.columns]
     seen = set()
     cols = [c for c in cols if not (c in seen or seen.add(c))]
     df_final[cols].to_csv(out_wide_csv, index=False)
 
-    # Print
     print("\n" + "=" * 50)
     print("📊 FINAL CONSISTENT SUMMARY")
     print("=" * 50)
@@ -511,7 +530,6 @@ def step5_check_eligibility(config: dict) -> dict:
     return {"status": "ok", "path": out_wide_csv}
 
 
-# --- ALIASES FOR run.py ---
 def run(config: dict) -> dict:
     return step5_check_eligibility(config)
 

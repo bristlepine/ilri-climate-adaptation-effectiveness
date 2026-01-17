@@ -9,6 +9,10 @@ Step 3 (benchmark prep + DOI enrichment):
   - If DOI missing, enrich via Crossref/OpenAlex/SemanticScholar (cached)
   - STRICT MODE: Any DOI flagged as "Needs Review" is discarded automatically.
 
+MINIMAL UPDATE:
+  - Add safe `year` extraction (from citation_raw) and carry `year` forward to step3 output.
+  - Use year (when available) to improve DOI enrichment scoring, and backfill year from enrichment only if missing.
+
 Outputs:
   - outputs/step3/step3_benchmark_list.csv
   - outputs/step3/step3_benchmark_list.enriched_only.csv
@@ -40,6 +44,29 @@ from utils import load_json, save_json, doi_from_text, normalize_doi, request_wi
 
 # --- CONFIGURATION & THRESHOLDS ---
 YEAR_SPLIT_REGEX = re.compile(r"[\s\.,]\(\d{4}[a-z]?\)[\.,]?\s*")
+
+# --- NEW: safe year extraction ---
+YEAR_PARENS_RE = re.compile(r"\((\d{4})[a-z]?\)")
+YEAR_ANY_RE = re.compile(r"\b(19|20)\d{2}\b")
+
+
+def _extract_year_any(text: str) -> Optional[int]:
+    if not isinstance(text, str):
+        return None
+    m = YEAR_PARENS_RE.search(text)
+    if m:
+        try:
+            return int(m.group(1))
+        except Exception:
+            return None
+    m2 = YEAR_ANY_RE.search(text)
+    if m2:
+        try:
+            return int(m2.group(0))
+        except Exception:
+            return None
+    return None
+
 
 CROSSREF_WORKS_URL = "https://api.crossref.org/works"
 OPENALEX_WORKS_URL = "https://api.openalex.org/works"
@@ -239,7 +266,15 @@ def _best_doi_for_title(
     best = scored[0] if scored and scored[0]["score"] >= DOI_MIN_CANDIDATE_SCORE else None
 
     if not best:
-        return {"doi": None, "doi_source": None, "doi_score": 0.0, "matched_title": None, "needs_review": False}
+        return {
+            "doi": None,
+            "doi_source": None,
+            "doi_score": 0.0,
+            "matched_title": None,
+            "needs_review": False,
+            "year": None,            # NEW
+            "year_source": None,     # NEW
+        }
 
     return {
         "doi": best["doi"],
@@ -247,6 +282,8 @@ def _best_doi_for_title(
         "doi_score": float(best["score"]),
         "matched_title": best["title"],
         "needs_review": bool(best["score"] < DOI_AUTO_ACCEPT_SCORE),
+        "year": best.get("year"),           # NEW
+        "year_source": best.get("source"),  # NEW
     }
 
 
@@ -438,6 +475,9 @@ def step3_build_benchmark_list(config: dict) -> dict:
     initial_doi_mask = parsed_doi.notna()
     initial_doi_count = int(initial_doi_mask.sum())
 
+    # NEW: parse year from citation raw (Study text)
+    parsed_year = raw_studies.apply(_extract_year_any)
+
     out = pd.DataFrame(
         {
             "citation_raw": raw_studies,
@@ -445,6 +485,8 @@ def step3_build_benchmark_list(config: dict) -> dict:
             "type": bench[type_col] if type_col else "",
             "doi": parsed_doi,
             "identified_via": bench[idvia_col] if idvia_col else "",
+            "year": parsed_year,                   # NEW
+            "year_source": "parsed_from_citation", # NEW (default)
         }
     )
 
@@ -471,9 +513,22 @@ def step3_build_benchmark_list(config: dict) -> dict:
                 pbar.update(1)
                 continue
 
+            # NEW: pass year (if available) to improve matching
+            row_year = row.get("year")
+            try:
+                row_year_int = int(row_year) if str(row_year).strip() else None
+            except Exception:
+                row_year_int = None
+
             ck = _cache_key_for_title(clean_t)
             if ck not in cache:
-                got = _best_doi_for_title(session, clean_t, year=None, contact_email=contact_email, mailto=contact_email)
+                got = _best_doi_for_title(
+                    session,
+                    clean_t,
+                    year=row_year_int,  # NEW
+                    contact_email=contact_email,
+                    mailto=contact_email,
+                )
                 cache[ck] = got
                 if i % 25 == 0:
                     save_json(cache_path, cache)
@@ -481,6 +536,13 @@ def step3_build_benchmark_list(config: dict) -> dict:
             got = cache[ck]
             if got.get("doi"):
                 out.at[i, "doi"] = _normalize_doi_url(got["doi"])
+
+            # NEW: backfill year only if missing
+            cur_y = out.at[i, "year"]
+            missing_year = (cur_y is None) or (str(cur_y).strip() == "") or (str(cur_y).lower() == "nan")
+            if missing_year and got.get("year"):
+                out.at[i, "year"] = got.get("year")
+                out.at[i, "year_source"] = got.get("year_source") or got.get("doi_source") or "enriched"
 
             results_meta.append(
                 {
@@ -519,6 +581,7 @@ def step3_build_benchmark_list(config: dict) -> dict:
     out["_doi_enriched"] = out["_has_doi_final"] & (out["doi_source"] != "given")
     out["_doi_rejected"] = out["doi_source"] == "rejected_low_score"
 
+    # NEW: include year in exported schema
     final_cols = [
         "citation_raw",
         "record_key",
@@ -526,6 +589,8 @@ def step3_build_benchmark_list(config: dict) -> dict:
         "type",
         "doi",
         "identified_via",
+        "year",         # NEW
+        "year_source",  # NEW
         "doi_source",
         "doi_score",
         "doi_needs_review",

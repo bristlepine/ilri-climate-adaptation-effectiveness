@@ -69,3 +69,10 @@ outputs/**/*.pptx
 *.tmp
 *.temp
 *.bak
+
+# -------------------------------
+# Extra Debug Files
+# -------------------------------
+**step6b*
+**step6c*
+**eligibility_report_secondary_check.xlsx

@@ -1,0 +1,53 @@
+{
+  "status": "ok",
+  "timestamp_utc": "2026-01-16T21:24:33Z",
+  "run_signature": "bdf3f7e267c1",
+  "model": "qwen2.5:14b",
+  "criteria_path": "/Users/zarrar/projects/ilri-climate-adaptation-effectiveness/scripts/criteria.yml",
+  "criteria_text_hash": "56cdfcf4cb5e",
+  "params": {
+    "temperature": 0.25,
+    "top_p": 0.9,
+    "repeat_penalty": 1.1,
+    "blind_first_pass": true
+  },
+  "rows_total_secondary": 210,
+  "precheck": {
+    "rows_with_changes": 1,
+    "field_change_counts": {
+      "abstract": 1
+    }
+  },
+  "llm_check": {
+    "rows_targeted": 3,
+    "rows_processed": 3,
+    "rows_used_cache": 3,
+    "rows_skipped_already_secondary_yes": 0,
+    "rows_skipped_no_abstract": 0,
+    "rows_changed": 1,
+    "field_change_counts": {
+      "1_population_decision": 1,
+      "final_decision": 1
+    },
+    "final_decision_transitions": {
+      "include->unclear": 1
+    }
+  },
+  "examples": [
+    {
+      "row": 4,
+      "doi": "10.1016/j.agrformet.2016.04.010",
+      "changed_fields": [
+        "1_population_decision",
+        "final_decision"
+      ]
+    }
+  ],
+  "check_limit": 3,
+  "outputs": {
+    "final_xlsx": "/Users/zarrar/projects/ilri-climate-adaptation-effectiveness/scripts/outputs/step6/eligibility_report_secondary_check_final.xlsx",
+    "final_csv": "/Users/zarrar/projects/ilri-climate-adaptation-effectiveness/scripts/outputs/step6/eligibility_report_secondary_check_final.csv",
+    "summary_json": "/Users/zarrar/projects/ilri-climate-adaptation-effectiveness/scripts/outputs/step6/eligibility_report_secondary_check_final.json",
+    "cache_jsonl": "/Users/zarrar/projects/ilri-climate-adaptation-effectiveness/scripts/outputs/step6/step6c_cache.jsonl"
+  }
+}

@@ -1,0 +1,91 @@
+(Abstract source: abstracts_from:step4_abstracts.csv)
+(Step1 blocks source: step1_queries_from:step1_queries.json)
+Candidate terms from missed eligible titles + abstracts (filtered + eligibility-weighted)
+and routed to your Step1 query blocks (so you know WHERE to add them).
+
+BLOCK: C_concept__adaptation_actions
+  Where to add: inside this block's TITLE-ABS-KEY(...) OR list in step1_queries.json
+  Suggested terms:
+    extension, decisions, practices, behaviour
+  Paste-ready OR-snippet:
+    extension* OR decisions* OR practices* OR behaviour*
+  Rationale (weighted score; where they occur):
+    - extension: 40.50 (title_hits=1, abstract_hits=7)
+    - decisions: 18.90 (title_hits=1, abstract_hits=5)
+    - practices: 8.10 (title_hits=0, abstract_hits=3)
+    - behaviour: 8.10 (title_hits=0, abstract_hits=3)
+
+BLOCK: C_concept__resilience_outcomes
+  Where to add: inside this block's TITLE-ABS-KEY(...) OR list in step1_queries.json
+  Suggested terms:
+    vulnerability
+  Paste-ready OR-snippet:
+    vulnerability*
+  Rationale (weighted score; where they occur):
+    - vulnerability: 10.80 (title_hits=0, abstract_hits=4)
+
+BLOCK: C_concept__capacities_knowledge
+  Where to add: inside this block's TITLE-ABS-KEY(...) OR list in step1_queries.json
+  Suggested terms:
+    information, training
+  Paste-ready OR-snippet:
+    information* OR training*
+  Rationale (weighted score; where they occur):
+    - information: 18.00 (title_hits=0, abstract_hits=9)
+    - training: 10.00 (title_hits=0, abstract_hits=5)
+
+BLOCK: C_concept__livelihood_productivity
+  Where to add: inside this block's TITLE-ABS-KEY(...) OR list in step1_queries.json
+  Suggested terms:
+    yields, livelihoods, profits
+  Paste-ready OR-snippet:
+    yields* OR livelihoods* OR profits*
+  Rationale (weighted score; where they occur):
+    - yields: 18.23 (title_hits=0, abstract_hits=3)
+    - livelihoods: 12.15 (title_hits=0, abstract_hits=2)
+    - profits: 9.00 (title_hits=0, abstract_hits=2)
+
+BLOCK: C_context_climate__climate_framing
+  Where to add: inside this block's TITLE-ABS-KEY(...) OR list in step1_queries.json
+  Suggested terms:
+    risks
+  Paste-ready OR-snippet:
+    risks*
+  Rationale (weighted score; where they occur):
+    - risks: 22.50 (title_hits=0, abstract_hits=5)
+
+BLOCK: C_context_agriculture__ag_systems
+  Where to add: inside this block's TITLE-ABS-KEY(...) OR list in step1_queries.json
+  Suggested terms:
+    irrigation
+  Paste-ready OR-snippet:
+    irrigation*
+  Rationale (weighted score; where they occur):
+    - irrigation: 12.15 (title_hits=0, abstract_hits=2)
+
+BLOCK: P__households_poverty
+  Where to add: inside this block's TITLE-ABS-KEY(...) OR list in step1_queries.json
+  Suggested terms:
+    households
+  Paste-ready OR-snippet:
+    households*
+  Rationale (weighted score; where they occur):
+    - households: 42.53 (title_hits=0, abstract_hits=7)
+
+FINAL SUMMARY (deduped across all blocks; with title/abstract hit counts):
+  - extension: title_hits=1, abstract_hits=7, score=40.50
+  - decisions: title_hits=1, abstract_hits=5, score=18.90
+  - practices: title_hits=0, abstract_hits=3, score=8.10
+  - behaviour: title_hits=0, abstract_hits=3, score=8.10
+  - vulnerability: title_hits=0, abstract_hits=4, score=10.80
+  - information: title_hits=0, abstract_hits=9, score=18.00
+  - training: title_hits=0, abstract_hits=5, score=10.00
+  - yields: title_hits=0, abstract_hits=3, score=18.23
+  - livelihoods: title_hits=0, abstract_hits=2, score=12.15
+  - profits: title_hits=0, abstract_hits=2, score=9.00
+  - risks: title_hits=0, abstract_hits=5, score=22.50
+  - irrigation: title_hits=0, abstract_hits=2, score=12.15
+  - households: title_hits=0, abstract_hits=7, score=42.53
+
+FINAL OR-SNIPPET (wildcarded; paste terms into the appropriate blocks above, not necessarily into TOTAL__ALL directly):
+  extension* OR decisions* OR practices* OR behaviour* OR vulnerability* OR information* OR training* OR yields* OR livelihoods* OR profits* OR risks* OR irrigation* OR households*
