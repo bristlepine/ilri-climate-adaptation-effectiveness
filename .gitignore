@@ -81,12 +81,6 @@ scripts/outputs/
 scripts/outputs_*/
 scripts/outputs_searchstrings/
 
-# Generated docs/artifacts anywhere
-**/*.pdf
-**/*.docx
-**/*.pptx
-**/*.xlsx
-
 # Ignore check script(s)
 check.py
 scripts/check.py
