@@ -45,9 +45,9 @@ Each deliverable will receive its own versioned DOI, listed below.
 
 | No. | Deliverable | Type | Due Date | Status | DOI |
 |-----|-------------|------|----------|--------|------|
-| 1 | [Inception Report](https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/01_inception_report/Deliverable%201_Inception%20Report_IL01_v1.pdf) | Final RQs, search plan, Gantt chart | Interim | Complete | https://doi.org/10.5281/zenodo.17861055 |
-| 2 | [Draft Systematic Map Protocol](https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/02_draft_systematic_map_protocol/Deliverable%202_Draft%20Systematic%20Map%20Protocol_v3.pdf) | Interim Report | Jan 2, 2026 | Complete | https://zenodo.org/records/18369383 |
-| 3 | Final Scoping Review / Systematic Map Protocol (CGSpace) | Final Report | Jan 30, 2026 | Not Started | TBD |
+| 1 | [Inception Report](https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/Deliverable%201_Inception%20Report_IL01_v1.pdf) | Final RQs, search plan, Gantt chart | Interim | Complete | https://doi.org/10.5281/zenodo.17861055 |
+| 2 | [Draft Systematic Map Protocol](https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/Deliverable%202_Draft%20Systematic%20Map%20Protocol_v3.pdf) | Interim Report | Jan 2, 2026 | Complete | https://zenodo.org/records/18369383 |
+| 3 | [Final Systematic Map Protocol](https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/Deliverable%203_Bristlepine_Final%20Systematic%20Map%20Protocol_v1.pdf)| Final | Jan 30, 2026 | Complete | https://zenodo.org/records/18370029 |
 | 4 | Draft Scoping Review + Evidence Database | Interim | Feb 27, 2026 | Not Started | TBD |
 | 5 | Final Scoping Review + Systematic Map + Database | Final | Mar 27, 2026 | Not Started | TBD |
 | 6 | Draft Systematic Review / Meta-analysis Protocol | Interim | May 1, 2026 | Not Started | TBD |
