@@ -45,8 +45,8 @@ Each deliverable will receive its own versioned DOI, listed below.
 
 | No. | Deliverable | Type | Due Date | Status | DOI |
 |-----|-------------|------|----------|--------|------|
-| 1 | Inception Report | Final RQs, search plan, Gantt chart | Interim | Submitted | [PDF](https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/01_inception_report/Deliverable%201_Inception%20Report_IL01_v1.pdf) • [DOI](https://doi.org/10.5281/zenodo.17861055) |
-| 2 | Draft Scoping Review & Systematic Map Protocol | Interim Report | Jan 2, 2026 | In Progress | TBD |
+| 1 | [Inception Report](https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/01_inception_report/Deliverable%201_Inception%20Report_IL01_v1.pdf) | Final RQs, search plan, Gantt chart | Interim | Complete | https://doi.org/10.5281/zenodo.17861055 |
+| 2 | Draft Systematic Map Protocol | Interim Report | Jan 2, 2026 | Complete | https://zenodo.org/records/18369383 |
 | 3 | Final Scoping Review / Systematic Map Protocol (CGSpace) | Final Report | Jan 30, 2026 | Not Started | TBD |
 | 4 | Draft Scoping Review + Evidence Database | Interim | Feb 27, 2026 | Not Started | TBD |
 | 5 | Final Scoping Review + Systematic Map + Database | Final | Mar 27, 2026 | Not Started | TBD |
@@ -69,16 +69,30 @@ repo-root/
 ├── deliverables/
 │   ├── 01_inception_report/
 │   │   ├── Deliverable 1_Inception Report_IL01_v1.pdf
-│   │   ├── README.md
 │   │   ├── metadata.json
+├── environment.yml
 ├── frontend/
-│   ├── README.md
 │   ├── next-env.d.ts
 │   ├── next.config.ts
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── postcss.config.mjs
 │   ├── tsconfig.json
+├── scripts/
+│   ├── Benchmark List - List.csv
+│   ├── config.py
+│   ├── criteria.yml
+│   ├── run.py
+│   ├── scopus.py
+│   ├── search_strings.yml
+│   ├── step1_counts.py
+│   ├── step2_retrieve.py
+│   ├── step3_benchmark.py
+│   ├── step4_abstracts.py
+│   ├── step5_eligibility.py
+│   ├── step6_visualize.py
+│   ├── step7_scopus_check.py
+│   ├── utils.py
 ```
 <!-- AUTO-STRUCTURE:END --> 
 

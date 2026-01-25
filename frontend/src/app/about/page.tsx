@@ -85,16 +85,30 @@ repo-root/
 ├── deliverables/
 │   ├── 01_inception_report/
 │   │   ├── Deliverable 1_Inception Report_IL01_v1.pdf
-│   │   ├── README.md
 │   │   ├── metadata.json
+├── environment.yml
 ├── frontend/
-│   ├── README.md
 │   ├── next-env.d.ts
 │   ├── next.config.ts
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── postcss.config.mjs
 │   ├── tsconfig.json
+├── scripts/
+│   ├── Benchmark List - List.csv
+│   ├── config.py
+│   ├── criteria.yml
+│   ├── run.py
+│   ├── scopus.py
+│   ├── search_strings.yml
+│   ├── step1_counts.py
+│   ├── step2_retrieve.py
+│   ├── step3_benchmark.py
+│   ├── step4_abstracts.py
+│   ├── step5_eligibility.py
+│   ├── step6_visualize.py
+│   ├── step7_scopus_check.py
+│   ├── utils.py
 </code></pre></p>
 
 

@@ -1,20 +1,20 @@
 {
-  "total_rows": 210,
-  "cached_ok": 206,
+  "total_rows": 225,
+  "cached_ok": 221,
   "cached_failed_skipped": 4,
   "fresh_ok": 0,
   "fresh_failed": 0,
-  "ok_total": 206,
+  "ok_total": 221,
   "failed_total": 4,
   "ok_by_source": {
-    "elsevier_api": 95,
-    "openalex": 31,
-    "semantic_scholar": 38,
-    "landing_meta": 42
+    "elsevier_api": 100,
+    "openalex": 32,
+    "semantic_scholar": 46,
+    "landing_meta": 43
   },
   "cache_ttl_days": 30,
   "force_refresh": false,
-  "timestamp_utc": "2026-01-16T20:36:35Z",
+  "timestamp_utc": "2026-01-25T14:42:39Z",
   "out_columns": [
     "doi",
     "doi_clean",

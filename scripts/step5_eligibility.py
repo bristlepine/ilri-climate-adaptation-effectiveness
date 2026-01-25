@@ -210,6 +210,8 @@ def step5_check_eligibility(config: dict) -> dict:
     out_wide_csv = os.path.join(step5_dir, "step5_eligibility_wide.csv")
     out_jsonl = os.path.join(step5_dir, "step5_details.jsonl")
     out_meta = os.path.join(step5_dir, "step5_eligibility.meta.json")
+    out_pass_csv = os.path.join(step5_dir, "step5_eligibility_passed.csv")
+
 
     print(f"[Step 5] Loading criteria from {criteria_yml}")
     cfg_yml = _load_yaml(criteria_yml)
@@ -231,6 +233,17 @@ def step5_check_eligibility(config: dict) -> dict:
         df4["doi_clean"] = df4.get("doi", pd.Series([""] * len(df4))).apply(_normalize_doi)
 
     merged = pd.merge(df3, df4, on="doi_clean", suffixes=("_meta", "_abs"), how="left")
+    # --- unify citation_raw/title after merge (handles suffixes) ---
+    if "citation_raw" not in merged.columns:
+        c_abs = "citation_raw_abs" if "citation_raw_abs" in merged.columns else None
+        c_meta = "citation_raw_meta" if "citation_raw_meta" in merged.columns else None
+        if c_abs or c_meta:
+            merged["citation_raw"] = ""
+            if c_abs:
+                merged["citation_raw"] = merged[c_abs].fillna("")
+            if c_meta:
+                merged.loc[merged["citation_raw"].astype(str).str.strip().eq(""), "citation_raw"] = merged[c_meta].fillna("")
+
     merged["doi_clean"] = merged["doi_clean"].fillna("").astype(str).str.strip().str.lower()
     merged = merged[merged["doi_clean"] != ""].copy()
     merged["abstract"] = merged.get("abstract", pd.Series([""] * len(merged))).fillna("").astype(str)
@@ -297,6 +310,7 @@ def step5_check_eligibility(config: dict) -> dict:
                     "year_source": year_source,
                     "hard_filter_status": "pass",
                     "final_decision": "pending",
+                    "notes": "",
                 }
 
                 skip = False
@@ -358,6 +372,10 @@ def step5_check_eligibility(config: dict) -> dict:
     last_by_doi = _load_jsonl_last_by_doi(out_jsonl)
     df_final = pd.DataFrame(list(last_by_doi.values()))
 
+    if "notes" not in df_final.columns:
+        df_final["notes"] = ""
+    df_final["notes"] = df_final["notes"].fillna("").astype(str)
+
     lk = df4[
         [
             "doi_clean",
@@ -413,7 +431,8 @@ def step5_check_eligibility(config: dict) -> dict:
         sc = f"{c}_step4"
         if sc in df_final.columns:
             if c in df_final.columns:
-                df_final[c] = df_final[c].fillna(df_final[sc])
+                mask = df_final[c].isna() | df_final[c].astype(str).str.strip().eq("")
+                df_final.loc[mask, c] = df_final.loc[mask, sc]
             else:
                 df_final[c] = df_final[sc]
             df_final = df_final.drop(columns=[sc])
@@ -495,6 +514,7 @@ def step5_check_eligibility(config: dict) -> dict:
         "year",
         "year_source",
         "final_decision",
+        "notes",
         "hard_filter_status",
         "run_signature",
         "timestamp_utc",
@@ -512,6 +532,15 @@ def step5_check_eligibility(config: dict) -> dict:
     seen = set()
     cols = [c for c in cols if not (c in seen or seen.add(c))]
     df_final[cols].to_csv(out_wide_csv, index=False)
+
+    # --- Passed-only export (final_decision == include) ---
+    if "final_decision" in df_final.columns and not df_final.empty:
+        passed = df_final[df_final["final_decision"].astype(str).str.lower().eq("include")].copy()
+    else:
+        passed = df_final.iloc[0:0].copy()
+
+    passed[cols].to_csv(out_pass_csv, index=False)
+
 
     print("\n" + "=" * 50)
     print("📊 FINAL CONSISTENT SUMMARY")

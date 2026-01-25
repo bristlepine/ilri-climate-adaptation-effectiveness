@@ -17,7 +17,7 @@ import hashlib
 import html
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
-
+import random
 import requests
 import yaml
 import pandas as pd
@@ -190,44 +190,92 @@ def request_with_retries(
     headers: dict,
     params: Optional[dict] = None,
     data: Optional[dict] = None,
-    tries: int = 6,
+    tries: int = 12,
+    timeout: Tuple[float, float] = (30.0, 180.0),  # (connect_timeout, read_timeout)
 ) -> Tuple[dict, dict]:
     """
     Returns: (json_data, last_rate_headers)
-    Retries on 429 + common 5xx with exponential backoff.
+
+    Retries on:
+      - 429 (rate limited) with Retry-After if present
+      - 500/502/503/504 (transient server errors)
+      - network exceptions: ReadTimeout, Timeout, ConnectionError, ChunkedEncodingError
+
+    Best-practice defaults for Scopus bulk retrieval:
+      - timeout=(30, 180): avoids hanging forever, but tolerates slow responses
+      - tries=12: gives enough runway through flaky periods
+      - exponential backoff w/ jitter, capped at 60s
     """
     backoff = 1.0
-    last_rate = {}
+    last_rate: dict = {}
 
-    for _ in range(tries):
-        if method.upper() == "POST":
-            r = session.post(url, headers=headers, data=data or params, timeout=60)
-        else:
-            r = session.get(url, headers=headers, params=params, timeout=60)
+    def _sleep_with_jitter(base: float) -> None:
+        # add small jitter so many retries don't sync up
+        time.sleep(base + random.uniform(0.0, min(0.5, base * 0.1)))
 
-        last_rate = _rate_headers(r)
+    method_u = (method or "GET").upper()
 
-        if r.status_code == 200:
-            return r.json(), last_rate
-
-        if r.status_code == 429:
-            ra = r.headers.get("Retry-After")
-            if ra:
-                try:
-                    wait_s = max(1.0, float(ra))
-                except Exception:
-                    wait_s = backoff
+    for attempt in range(tries):
+        try:
+            if method_u == "POST":
+                r = session.post(
+                    url,
+                    headers=headers,
+                    data=data if data is not None else params,
+                    timeout=timeout,
+                )
             else:
-                wait_s = backoff
-            time.sleep(wait_s)
+                r = session.get(
+                    url,
+                    headers=headers,
+                    params=params,
+                    timeout=timeout,
+                )
+
+            last_rate = _rate_headers(r)
+
+            if r.status_code == 200:
+                # Occasionally APIs return HTML on errors with 200; safeguard json parse
+                try:
+                    return r.json(), last_rate
+                except Exception as e:
+                    raise RuntimeError(f"HTTP 200 but JSON parse failed: {str(e)[:200]} :: {r.text[:400]}")
+
+            # Rate limit
+            if r.status_code == 429:
+                ra = r.headers.get("Retry-After")
+                if ra:
+                    try:
+                        wait_s = max(1.0, float(ra))
+                    except Exception:
+                        wait_s = backoff
+                else:
+                    wait_s = backoff
+
+                _sleep_with_jitter(wait_s)
+                backoff = min(backoff * 2, 60.0)
+                continue
+
+            # Transient server errors
+            if r.status_code in (500, 502, 503, 504):
+                _sleep_with_jitter(backoff)
+                backoff = min(backoff * 2, 60.0)
+                continue
+
+            # Other non-retryable HTTP errors
+            raise RuntimeError(f"HTTP {r.status_code}: {r.text[:800]}")
+
+        except (
+            requests.exceptions.ReadTimeout,
+            requests.exceptions.Timeout,
+            requests.exceptions.ConnectionError,
+            requests.exceptions.ChunkedEncodingError,
+        ):
+            # transient network failure
+            if attempt == tries - 1:
+                raise
+            _sleep_with_jitter(backoff)
             backoff = min(backoff * 2, 60.0)
             continue
-
-        if r.status_code in (500, 502, 503, 504):
-            time.sleep(backoff)
-            backoff = min(backoff * 2, 60.0)
-            continue
-
-        raise RuntimeError(f"HTTP {r.status_code}: {r.text[:800]}")
 
     raise RuntimeError(f"Failed after retries. Last rate headers: {last_rate}")

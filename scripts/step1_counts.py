@@ -21,13 +21,10 @@ import yaml
 import matplotlib.pyplot as plt
 
 
-# ---- Step-local controls (keep here) ----
-USE_POST_FOR_SEARCH = 1   # avoids 413 for long queries
+USE_POST_FOR_SEARCH = 1
 VIEW = "STANDARD"
 STEP1_SLEEP_S = 0.10
 
-
-# ---- Default endpoint fallback ----
 DEFAULT_SCOPUS_SEARCH_URL = "https://api.elsevier.com/content/search/scopus"
 
 
@@ -37,9 +34,6 @@ class ScopusAuth:
     inst_token: Optional[str] = None
 
 
-# ----------------------------
-# Small, local helpers
-# ----------------------------
 def _load_json(path: str, default):
     try:
         if os.path.exists(path) and os.path.getsize(path) > 0:
@@ -137,9 +131,6 @@ def _request_with_retries(
     raise RuntimeError(f"Failed after retries. Last rate headers: {last_rate}")
 
 
-# ----------------------------
-# Step 1 core logic
-# ----------------------------
 def scopus_count_only(scopus_search_url: str, auth: ScopusAuth, query: str, count_per_page: int = 1) -> Tuple[int, dict]:
     headers = _headers(auth)
     meta = {"query": query, "count_per_page": count_per_page, "view": VIEW, "rate_headers_last": {}}
@@ -155,9 +146,34 @@ def scopus_count_only(scopus_search_url: str, auth: ScopusAuth, query: str, coun
     return total, meta
 
 
+def _build_limits_expr(cfg: dict) -> str:
+    lim = cfg.get("limits")
+    if not lim:
+        return ""
+
+    if isinstance(lim, str):
+        s = lim.strip()
+        return f"({s})" if s else ""
+
+    parts: List[str] = []
+    if isinstance(lim, dict):
+        for v in lim.values():
+            s = str(v).strip()
+            if s:
+                parts.append(f"({s})")
+    elif isinstance(lim, list):
+        for v in lim:
+            s = str(v).strip()
+            if s:
+                parts.append(f"({s})")
+
+    return " AND ".join(parts)
+
+
 def _build_queries(cfg: dict) -> Tuple[Dict[str, str], Dict[str, str], str]:
     field = cfg.get("field", "TITLE-ABS-KEY").strip()
     elements = cfg.get("elements", {}) or {}
+    limits_expr = _build_limits_expr(cfg)
 
     subgroup_queries: Dict[str, str] = {}
     element_queries: Dict[str, str] = {}
@@ -168,17 +184,32 @@ def _build_queries(cfg: dict) -> Tuple[Dict[str, str], Dict[str, str], str]:
         for sub_key, expr in (subgroups or {}).items():
             expr = str(expr).strip()
             qname = f"{element_key}__{sub_key}"
-            subgroup_queries[qname] = f"{field}({expr})"
+            q = f"{field}({expr})"
+            if limits_expr:
+                q = f"{q} AND {limits_expr}"
+            subgroup_queries[qname] = q
             raw_exprs.append(f"({expr})")
 
         if raw_exprs:
             or_raw = " OR ".join(raw_exprs)
             element_raw_or[element_key] = f"({or_raw})"
-            element_queries[f"{element_key}__ALL"] = f"{field}({element_raw_or[element_key]})"
+            q_all = f"{field}({element_raw_or[element_key]})"
+            if limits_expr:
+                q_all = f"{q_all} AND {limits_expr}"
+            element_queries[f"{element_key}__ALL"] = q_all
 
     combined_raw = " AND ".join([f"({v})" for v in element_raw_or.values()])
     combined_query = f"{field}({combined_raw})" if combined_raw else ""
+    if combined_query and limits_expr:
+        combined_query = f"{combined_query} AND {limits_expr}"
     return subgroup_queries, element_queries, combined_query
+
+
+def _normalize_group(g: str) -> str:
+    gl = (g or "").lower()
+    if gl in ("c_context_limcs", "c_context_lmics"):
+        return "C_context_LMICs"
+    return g
 
 
 def _plot_counts(summary: pd.DataFrame, out_png: str, title: str, timestamp_utc: str) -> None:
@@ -191,10 +222,10 @@ def _plot_counts(summary: pd.DataFrame, out_png: str, title: str, timestamp_utc:
     def group_of(qname: str) -> str:
         if qname == "TOTAL__ALL":
             return "TOTAL"
-        return qname.split("__", 1)[0]
+        return _normalize_group(qname.split("__", 1)[0])
 
     plot_df["group"] = plot_df["query_name"].astype(str).apply(group_of)
-    group_order = ["P", "C_concept", "C_context_climate", "C_context_agriculture", "M", "TOTAL"]
+    group_order = ["P", "C_concept", "C_context_climate", "C_context_agriculture", "C_context_LMICs", "M", "TOTAL"]
     plot_df["group_order"] = plot_df["group"].apply(lambda g: group_order.index(g) if g in group_order else 999)
     plot_df = plot_df.sort_values(["group_order", "query_name"]).reset_index(drop=True)
 
@@ -203,6 +234,7 @@ def _plot_counts(summary: pd.DataFrame, out_png: str, title: str, timestamp_utc:
         "C_concept": "#ff7f0e",
         "C_context_climate": "#2ca02c",
         "C_context_agriculture": "#d62728",
+        "C_context_LMICs": "#8c564b",
         "M": "#9467bd",
         "TOTAL": "#111111",
     }
@@ -211,6 +243,7 @@ def _plot_counts(summary: pd.DataFrame, out_png: str, title: str, timestamp_utc:
         "C_concept": "Concept (C)",
         "C_context_climate": "Context (C) climate",
         "C_context_agriculture": "Context (C) agriculture",
+        "C_context_LMICs": "Context (C) LMICs",
         "M": "Methodological focus (M)",
         "TOTAL": "TOTAL",
     }
@@ -253,22 +286,19 @@ def _plot_counts(summary: pd.DataFrame, out_png: str, title: str, timestamp_utc:
 
     os.makedirs(os.path.dirname(out_png), exist_ok=True)
     plt.figtext(
-        0.99, 0.01,
+        0.99,
+        0.01,
         f"Generated: {timestamp_utc.replace('T', ' ').replace('Z', ' UTC')}",
         ha="right",
         va="bottom",
         fontsize=8,
-        color="gray"
+        color="gray",
     )
     plt.savefig(out_png, dpi=200)
     plt.close()
 
 
 def run(config: dict) -> dict:
-    """
-    Runner entrypoint.
-    Reads SCOPUS_API_KEY / SCOPUS_INST_TOKEN from env (dotenv already loaded by run.py).
-    """
     api_key = os.getenv("SCOPUS_API_KEY")
     inst_token = os.getenv("SCOPUS_INST_TOKEN")
 
@@ -290,7 +320,6 @@ def run(config: dict) -> dict:
         or DEFAULT_SCOPUS_SEARCH_URL
     )
 
-    # outputs (same names as original)
     step1_queries_json = os.path.join(step_dir, "step1_queries.json")
     step1_summary_csv = os.path.join(step_dir, "step1_summary.csv")
     step1_summary_json = os.path.join(step_dir, "step1_summary.json")
@@ -382,15 +411,14 @@ def run(config: dict) -> dict:
     _save_json(step1_cache_json, cache)
 
     summary = pd.DataFrame(rows)
-    # --- BUILD STEP 1 SUMMARY JSON ---
+
     def _group_of(qname: str) -> str:
         if qname == "TOTAL__ALL":
             return "TOTAL"
-        return qname.split("__", 1)[0]
+        return _normalize_group(qname.split("__", 1)[0])
 
     summary["_group"] = summary["query_name"].astype(str).apply(_group_of)
 
-    # TOTAL
     total_all = (
         summary.loc[summary["query_name"] == "TOTAL__ALL", "total_results"]
         .dropna()
@@ -399,17 +427,15 @@ def run(config: dict) -> dict:
     )
     total_all = total_all[0] if total_all else None
 
-    # By element (P, C_*, M)
     by_element = (
         summary[summary["_group"] != "TOTAL"]
         .groupby("_group")["total_results"]
-        .max()   # IMPORTANT: element __ALL already represents OR
+        .max()
         .dropna()
         .astype(int)
         .to_dict()
     )
 
-    # By subgroup (fully granular)
     by_subgroup = (
         summary[
             (~summary["query_name"].str.endswith("__ALL")) &
@@ -440,7 +466,7 @@ def run(config: dict) -> dict:
         summary,
         step1_plot_png,
         "Scopus record counts by query",
-        ts
+        ts,
     )
 
     return {

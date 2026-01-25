@@ -21,10 +21,11 @@ FRONTEND_PAGE = ROOT / "frontend/src/app/about/page.tsx"
 SECTION_START = "<!-- AUTO-STRUCTURE:START -->"
 SECTION_END   = "<!-- AUTO-STRUCTURE:END -->"
 
-
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # REPO STRUCTURE
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------
+
+IGNORE_FILES = {"check.py"}  # add this
 
 def indent(level: int) -> str:
     return "│   " * level
@@ -32,7 +33,7 @@ def indent(level: int) -> str:
 def generate_structure(path: Path, level: int = 0) -> list:
     lines = []
     for item in sorted(path.iterdir()):
-        if item.name.startswith(".") or item.name == "README.md":
+        if item.name.startswith(".") or item.name == "README.md" or item.name in IGNORE_FILES:
             continue
 
         if level == 0:
@@ -42,7 +43,12 @@ def generate_structure(path: Path, level: int = 0) -> list:
                 # Normal folders — one level of files only
                 if item.name != "deliverables":
                     for f in sorted(item.iterdir()):
-                        if f.is_file() and not f.name.startswith("."):
+                        if (
+                            f.is_file()
+                            and not f.name.startswith(".")
+                            and f.name != "README.md"
+                            and f.name not in IGNORE_FILES
+                        ):
                             lines.append(f"{indent(1)}├── {f.name}")
                     continue
 
@@ -51,7 +57,12 @@ def generate_structure(path: Path, level: int = 0) -> list:
                     if sub.is_dir():
                         lines.append(f"{indent(1)}├── {sub.name}/")
                         for f in sorted(sub.iterdir()):
-                            if f.is_file() and not f.name.startswith("."):
+                            if (
+                                f.is_file()
+                                and not f.name.startswith(".")
+                                and f.name != "README.md"
+                                and f.name not in IGNORE_FILES
+                            ):
                                 lines.append(f"{indent(2)}├── {f.name}")
             else:
                 lines.append(f"├── {item.name}")

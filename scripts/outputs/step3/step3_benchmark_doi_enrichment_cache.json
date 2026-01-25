@@ -922,5 +922,257 @@
     "doi_score": 0.0,
     "matched_title": null,
     "needs_review": false
+  },
+  "7b9e28d3fb8725e0e31da9979cb7aba8cb6eda959d8a846b27e8a0ec540a3052": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "990fd6d345447f4a087d78bfb751ff3db814233762b4028a5bbc175e5370c920": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "21109e0ae5f4d2ca41a6a52c5adf369ef588769802e221d85c8dae1e79183c7a": {
+    "doi": "https://doi.org/10.1016/j.jenvman.2012.10.036",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Adapting agriculture to climate change in Kenya: Household strategies and determinants",
+    "needs_review": false,
+    "year": 2013,
+    "year_source": "crossref"
+  },
+  "e785da6c70fa27ea4825289d33c7e72cf002625b63e4fb9daad2a538de0ff078": {
+    "doi": "https://doi.org/10.1016/j.agee.2008.04.016",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "A multi-scale assessment of hurricane impacts on agricultural landscapes based on land use and topographic features",
+    "needs_review": false,
+    "year": 2008,
+    "year_source": "crossref"
+  },
+  "dc36ae445054299e94f71be27c709257ea18cc64b176f33d2f65da34a4c755a1": {
+    "doi": "https://doi.org/10.1080/21683565.2014.900842",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Farmer Strategies for Dealing with Climatic Variability: A Case Study from the Mixteca Alta Region of Oaxaca, Mexico",
+    "needs_review": false,
+    "year": 2014,
+    "year_source": "crossref"
+  },
+  "438246b8b9db354fdb9fc7f90f465a3efaad251a3cd03c241f86ab50b0c851f7": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "f01d058d61e17dcc61a300223249ff115dcadfbbd9657856210810355acad567": {
+    "doi": "https://doi.org/10.1016/j.ecolind.2022.109657",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate adaptation indicators and metrics: State of local policy practice",
+    "needs_review": false,
+    "year": 2022,
+    "year_source": "crossref"
+  },
+  "231272f905ee86aaaaf9e7000cbe2a4d74f0406f021b7a94b24091dc1c125bf2": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "4946d1390a4b38406df3b23727fe07b63601872d4a36d49639e956f162bff6da": {
+    "doi": "https://doi.org/10.1016/j.oneear.2021.09.001",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Equity in human adaptation-related responses: A systematic global review",
+    "needs_review": false,
+    "year": 2021,
+    "year_source": "crossref"
+  },
+  "bf3b4d49103c009bce74bb9814e6f919c76bfba298c63a7a07c9cb6ac7a9c9cf": {
+    "doi": "https://doi.org/10.1016/j.scitotenv.2021.150420",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Understanding responses to climate-related water scarcity in Africa",
+    "needs_review": false,
+    "year": 2022,
+    "year_source": "crossref"
+  },
+  "7414cd8aa58356f7d28b932da7b549481e1ea3795ce61359cdee8d507574ebb3": {
+    "doi": "https://doi.org/10.1088/1748-9326/ac092d",
+    "doi_source": "crossref",
+    "doi_score": 0.6197183098591549,
+    "matched_title": "Feasibility assessment of climate change adaptation options across Africa: an evidence-based review",
+    "needs_review": true,
+    "year": 2021,
+    "year_source": "crossref"
+  },
+  "de101bc24e375365f0cec2083e4b9ce44583995a9945880eff47965086af1555": {
+    "doi": "https://doi.org/10.1007/s10113-021-01808-9",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Global evidence of constraints and limits to human adaptation",
+    "needs_review": false,
+    "year": 2021,
+    "year_source": "crossref"
+  },
+  "2f6267c95fe1a77d2337cc392198e7a4a831c8ffa2b1a046d40a57c3ed6c7027": {
+    "doi": "https://doi.org/10.1093/oxfclm/kgab005",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Climate change adaptation to extreme heat: a global systematic review of implemented action",
+    "needs_review": false,
+    "year": 2021,
+    "year_source": "crossref"
+  },
+  "2f54a7aa744dcf63954b528c84e0b9f64b85036cf5925d38737c688fa423d58f": {
+    "doi": "https://doi.org/10.1088/1748-9326/ac092d",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Feasibility assessment of climate change adaptation options across Africa: an evidence-based review",
+    "needs_review": false,
+    "year": 2021,
+    "year_source": "crossref"
+  },
+  "eac091ca34b247e5b350e715e70992bdbecb70d682c47f58dab4fe8f3baf658c": {
+    "doi": "https://doi.org/10.1038/s41558-021-01170-y",
+    "doi_source": "openalex",
+    "doi_score": 1.0,
+    "matched_title": "A systematic global stocktake of evidence on human adaptation to climate change",
+    "needs_review": false,
+    "year": 2021,
+    "year_source": "openalex"
+  },
+  "7a36fee77a69a97ad7ee6b3426ad1271a7746aade75379526887e4d232edc2be": {
+    "doi": "https://doi.org/10.21203/rs.3.rs-774241/v1",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "The role of indigenous knowledge and local knowledge in water sector adaptation to climate change in Africa: A structured assessment",
+    "needs_review": false,
+    "year": 2021,
+    "year_source": "crossref"
+  },
+  "ad6124446859f1dc4f0d45b732ba99adf7cdd841fb85a81cdce2a571cffca866": {
+    "doi": "https://doi.org/10.1080/17565529.2025.2502468",
+    "doi_source": "crossref",
+    "doi_score": 0.8866995073891626,
+    "matched_title": "What constitutes climate change adaptation in Kenyan livestock systems: a systematic review",
+    "needs_review": true,
+    "year": 2025,
+    "year_source": "crossref"
+  },
+  "1c6689ca021e207d3be107df7249aced7c3f5116d34706ab52f04c99b65184ff": {
+    "doi": "https://doi.org/10.1079/cabireviews.2025.0058",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Locally led adaptation and climate-smart agriculture: A review of two conceptual framings of responses to climate change in LMICs",
+    "needs_review": false,
+    "year": 2025,
+    "year_source": "crossref"
+  },
+  "f7d3edd0b774d09c8c4451de6ed3327a8696b44b9148c099528ca7cffcbc78b0": {
+    "doi": "https://doi.org/10.1080/17565529.2022.2154124",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Gender empowerment and parity in East Africa: evidence from climate-smart agriculture in Ethiopia and Kenya",
+    "needs_review": false,
+    "year": 2022,
+    "year_source": "crossref"
+  },
+  "6151db7d714cbb0739569401e5d0b54e62bea657eef7e6792b83927957c1ba3c": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "c87de7ef9e0328dcea4d6ec5b150d64a14ee6e4941f8bdc833aea7534f4d02b5": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "67de0904170bc000a394e98196cce1d518059f29ec53652a7ee4cf41cd7f3353": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "9e7a375e4d7345dc90ec5d80b2a1c44d2b2d63e8163b97707004bc639a03e2f4": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "2dba69202d499e7155fb5db031564a32b75763a2ae9b93307ab0918fede27f4f": {
+    "doi": "https://doi.org/10.1016/j.envsci.2021.08.017",
+    "doi_source": "crossref",
+    "doi_score": 1.0,
+    "matched_title": "Do governments track the implementation of national climate change adaptation plans? An evidence-based global stocktake of monitoring and evaluation systems",
+    "needs_review": false,
+    "year": 2021,
+    "year_source": "crossref"
+  },
+  "87379e5635cb1f89e02ab325108683b749f9721b777ea406d596aefd93ad1e20": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "de276e76b93c2bc67b7dc5d9cce51d066732458a8e670e3963c1f8693a9fa80e": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "06636ab726efbee02e8c9792779fe1851ef7a9211d4e6a1c76038cb0926a1862": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
+  },
+  "c982305d94e8ae8b6e7612b48cfe0e6bb5bf452b7499d40b6a54de0cac05743c": {
+    "doi": null,
+    "doi_source": null,
+    "doi_score": 0.0,
+    "matched_title": null,
+    "needs_review": false,
+    "year": null,
+    "year_source": null
   }
 }

@@ -4,7 +4,11 @@ step2_retrieve.py
 
 Step 2 (retrieve TOTAL__ALL records; streaming):
   - Avoid deep paging limits by slicing TOTAL query into PUBYEAR ranges (<= DEEP_PAGING_LIMIT)
+  - If a single PUBYEAR slice still exceeds the deep paging limit, sub-slice within-year by:
+      1) SUBJAREA() (may overlap -> final dedupe)
+      2) SRCTYPE() (disjoint within a SUBJAREA bucket)
   - Stream each slice to CSV, then concatenate -> outputs/step2/step2_total_records.csv
+  - Final combined CSV is deduped on record_key to guard against overlap.
 
 Additional outputs:
   - outputs/step2/step2_total_records.docx
@@ -55,6 +59,69 @@ DEFAULT_PUBYEAR_MAX = 2025
 DEFAULT_MAX_RESULTS_TOTAL = None
 
 
+# Scopus subject area codes (commonly used by SUBJAREA in advanced query).
+# Note: items may be tagged with multiple subject areas -> overlap is possible.
+SCOPUS_SUBJAREAS = [
+    "AGRI", "ARTS", "BIOC", "BUSI", "CENG", "CHEM", "COMP", "DECI", "DENT", "EART",
+    "ECON", "ENER", "ENGI", "ENVI", "HEAL", "IMMU", "MATE", "MATH", "MEDI", "NEUR",
+    "NURS", "PHAR", "PHYS", "PSYC", "SOCI", "VETE", "MULT",
+]
+
+# Scopus source type codes (SRCTYPE in advanced query). These are disjoint.
+# If any are invalid for your tenant, you'll see it immediately during counting; remove the bad code.
+SCOPUS_SRCTYPES = ["j", "p", "k", "b", "d", "t", "r"]  # journal, proceedings, book series, book, trade, etc.
+
+
+def _sanitize_csv_tail(path: str) -> None:
+    """
+    If the file doesn't end with a newline, truncate to the last newline.
+    Protects against a crash mid-write leaving a partial last row.
+    """
+    if not os.path.exists(path) or os.path.getsize(path) == 0:
+        return
+
+    with open(path, "rb") as f:
+        f.seek(0, os.SEEK_END)
+        size = f.tell()
+        if size == 0:
+            return
+        f.seek(-1, os.SEEK_END)
+        last = f.read(1)
+
+        if last == b"\n":
+            return
+
+        chunk = min(size, 1024 * 1024)
+        f.seek(-chunk, os.SEEK_END)
+        buf = f.read(chunk)
+        idx = buf.rfind(b"\n")
+        if idx == -1:
+            new_size = 0
+        else:
+            new_size = size - (chunk - (idx + 1))
+
+    with open(path, "ab") as f:
+        f.truncate(new_size)
+
+
+def _count_csv_data_rows(path: str) -> int:
+    """
+    Fast-ish line count. Assumes one record per line (pandas CSV output).
+    Returns number of data rows (excluding header).
+    """
+    if not os.path.exists(path) or os.path.getsize(path) == 0:
+        return 0
+
+    n = 0
+    with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        header = f.readline()
+        if not header:
+            return 0
+        for _ in f:
+            n += 1
+    return n
+
+
 def _save_json(path: str, obj) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     tmp = path + ".tmp"
@@ -103,9 +170,7 @@ def scopus_count_only(
     with requests.Session() as session:
         params = {"query": query, "start": "0", "count": str(count_per_page), "view": view}
         method = "POST" if use_post else "GET"
-        data, rate = request_with_retries(
-            session, method, scopus_search_url, headers, params=params, data=params
-        )
+        data, rate = request_with_retries(session, method, scopus_search_url, headers, params=params, data=params)
         meta["rate_headers_last"] = rate
 
     sr = (data or {}).get("search-results", {}) or {}
@@ -182,6 +247,12 @@ def _with_pubyear_missing_or_outside(base_query: str, y0: int, y1: int) -> str:
     return f"({base_query}) AND NOT (PUBYEAR > {y0 - 1} AND PUBYEAR < {y1 + 1})"
 
 
+def _safe_tag(s: str) -> str:
+    s = re.sub(r"[^A-Za-z0-9_]+", "_", s.strip())
+    s = re.sub(r"_+", "_", s).strip("_")
+    return s or "SLICE"
+
+
 def _plan_year_slices(
     auth: ScopusAuth,
     scopus_search_url: str,
@@ -206,30 +277,195 @@ def _plan_year_slices(
     mid = (y0 + y1) // 2
     return (
         _plan_year_slices(
-            auth,
-            scopus_search_url,
-            base_query,
-            y0,
-            mid,
-            deep_paging_limit=deep_paging_limit,
-            use_post=use_post,
-            view=view,
+            auth, scopus_search_url, base_query, y0, mid,
+            deep_paging_limit=deep_paging_limit, use_post=use_post, view=view
         )
         + _plan_year_slices(
-            auth,
-            scopus_search_url,
-            base_query,
-            mid + 1,
-            y1,
-            deep_paging_limit=deep_paging_limit,
-            use_post=use_post,
-            view=view,
+            auth, scopus_search_url, base_query, mid + 1, y1,
+            deep_paging_limit=deep_paging_limit, use_post=use_post, view=view
         )
     )
 
 
-def _safe_slice_tag(y0: int, y1: int) -> str:
-    return f"PUBYEAR_{y0}_{y1}"
+def _plan_within_year_subjarea_slices(
+    auth: ScopusAuth,
+    scopus_search_url: str,
+    base_q: str,
+    year: int,
+    *,
+    deep_paging_limit: int,
+    use_post: int,
+    view: str,
+) -> List[dict]:
+    """
+    Create SUBJAREA sub-slices for a single year slice that is still > deep paging limit.
+    Adds a remainder slice for records not matching any SUBJAREA codes in our list.
+    Note: SUBJAREA can overlap; we will dedupe final output on record_key.
+    """
+    parent_q = _with_pubyear_range(base_q, year, year)
+    parent_total, _ = scopus_count_only(auth, scopus_search_url, parent_q, use_post=use_post, view=view, count_per_page=1)
+
+    slices: List[dict] = []
+    covered_exprs: List[str] = []
+    covered_sum = 0
+
+    for code in SCOPUS_SUBJAREAS:
+        expr = f"SUBJAREA({code})"
+        q = f"({parent_q}) AND {expr}"
+        t, _ = scopus_count_only(auth, scopus_search_url, q, use_post=use_post, view=view, count_per_page=1)
+        if t <= 0:
+            continue
+        slices.append(
+            {
+                "tag": _safe_tag(f"PUBYEAR_{year}_{year}__SUBJAREA_{code}"),
+                "query": q,
+                "expected": int(t),
+                "kind": "PUBYEAR_SUBJAREA",
+                "year": year,
+                "subjarea": code,
+            }
+        )
+        covered_exprs.append(expr)
+        covered_sum += int(t)
+
+    # remainder: not in any of the subject area codes we enumerated
+    if covered_exprs:
+        or_part = " OR ".join(covered_exprs)
+        remainder_q = f"({parent_q}) AND NOT ({or_part})"
+        remainder_t, _ = scopus_count_only(auth, scopus_search_url, remainder_q, use_post=use_post, view=view, count_per_page=1)
+        if remainder_t > 0:
+            slices.append(
+                {
+                    "tag": _safe_tag(f"PUBYEAR_{year}_{year}__SUBJAREA_REMAINDER"),
+                    "query": remainder_q,
+                    "expected": int(remainder_t),
+                    "kind": "PUBYEAR_SUBJAREA_REMAINDER",
+                    "year": year,
+                    "subjarea": None,
+                }
+            )
+
+    # We don't require covered_sum == parent_total because SUBJAREA can overlap (multi-tagging).
+    # Dedupe later avoids double counting.
+    return slices
+
+
+def _plan_within_slice_srctype_slices(
+    auth: ScopusAuth,
+    scopus_search_url: str,
+    parent_slice: dict,
+    *,
+    deep_paging_limit: int,
+    use_post: int,
+    view: str,
+) -> List[dict]:
+    """
+    Further sub-slice an oversized slice by SRCTYPE() into disjoint buckets.
+    Adds a remainder bucket for anything not matching our SRCTYPE list.
+    """
+    parent_q = parent_slice["query"]
+    parent_total = int(parent_slice["expected"])
+
+    slices: List[dict] = []
+    covered_exprs: List[str] = []
+    covered_sum = 0
+
+    for code in SCOPUS_SRCTYPES:
+        expr = f"SRCTYPE({code})"
+        q = f"({parent_q}) AND {expr}"
+        t, _ = scopus_count_only(auth, scopus_search_url, q, use_post=use_post, view=view, count_per_page=1)
+        if t <= 0:
+            continue
+        slices.append(
+            {
+                "tag": _safe_tag(f"{parent_slice['tag']}__SRCTYPE_{code}"),
+                "query": q,
+                "expected": int(t),
+                "kind": "SRCTYPE",
+                "parent_tag": parent_slice["tag"],
+                "srctype": code,
+            }
+        )
+        covered_exprs.append(expr)
+        covered_sum += int(t)
+
+    if covered_exprs:
+        or_part = " OR ".join(covered_exprs)
+        remainder_q = f"({parent_q}) AND NOT ({or_part})"
+        remainder_t, _ = scopus_count_only(auth, scopus_search_url, remainder_q, use_post=use_post, view=view, count_per_page=1)
+        if remainder_t > 0:
+            slices.append(
+                {
+                    "tag": _safe_tag(f"{parent_slice['tag']}__SRCTYPE_REMAINDER"),
+                    "query": remainder_q,
+                    "expected": int(remainder_t),
+                    "kind": "SRCTYPE_REMAINDER",
+                    "parent_tag": parent_slice["tag"],
+                    "srctype": None,
+                }
+            )
+
+    # SRCTYPE is disjoint, so covered_sum + remainder_t should be close to parent_total.
+    # We won't hard-fail; just return what we planned.
+    return slices
+
+
+def _expand_slices(
+    auth: ScopusAuth,
+    scopus_search_url: str,
+    base_q: str,
+    year_slices: List[Tuple[int, int, int]],
+    *,
+    deep_paging_limit: int,
+    use_post: int,
+    view: str,
+) -> List[dict]:
+    """
+    Expand year slices. If a slice is a single year and still > limit, expand within-year.
+    If any within-year slice still > limit, expand that further by SRCTYPE.
+    """
+    expanded: List[dict] = []
+
+    for y0, y1, t in year_slices:
+        if y0 == y1 and t > deep_paging_limit:
+            year = y0
+            subj_slices = _plan_within_year_subjarea_slices(
+                auth,
+                scopus_search_url,
+                base_q,
+                year,
+                deep_paging_limit=deep_paging_limit,
+                use_post=use_post,
+                view=view,
+            )
+
+            for ss in subj_slices:
+                if int(ss["expected"]) > deep_paging_limit:
+                    # further expand by SRCTYPE (disjoint)
+                    sr_slices = _plan_within_slice_srctype_slices(
+                        auth,
+                        scopus_search_url,
+                        ss,
+                        deep_paging_limit=deep_paging_limit,
+                        use_post=use_post,
+                        view=view,
+                    )
+                    expanded.extend(sr_slices)
+                else:
+                    expanded.append(ss)
+        else:
+            expanded.append(
+                {
+                    "tag": _safe_tag(f"PUBYEAR_{y0}_{y1}"),
+                    "query": _with_pubyear_range(base_q, y0, y1),
+                    "expected": int(t),
+                    "kind": "PUBYEAR",
+                    "year_start": y0,
+                    "year_end": y1,
+                }
+            )
+
+    return expanded
 
 
 def _concat_csvs(csv_paths: List[str], out_csv: str) -> int:
@@ -257,6 +493,24 @@ def _concat_csvs(csv_paths: List[str], out_csv: str) -> int:
     return total_rows
 
 
+def _dedupe_csv_in_place(path: str, key_col: str = "record_key") -> int:
+    """
+    Dedupe the combined CSV in place by record_key.
+    Returns number of rows after dedupe (data rows, excluding header).
+    """
+    if not os.path.exists(path) or os.path.getsize(path) == 0:
+        return 0
+    df = pd.read_csv(path, engine="python", on_bad_lines="skip")
+    if df.empty:
+        return 0
+    if key_col in df.columns:
+        df = df.drop_duplicates(subset=[key_col], keep="first")
+    else:
+        df = df.drop_duplicates(keep="first")
+    df.to_csv(path, index=False)
+    return int(len(df))
+
+
 def scopus_retrieve_stream_to_csv_start(
     auth: ScopusAuth,
     scopus_search_url: str,
@@ -273,10 +527,18 @@ def scopus_retrieve_stream_to_csv_start(
     method = "POST" if use_post else "GET"
 
     os.makedirs(os.path.dirname(out_csv), exist_ok=True)
-    if os.path.exists(out_csv):
-        os.remove(out_csv)
 
-    retrieved = 0
+    # --- RESUME LOGIC ---
+    if os.path.exists(out_csv) and os.path.getsize(out_csv) > 0:
+        _sanitize_csv_tail(out_csv)
+        retrieved = _count_csv_data_rows(out_csv)
+        resume_mode = True
+    else:
+        retrieved = 0
+        resume_mode = False
+        if os.path.exists(out_csv):
+            os.remove(out_csv)
+
     total_reported = None
 
     meta = {
@@ -287,27 +549,32 @@ def scopus_retrieve_stream_to_csv_start(
         "max_results": max_results,
         "rate_headers_last": {},
         "started_utc": utc_now_iso(),
+        "resume_mode": bool(resume_mode),
+        "resume_existing_rows": int(retrieved),
     }
 
     pbar = None
+
     with requests.Session() as session:
         while True:
             if max_results is not None and retrieved >= max_results:
                 break
 
             params = {"query": query, "start": str(retrieved), "count": str(count_per_page), "view": view}
-            data, rate = request_with_retries(
-                session, method, scopus_search_url, headers, params=params, data=params
-            )
+
+            data, rate = request_with_retries(session, method, scopus_search_url, headers, params=params, data=params)
             meta["rate_headers_last"] = rate
 
             sr = (data or {}).get("search-results", {}) or {}
+
             if total_reported is None:
                 total_reported = int(sr.get("opensearch:totalResults", "0"))
                 meta["total_reported_by_scopus"] = total_reported
                 pbar_total = total_reported if max_results is None else min(total_reported, max_results)
-                pbar = tqdm(total=pbar_total, desc="[step2] Retrieving", unit="rec")
+                pbar = tqdm(total=pbar_total, desc="[step2] Retrieving", unit="rec", initial=min(retrieved, pbar_total))
                 print(f"[step2] Total reported by Scopus: {total_reported:,}")
+                if resume_mode:
+                    print(f"[step2] RESUME: {retrieved:,} rows already in {out_csv}")
 
             entries = sr.get("entry", []) or []
             if not entries:
@@ -496,13 +763,12 @@ def step2_retrieve_total(config: dict) -> dict:
     export_bib = bool(config.get("export_bib", True))
     export_ris = bool(config.get("export_ris", True))
     mw = config.get("max_word_items", getattr(cfg, "MAX_WORD_ITEMS", None))
-    max_word_items = int(mw) if mw not in (None, "") else None  
+    max_word_items = int(mw) if mw not in (None, "") else None
 
     os.makedirs(step2_dir, exist_ok=True)
 
     already_have_csv = os.path.exists(step2_total_csv) and os.path.getsize(step2_total_csv) > 0
 
-    # We'll fill these for meta/return regardless of whether we retrieved
     base_total = 0
     planned_total = 0
     combined_rows = 0
@@ -521,13 +787,11 @@ def step2_retrieve_total(config: dict) -> dict:
         if not base_q:
             raise SystemExit("[step2] TOTAL__ALL query is empty; check search_strings.yml")
 
-        base_total, _ = scopus_count_only(
-            auth, scopus_search_url, base_q, use_post=use_post, view=view, count_per_page=1
-        )
+        base_total, _ = scopus_count_only(auth, scopus_search_url, base_q, use_post=use_post, view=view, count_per_page=1)
         print(f"[step2] TOTAL__ALL reported by Scopus: {base_total:,}")
 
         print("[step2] Planning PUBYEAR slices...")
-        slices = _plan_year_slices(
+        year_slices = _plan_year_slices(
             auth,
             scopus_search_url,
             base_q,
@@ -538,36 +802,69 @@ def step2_retrieve_total(config: dict) -> dict:
             view=view,
         )
 
-        missing_q = _with_pubyear_missing_or_outside(base_q, pubyear_min, pubyear_max)
-        missing_total, _ = scopus_count_only(
-            auth, scopus_search_url, missing_q, use_post=use_post, view=view, count_per_page=1
+        # Expand any single-year slices that still exceed deep paging limit
+        expanded_slices = _expand_slices(
+            auth,
+            scopus_search_url,
+            base_q,
+            year_slices,
+            deep_paging_limit=deep_paging_limit,
+            use_post=use_post,
+            view=view,
         )
 
-        planned_total = sum(t for _, _, t in slices) + int(missing_total)
+        missing_q = _with_pubyear_missing_or_outside(base_q, pubyear_min, pubyear_max)
+        missing_total, _ = scopus_count_only(auth, scopus_search_url, missing_q, use_post=use_post, view=view, count_per_page=1)
+
+        planned_total = sum(int(s["expected"]) for s in expanded_slices) + int(missing_total)
         print("[step2] Slice plan:")
-        for y0, y1, t in slices:
-            print(f"  - {y0}-{y1}: {t:,}")
+        for s in expanded_slices:
+            print(f"  - {s['tag']}: {int(s['expected']):,}")
         print(f"  - PUBYEAR_MISSING_OR_OUTSIDE: {missing_total:,}")
-        print(f"[step2] Planned total across slices: {planned_total:,}")
-        if planned_total != base_total:
-            print(f"[step2] WARNING: planned_total ({planned_total:,}) != base_total ({base_total:,}).")
+        print(f"[step2] Planned total across slices (may exceed base_total due to overlap): {planned_total:,}")
+        print(f"[step2] NOTE: overlap can occur in SUBJAREA slices; final output is deduped by record_key.")
 
         slice_csvs: List[str] = []
         slice_metas = []
 
-        for y0, y1, slice_total in slices:
-            tag = _safe_slice_tag(y0, y1)
-            q_slice = _with_pubyear_range(base_q, y0, y1)
+        # Retrieve expanded slices
+        for s in expanded_slices:
+            tag = s["tag"]
+            q_slice = s["query"]
+            slice_total = int(s["expected"])
 
             out_csv = os.path.join(step2_dir, f"step2_total_records__{tag}.csv")
             out_meta = os.path.join(step2_dir, f"step2_total_records__{tag}.meta.json")
 
+            existing_rows = 0
             if os.path.exists(out_csv) and os.path.getsize(out_csv) > 0:
-                print(f"[step2] SKIP {tag} (exists): {out_csv}")
+                _sanitize_csv_tail(out_csv)
+                existing_rows = _count_csv_data_rows(out_csv)
+
+            expected_complete = False
+            if os.path.exists(out_meta) and os.path.getsize(out_meta) > 0:
+                try:
+                    with open(out_meta, "r", encoding="utf-8") as f:
+                        prior = json.load(f)
+                    prior_total = int(prior.get("total_reported_by_scopus") or 0)
+                    if prior_total > 0 and existing_rows >= prior_total:
+                        expected_complete = True
+                except Exception:
+                    pass
+
+            if expected_complete:
+                print(f"[step2] SKIP {tag} (complete): {out_csv} ({existing_rows:,} rows)")
                 slice_csvs.append(out_csv)
                 continue
 
+            if existing_rows > 0:
+                print(f"[step2] RESUME {tag}: {out_csv} ({existing_rows:,} rows so far)")
+
+            if slice_total > deep_paging_limit:
+                print(f"[step2] WARNING: {tag} still > deep_paging_limit ({slice_total:,} > {deep_paging_limit:,}). "
+                      f"This will likely 400 without further slicing.")
             print(f"\n[step2] RETRIEVE {tag} (expected {slice_total:,})")
+
             total_reported, retrieved, meta = scopus_retrieve_stream_to_csv_start(
                 auth,
                 scopus_search_url,
@@ -583,12 +880,11 @@ def step2_retrieve_total(config: dict) -> dict:
             meta.update(
                 {
                     "slice_tag": tag,
-                    "slice_pubyear_start": y0,
-                    "slice_pubyear_end": y1,
                     "expected_total_from_planner": int(slice_total),
                     "total_reported_by_scopus": int(total_reported),
                     "retrieved_rows": int(retrieved),
                     "timestamp_utc": utc_now_iso(),
+                    "slice_kind": s.get("kind"),
                 }
             )
             _save_json(out_meta, meta)
@@ -597,15 +893,35 @@ def step2_retrieve_total(config: dict) -> dict:
             slice_csvs.append(out_csv)
             slice_metas.append(meta)
 
+        # Missing/outside slice (still year-bounded exclusion)
         if missing_total > 0:
             tag = "PUBYEAR_MISSING_OR_OUTSIDE"
             out_csv = os.path.join(step2_dir, f"step2_total_records__{tag}.csv")
             out_meta = os.path.join(step2_dir, f"step2_total_records__{tag}.meta.json")
 
+            existing_rows = 0
             if os.path.exists(out_csv) and os.path.getsize(out_csv) > 0:
-                print(f"[step2] SKIP {tag} (exists): {out_csv}")
+                _sanitize_csv_tail(out_csv)
+                existing_rows = _count_csv_data_rows(out_csv)
+
+            expected_complete = False
+            if os.path.exists(out_meta) and os.path.getsize(out_meta) > 0:
+                try:
+                    with open(out_meta, "r", encoding="utf-8") as f:
+                        prior = json.load(f)
+                    prior_total = int(prior.get("total_reported_by_scopus") or 0)
+                    if prior_total > 0 and existing_rows >= prior_total:
+                        expected_complete = True
+                except Exception:
+                    pass
+
+            if expected_complete:
+                print(f"[step2] SKIP {tag} (complete): {out_csv} ({existing_rows:,} rows)")
                 slice_csvs.append(out_csv)
             else:
+                if existing_rows > 0:
+                    print(f"[step2] RESUME {tag}: {out_csv} ({existing_rows:,} rows so far)")
+
                 print(f"\n[step2] RETRIEVE {tag} (expected {missing_total:,})")
                 total_reported, retrieved, meta = scopus_retrieve_stream_to_csv_start(
                     auth,
@@ -621,12 +937,11 @@ def step2_retrieve_total(config: dict) -> dict:
                 meta.update(
                     {
                         "slice_tag": tag,
-                        "slice_pubyear_start": None,
-                        "slice_pubyear_end": None,
                         "expected_total_from_planner": int(missing_total),
                         "total_reported_by_scopus": int(total_reported),
                         "retrieved_rows": int(retrieved),
                         "timestamp_utc": utc_now_iso(),
+                        "slice_kind": "PUBYEAR_MISSING_OR_OUTSIDE",
                     }
                 )
                 _save_json(out_meta, meta)
@@ -637,10 +952,15 @@ def step2_retrieve_total(config: dict) -> dict:
         print(f"\n[step2] Combining slice CSVs -> {step2_total_csv}")
         combined_rows = _concat_csvs(slice_csvs, step2_total_csv)
 
+        print(f"[step2] Deduping combined CSV by record_key -> {step2_total_csv}")
+        deduped_rows = _dedupe_csv_in_place(step2_total_csv, key_col="record_key")
+        print(f"[step2] Combined rows before dedupe: {combined_rows:,} | after dedupe: {deduped_rows:,}")
+        combined_rows = deduped_rows
+
     meta_out = {
         "base_total_reported_by_scopus": int(base_total),
         "planned_total_across_slices": int(planned_total),
-        "combined_rows_written": int(combined_rows),
+        "combined_rows_written_after_dedupe": int(combined_rows),
         "pubyear_min": int(pubyear_min),
         "pubyear_max": int(pubyear_max),
         "deep_paging_limit": int(deep_paging_limit),
@@ -677,16 +997,14 @@ def step2_retrieve_total(config: dict) -> dict:
     meta_out["exports"] = exports
     _save_json(step2_total_meta_json, meta_out)
 
-    print(f"[step2] Final combined rows: {combined_rows:,}")
-    if combined_rows != base_total:
-        print(f"[step2] WARNING: combined_rows ({combined_rows:,}) != base_total ({base_total:,}).")
+    print(f"[step2] Final combined rows (after dedupe): {combined_rows:,}")
 
     return {
         "status": "ok",
         "step2_total_csv": step2_total_csv,
         "step2_total_meta_json": step2_total_meta_json,
         "base_total_reported_by_scopus": int(base_total),
-        "combined_rows_written": int(combined_rows),
+        "combined_rows_written_after_dedupe": int(combined_rows),
         "exports": exports,
     }
 

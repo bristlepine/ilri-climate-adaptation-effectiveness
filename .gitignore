@@ -14,10 +14,16 @@ __pycache__/
 *.pyo
 *.pyd
 .env
+.env.*
 .venv
 venv/
 env/
 pip-wheel-metadata/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -37,7 +43,7 @@ renv/library/
 renv/staging/
 
 # -------------------------------
-# Node / Frontend (optional later)
+# Node / Frontend
 # -------------------------------
 node_modules/
 npm-debug.log
@@ -45,6 +51,13 @@ yarn-debug.log*
 yarn-error.log*
 build/
 dist/
+
+# Next.js (frontend)
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+frontend/.turbo/
+frontend/.vercel/
 
 # -------------------------------
 # Data Files (raw exported search results)
@@ -59,9 +72,24 @@ data/intermediate/*
 # Logs + Outputs
 # -------------------------------
 *.log
-outputs/**/*.pdf
-outputs/**/*.docx
-outputs/**/*.pptx
+
+# Generic outputs folder (if used)
+outputs/
+
+# Scopus pipeline outputs (actual repo paths)
+scripts/outputs/
+scripts/outputs_*/
+scripts/outputs_searchstrings/
+
+# Generated docs/artifacts anywhere
+**/*.pdf
+**/*.docx
+**/*.pptx
+**/*.xlsx
+
+# Ignore check script(s)
+check.py
+scripts/check.py
 
 # -------------------------------
 # Temporary
@@ -70,9 +98,3 @@ outputs/**/*.pptx
 *.temp
 *.bak
 
-# -------------------------------
-# Extra Debug Files
-# -------------------------------
-**step6b*
-**step6c*
-**eligibility_report_secondary_check.xlsx

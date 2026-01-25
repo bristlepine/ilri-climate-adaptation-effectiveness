@@ -6,13 +6,6 @@ Generates STATIC summary charts and a formatted Excel report.
 
 Behavior:
 - Always generates baseline figures from outputs/step5/step5_eligibility_wide.csv
-- If outputs/step6/eligibility_report_secondary_check_final.csv exists:
-  - Generates the same figures for that dataset (with a _secondary suffix)
-  - Generates ONE additional summary figure showing what changed vs baseline
-
-IMPORTANT CHANGE (naming only):
-- Secondary OUTPUT FIGURES + EXCEL are now prefixed with "step6a_" so they group together.
-  Baseline outputs keep their existing names.
 
 Final Updates:
 - BAR CHART: Displays "Pass Rate %" above each bar instead of Total Count.
@@ -162,6 +155,19 @@ def _prepare_dataset(df_res, df_meta, abstract_map):
         merged[c] = merged[c].replace([r"^\s*$", "nan", "None", "NaN"], "unclear", regex=True)
         merged[c] = merged[c].fillna("unclear")
 
+    # Ensure notes column exists (do NOT include in decision columns)
+    if "notes" not in merged.columns:
+        merged["notes"] = ""
+    merged["notes"] = merged["notes"].fillna("").astype(str)
+
+    # Reorder: put notes immediately after final_decision (if present)
+    if "final_decision" in merged.columns and "notes" in merged.columns:
+        cols = list(merged.columns)
+        cols.remove("notes")
+        fi = cols.index("final_decision")
+        cols.insert(fi + 1, "notes")
+        merged = merged[cols]
+
     return merged, crit_cols, cols_to_fix
 
 
@@ -239,12 +245,15 @@ def _generate_long_heatmap(sub_df, crit_cols, viz_dir, title_text, filename):
     if sub_df.empty:
         return
 
-    temp_scores = sub_df[crit_cols].applymap(_normalize_decision)
+    # --- replace applymap with per-column map (pandas 3+ compatible) ---
+    temp_scores = sub_df[crit_cols].apply(lambda col: col.map(_normalize_decision))
+
     sub_df = sub_df.copy()
     sub_df["_sort_score"] = temp_scores.sum(axis=1)
     sub_df = sub_df.sort_values(by=["_sort_score", "title"], ascending=[False, True])
 
-    matrix = sub_df[crit_cols].applymap(_normalize_decision)
+    # --- replace applymap again here ---
+    matrix = sub_df[crit_cols].apply(lambda col: col.map(_normalize_decision))
     matrix.columns = [c.replace("_decision", "").upper() for c in crit_cols]
     matrix.index = sub_df["title"].astype(str).apply(lambda x: x[:80] + "..." if len(x) > 80 else x)
 
@@ -269,7 +278,6 @@ def _generate_long_heatmap(sub_df, crit_cols, viz_dir, title_text, filename):
 
     plt.savefig(os.path.join(viz_dir, filename), dpi=300)
     plt.close()
-
 
 def _write_excel(final_df, crit_cols, out_excel):
     fill_pass = PatternFill(start_color=PALETTE["excel_pass"], end_color=PALETTE["excel_pass"], fill_type="solid")
@@ -323,127 +331,25 @@ def _write_excel(final_df, crit_cols, out_excel):
                     cell.fill = fill_unclear
 
 
-def _save_change_summary(baseline_df, secondary_df, cols_to_fix, viz_dir, filename):
-    b = baseline_df.copy()
-    s = secondary_df.copy()
-
-    b["doi"] = b.get("doi", "").apply(_clean_doi)
-    s["doi"] = s.get("doi", "").apply(_clean_doi)
-
-    b = b[b["doi"].astype(str).str.strip() != ""]
-    s = s[s["doi"].astype(str).str.strip() != ""]
-
-    merged = pd.merge(b, s, on="doi", how="inner", suffixes=("_base", "_sec"))
-    if merged.empty:
-        return
-
-    rows = []
-    for col in cols_to_fix:
-        cb = f"{col}_base"
-        cs = f"{col}_sec"
-        if cb not in merged.columns or cs not in merged.columns:
-            continue
-
-        base_bucket = merged[cb].apply(_decision_bucket)
-        sec_bucket = merged[cs].apply(_decision_bucket)
-
-        base_counts = base_bucket.value_counts()
-        sec_counts = sec_bucket.value_counts()
-
-        d_pass = int(sec_counts.get("pass", 0) - base_counts.get("pass", 0))
-        d_fail = int(sec_counts.get("fail", 0) - base_counts.get("fail", 0))
-        d_unc = int(
-            (sec_counts.get("unclear", 0) + sec_counts.get("no_abstract", 0))
-            - (base_counts.get("unclear", 0) + base_counts.get("no_abstract", 0))
-        )
-
-        label = col.replace("_decision", "").replace("final_decision", "FINAL").upper()
-        rows.append({"Criterion": label, "Pass": d_pass, "Fail": d_fail, "Unclear": d_unc})
-
-    if not rows:
-        return
-
-    df = pd.DataFrame(rows).set_index("Criterion")[["Pass", "Fail", "Unclear"]]
-
-    n = len(df.index)
-    x = np.arange(n)
-    width = 0.25
-
-    fig_height = max(6, 2.5 + 0.25 * n)
-    fig, ax = plt.subplots(figsize=(12, fig_height))
-
-    bars_pass = ax.bar(x - width, df["Pass"].values, width, label="Pass", color=PALETTE["pass"], edgecolor="black")
-    bars_fail = ax.bar(x, df["Fail"].values, width, label="Fail", color=PALETTE["fail"], edgecolor="black")
-    bars_unc = ax.bar(x + width, df["Unclear"].values, width, label="Unclear", color=PALETTE["unclear"], edgecolor="black")
-
-    ax.axhline(0, color="black", linewidth=1)
-
-    def add_labels(bars):
-        for br in bars:
-            v = int(br.get_height())
-            if v == 0:
-                continue
-            ax.text(
-                br.get_x() + br.get_width() / 2,
-                1.02,
-                f"{v:+d}",
-                transform=ax.get_xaxis_transform(),
-                ha="center",
-                va="bottom",
-                fontsize=10,
-                weight="bold",
-                color="black",
-                clip_on=False,
-            )
-
-    add_labels(bars_pass)
-    add_labels(bars_fail)
-    add_labels(bars_unc)
-
-    ax.set_xticks(x)
-    ax.set_xticklabels(df.index.tolist(), rotation=45, ha="right")
-    ax.set_ylabel("Net Change in Count (Secondary - Baseline)")
-    ax.set_xlabel("Eligibility Criteria")
-
-    legend_elements = [
-        Patch(facecolor=PALETTE["pass"], edgecolor="gray", label="Pass"),
-        Patch(facecolor=PALETTE["fail"], edgecolor="gray", label="Fail"),
-        Patch(facecolor=PALETTE["unclear"], edgecolor="gray", label="Unclear"),
-    ]
-
-    _setup_fixed_header_layout(
-        fig,
-        fig_height,
-        "Screening Results Breakdown Changes (Secondary - Baseline)",
-        legend_elements,
-        custom_top_margin=2.0,
-    )
-
-    plt.subplots_adjust(bottom=0.25)
-    plt.savefig(os.path.join(viz_dir, filename), dpi=300)
-    plt.close()
-
-
 def run_step6(config: dict) -> dict:
     out_dir = config.get("out_dir") or getattr(cfg, "out_dir", "outputs")
     viz_dir = os.path.join(out_dir, "step6")
     os.makedirs(viz_dir, exist_ok=True)
 
-    step5_csv = os.path.join(out_dir, "step5", "step5_eligibility_wide.csv")
+    # Prefer manual Step 5 output if present, otherwise fall back to default
+    step5_csv_manual = os.path.join(out_dir, "step5", "step5_eligibility_wide_manual.csv")
+    step5_csv_default = os.path.join(out_dir, "step5", "step5_eligibility_wide.csv")
+    step5_csv = step5_csv_manual if os.path.exists(step5_csv_manual) else step5_csv_default
     step3_csv = os.path.join(out_dir, "step3", "step3_benchmark_list.csv")
     step4_csv = os.path.join(out_dir, "step4", "step4_abstracts.csv")
 
-    secondary_csv = os.path.join(viz_dir, "eligibility_report_secondary_check_final.csv")
-
     out_excel = os.path.join(viz_dir, "eligibility_report.xlsx")
-
-    # renamed secondary outputs (prefix step6a_)
-    out_excel_secondary = os.path.join(viz_dir, "step6a_eligibility_report_secondary.xlsx")
 
     if not os.path.exists(step5_csv):
         print("❌ Missing Step 5 output.")
         return {"status": "error"}
 
+    print(f"[Step 6] Using Step 5 input: {step5_csv}")
     print(f"[Step 6] Generating visuals in: {viz_dir}")
 
     df_res = pd.read_csv(step5_csv)
@@ -458,7 +364,6 @@ def run_step6(config: dict) -> dict:
 
     merged_base, crit_cols_base, cols_to_fix_base = _prepare_dataset(df_res, df_meta, abstract_map)
 
-    # baseline outputs unchanged
     _save_bar_summary(
         merged_base,
         cols_to_fix_base,
@@ -479,36 +384,6 @@ def run_step6(config: dict) -> dict:
     print("   📊 Generating Styled Excel...")
     _write_excel(merged_base, crit_cols_base, out_excel)
     print(f"   ✅ Saved Excel Report: {out_excel}")
-
-    if os.path.exists(secondary_csv):
-        print("   Found secondary final CSV. Generating secondary visuals...")
-        df_res2 = pd.read_csv(secondary_csv)
-        merged_sec, crit_cols_sec, cols_to_fix_sec = _prepare_dataset(df_res2, df_meta, abstract_map)
-
-        # secondary outputs renamed (prefix step6a_)
-        _save_bar_summary(
-            merged_sec,
-            cols_to_fix_sec,
-            viz_dir,
-            "step6a_1_criteria_summary_secondary.png",
-            "Screening Results Breakdown (Secondary)",
-        )
-
-        df_inc2 = merged_sec[merged_sec["final_decision"].str.contains("include|yes|pass", case=False)].copy()
-        _generate_long_heatmap(df_inc2, crit_cols_sec, viz_dir, "INCLUDED Papers (Secondary)", "step6a_2_heatmap_included_secondary.png")
-
-        df_exc2 = merged_sec[merged_sec["final_decision"].str.contains("exclude|no|fail", case=False)].copy()
-        _generate_long_heatmap(df_exc2, crit_cols_sec, viz_dir, "EXCLUDED Papers (Secondary)", "step6a_3_heatmap_excluded_secondary.png")
-
-        df_unc2 = merged_sec[~merged_sec.index.isin(df_inc2.index) & ~merged_sec.index.isin(df_exc2.index)].copy()
-        _generate_long_heatmap(df_unc2, crit_cols_sec, viz_dir, "UNCLEAR Papers (Secondary)", "step6a_4_heatmap_unclear_secondary.png")
-
-        _write_excel(merged_sec, crit_cols_sec, out_excel_secondary)
-        print(f"   ✅ Saved Excel Report: {out_excel_secondary}")
-
-        common_cols_to_fix = [c for c in cols_to_fix_base if c in cols_to_fix_sec]
-        _save_change_summary(merged_base, merged_sec, common_cols_to_fix, viz_dir, "step6a_1_criteria_summary_changes.png")
-        print(f"   ✅ Saved Change Summary: {os.path.join(viz_dir, 'step6a_1_criteria_summary_changes.png')}")
 
     return {"status": "ok", "path": viz_dir}
 

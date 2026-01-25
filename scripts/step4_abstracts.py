@@ -538,6 +538,8 @@ def step4_fetch_abstracts(config: dict) -> dict:
                 if res.get("abstract"):
                     rec.update(res)
                     rec["fetch_status"] = "ok"
+                    rec["error"] = ""
+                    rec["status_code"] = 200
                 else:
                     rec["source"] = res.get("source", "elsevier_api")
                     rec["status_code"] = res.get("status_code") or ""
@@ -549,6 +551,8 @@ def step4_fetch_abstracts(config: dict) -> dict:
                 if res.get("abstract"):
                     rec.update(res)
                     rec["fetch_status"] = "ok"
+                    rec["error"] = ""
+                    rec["status_code"] = 200
                 else:
                     rec["source"] = rec["source"] or res.get("source") or ""
                     rec["status_code"] = rec["status_code"] or (res.get("status_code") or "")
@@ -562,6 +566,8 @@ def step4_fetch_abstracts(config: dict) -> dict:
                 if res.get("abstract"):
                     rec.update(res)
                     rec["fetch_status"] = "ok"
+                    rec["error"] = ""
+                    rec["status_code"] = 200
                 else:
                     rec["source"] = rec["source"] or res.get("source") or ""
                     rec["status_code"] = rec["status_code"] or (res.get("status_code") or "")
@@ -573,6 +579,8 @@ def step4_fetch_abstracts(config: dict) -> dict:
                 if res.get("abstract"):
                     rec.update(res)
                     rec["fetch_status"] = "ok"
+                    rec["error"] = ""
+                    rec["status_code"] = 200
                 else:
                     rec["source"] = rec["source"] or res.get("source") or ""
                     rec["status_code"] = rec["status_code"] or (res.get("status_code") or "")
@@ -592,6 +600,8 @@ def step4_fetch_abstracts(config: dict) -> dict:
                     rec.update(res)
                     rec["landing_url"] = landing
                     rec["fetch_status"] = "ok"
+                    rec["error"] = ""
+                    rec["status_code"] = 200
                 else:
                     rec["landing_url"] = landing
                     rec["source"] = rec["source"] or res.get("source") or ""
