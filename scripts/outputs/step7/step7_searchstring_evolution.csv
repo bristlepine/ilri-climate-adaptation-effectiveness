@@ -1,6 +1,0 @@
-iteration,timestamp_local,search_hash,final_target,final_n_total,final_n_in_scopus,final_pct
-1,2026-01-24 14:51:32 EST,7966816ef7dd,baseline,29,20,68.96551724137932
-2,2026-01-24 21:14:08 EST,bd6f987dda52,baseline,29,27,93.10344827586206
-3,2026-01-24 22:09:11 EST,00d8bbd96338,baseline,29,28,96.55172413793103
-4,2026-01-25 00:16:28 EST,01a5982c67ce,baseline,29,29,100.0
-5,2026-01-25 12:20:02 EST,183cc856622b,baseline,29,29,100.0
