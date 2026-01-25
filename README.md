@@ -46,7 +46,7 @@ Each deliverable will receive its own versioned DOI, listed below.
 | No. | Deliverable | Type | Due Date | Status | DOI |
 |-----|-------------|------|----------|--------|------|
 | 1 | [Inception Report](https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/01_inception_report/Deliverable%201_Inception%20Report_IL01_v1.pdf) | Final RQs, search plan, Gantt chart | Interim | Complete | https://doi.org/10.5281/zenodo.17861055 |
-| 2 | Draft Systematic Map Protocol | Interim Report | Jan 2, 2026 | Complete | https://zenodo.org/records/18369383 |
+| 2 | [Draft Systematic Map Protocol](https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/02_draft_systematic_map_protocol/Deliverable%202_Draft%20Systematic%20Map%20Protocol_v3.pdf) | Interim Report | Jan 2, 2026 | Complete | https://zenodo.org/records/18369383 |
 | 3 | Final Scoping Review / Systematic Map Protocol (CGSpace) | Final Report | Jan 30, 2026 | Not Started | TBD |
 | 4 | Draft Scoping Review + Evidence Database | Interim | Feb 27, 2026 | Not Started | TBD |
 | 5 | Final Scoping Review + Systematic Map + Database | Final | Mar 27, 2026 | Not Started | TBD |
@@ -70,6 +70,9 @@ repo-root/
 │   ├── 01_inception_report/
 │   │   ├── Deliverable 1_Inception Report_IL01_v1.pdf
 │   │   ├── metadata.json
+│   ├── 02_draft_systematic_map_protocol/
+│   │   ├── Deliverable 2_Draft Systematic Map Protocol_v3.pdf
+│   ├── 03_final_systematic_map_protocol/
 ├── environment.yml
 ├── frontend/
 │   ├── next-env.d.ts

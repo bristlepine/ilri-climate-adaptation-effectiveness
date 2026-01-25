@@ -61,8 +61,8 @@ export default function AboutPage() {
 
 <p class="my-3 leading-relaxed">| No. | Deliverable | Type | Due Date | Status | DOI |</p>
 <p class="my-3 leading-relaxed">|-----|-------------|------|----------|--------|------|</p>
-<p class="my-3 leading-relaxed">| 1 | Inception Report | Final RQs, search plan, Gantt chart | Interim | Submitted | &lt;a href=&quot;https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/01_inception_report/Deliverable%201_Inception%20Report_IL01_v1.pdf&quot; class=&quot;text-green underline&quot;&gt;PDF&lt;/a&gt; • &lt;a href=&quot;https://doi.org/10.5281/zenodo.17861055&quot; class=&quot;text-green underline&quot;&gt;DOI&lt;/a&gt; |</p>
-<p class="my-3 leading-relaxed">| 2 | Draft Scoping Review &amp; Systematic Map Protocol | Interim Report | Jan 2, 2026 | In Progress | TBD |</p>
+<p class="my-3 leading-relaxed">| 1 | &lt;a href=&quot;https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/01_inception_report/Deliverable%201_Inception%20Report_IL01_v1.pdf&quot; class=&quot;text-green underline&quot;&gt;Inception Report&lt;/a&gt; | Final RQs, search plan, Gantt chart | Interim | Complete | https://doi.org/10.5281/zenodo.17861055 |</p>
+<p class="my-3 leading-relaxed">| 2 | &lt;a href=&quot;https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/02_draft_systematic_map_protocol/Deliverable%202_Draft%20Systematic%20Map%20Protocol_v3.pdf&quot; class=&quot;text-green underline&quot;&gt;Draft Systematic Map Protocol&lt;/a&gt; | Interim Report | Jan 2, 2026 | Complete | https://zenodo.org/records/18369383 |</p>
 <p class="my-3 leading-relaxed">| 3 | Final Scoping Review / Systematic Map Protocol (CGSpace) | Final Report | Jan 30, 2026 | Not Started | TBD |</p>
 <p class="my-3 leading-relaxed">| 4 | Draft Scoping Review + Evidence Database | Interim | Feb 27, 2026 | Not Started | TBD |</p>
 <p class="my-3 leading-relaxed">| 5 | Final Scoping Review + Systematic Map + Database | Final | Mar 27, 2026 | Not Started | TBD |</p>
@@ -86,6 +86,9 @@ repo-root/
 │   ├── 01_inception_report/
 │   │   ├── Deliverable 1_Inception Report_IL01_v1.pdf
 │   │   ├── metadata.json
+│   ├── 02_draft_systematic_map_protocol/
+│   │   ├── Deliverable 2_Draft Systematic Map Protocol_v3.pdf
+│   ├── 03_final_systematic_map_protocol/
 ├── environment.yml
 ├── frontend/
 │   ├── next-env.d.ts
