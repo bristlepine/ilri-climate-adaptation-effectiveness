@@ -81,10 +81,6 @@ scripts/outputs/
 scripts/outputs_*/
 scripts/outputs_searchstrings/
 
-# Ignore check script(s)
-step10_check.py
-scripts/step10_check.py
-
 # -------------------------------
 # Temporary
 # -------------------------------
