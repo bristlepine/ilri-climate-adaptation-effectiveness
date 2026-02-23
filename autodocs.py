@@ -25,7 +25,7 @@ SECTION_END   = "<!-- AUTO-STRUCTURE:END -->"
 # REPO STRUCTURE
 # ---------------------------------------------------------------------
 
-IGNORE_FILES = {"check.py"}  # add this
+IGNORE_FILES = {"step10_check.py"}  # add this
 
 def indent(level: int) -> str:
     return "│   " * level

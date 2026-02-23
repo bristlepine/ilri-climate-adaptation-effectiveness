@@ -782,10 +782,22 @@ def step2_retrieve_total(config: dict) -> dict:
         except Exception:
             combined_rows = 0
     else:
-        search_cfg = read_yaml(search_strings_yml)
-        _, _, base_q = _build_queries(search_cfg)
+        # Prefer Step 1 exact TOTAL query (guarantees identical limits + syntax)
+        step1_total_query_txt = os.path.join(out_dir, "step1", "step1_total_query.txt")
+
+        base_q = ""
+        if os.path.exists(step1_total_query_txt) and os.path.getsize(step1_total_query_txt) > 0:
+            with open(step1_total_query_txt, "r", encoding="utf-8") as f:
+                base_q = (f.read() or "").strip()
+
         if not base_q:
-            raise SystemExit("[step2] TOTAL__ALL query is empty; check search_strings.yml")
+            # Fallback (should rarely happen): rebuild from YAML
+            search_cfg = read_yaml(search_strings_yml)
+            _, _, base_q = _build_queries(search_cfg)
+
+        if not base_q:
+            raise SystemExit("[step2] TOTAL__ALL query is empty; check Step 1 outputs or search_strings.yml")
+
 
         base_total, _ = scopus_count_only(auth, scopus_search_url, base_q, use_post=use_post, view=view, count_per_page=1)
         print(f"[step2] TOTAL__ALL reported by Scopus: {base_total:,}")

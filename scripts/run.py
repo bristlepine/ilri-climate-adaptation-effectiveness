@@ -21,8 +21,10 @@ import step3_benchmark as step3
 import step4_abstracts as step4
 import step5_eligibility as step5
 import step6_visualize as step6
-import step7_scopus_check as step7  # <--- Added Step 7 Import
-
+import step7_scopus_check as step7  
+import step8_clean_scopus as step8
+import step9_enrich_abstracts as step9
+import step10_check as step10
 
 # ----------------------------
 # Logging setup
@@ -61,7 +63,10 @@ def build_config_dict() -> dict:
         "run_step4": cfg.run_step4,
         "run_step5": cfg.run_step5,
         "run_step6": cfg.run_step6,
-        "run_step7": cfg.run_step7, # <--- Added Step 7 Flag
+        "run_step7": cfg.run_step7,
+        "run_step8": cfg.run_step8,
+        "run_step9": cfg.run_step9,
+        "run_step10": cfg.run_step10,
     }
 
 
@@ -171,6 +176,36 @@ def main() -> None:
         "Check Benchmark vs Scopus",
         "step7_scopus_check",
         resolve_callable(step7, ["run", "main", "run_step7"]),
+        config,
+    )
+
+    # --- Added Step 8 ---
+    run_step(
+        config.get("run_step8", 1),
+        8,
+        "Clean Scopus Results",
+        "step8_clean_scopus",
+        resolve_callable(step8, ["run", "main", "run_step8"]),
+        config,
+    )
+
+    run_step(
+        config.get("run_step9", 1),
+        9,
+        "Abstract enrichment",
+        "step9_enrich_abstracts",
+        resolve_callable(step9, ["run", "main", "run_step9", "step9_enrich_abstracts"]),
+        config,
+    )
+
+
+    # --- Added Step 10 ---
+    run_step(
+        config.get("run_step10", 1),
+        10,
+        "Title/abstract step10_check",
+        "step10_check",
+        resolve_callable(step10, ["run", "main", "run_step10"]),
         config,
     )
 

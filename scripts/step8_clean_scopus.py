@@ -364,6 +364,18 @@ def df_to_ris(df: pd.DataFrame, out_path: str) -> int:
             n += 1
     return n
 
+def load_prev_step8(out_csv: str) -> pd.DataFrame:
+    if os.path.exists(out_csv) and os.path.getsize(out_csv) > 0:
+        try:
+            prev = pd.read_csv(out_csv, engine="python", on_bad_lines="skip")
+            if "dedupe_key" in prev.columns:
+                prev["dedupe_key"] = prev["dedupe_key"].apply(safe_str)
+                prev = prev[prev["dedupe_key"] != ""].copy()
+                return prev
+        except Exception:
+            pass
+    return pd.DataFrame()
+
 
 # ----------------------------
 # Main pipeline
@@ -419,17 +431,47 @@ def step8_clean_scopus(out_dir: str, step2_csv: str, *, use_crossref: bool, cros
 
     after = len(df)
 
+    # ------------------------------------------------------------
+    # Deterministic sync with existing Step8 outputs (default)
+    # - keep previous rows for dedupe_keys still present in new Step2
+    # - only process new dedupe_keys
+    # - drop stale ones automatically (by only keeping keys present in Step2)
+    # ------------------------------------------------------------
+    prev = load_prev_step8(out_csv)
+
+    if not prev.empty:
+        new_keys = set(df["dedupe_key"].tolist())
+        prev_keys = set(prev["dedupe_key"].tolist())
+
+        # Keep old/enriched rows for anything still in Step2 (this is the "skip existing")
+        keep_prev = prev[prev["dedupe_key"].isin(new_keys)].copy()
+
+        # Only process brand-new items from Step2
+        new_only = df[~df["dedupe_key"].isin(prev_keys)].copy()
+
+        keep_prev["_is_new"] = False
+        new_only["_is_new"] = True
+
+        df = pd.concat([keep_prev, new_only], ignore_index=True)
+
+        # Ensure uniqueness, preferring previous rows (so we truly "skip")
+        df = df.drop_duplicates(subset=["dedupe_key"], keep="first").copy()
+    else:
+        df["_is_new"] = True
+
+
     # Optional Crossref repair for missing metadata
     crossref_repaired = 0
     crossref_attempted = 0
 
     if use_crossref:
         # Only attempt when DOI exists and authors/journal/year are weak
-        mask = (df["doi"] != "") & (
+        mask = (df["_is_new"]) & (df["doi"] != "") & (
             (df["publicationName"] == "") |
             (df["year"] == "") |
             ((df["author_names"] == "") & (df["creator"] == ""))
         )
+
         idxs = df[mask].index.tolist()
 
         if crossref_max is not None:
@@ -478,10 +520,11 @@ def step8_clean_scopus(out_dir: str, step2_csv: str, *, use_crossref: bool, cros
 
     # Write cleaned CSV (keep useful columns first, then the rest)
     preferred = [
-    "dedupe_key", "title", "publicationName", "year", "coverDate", "doi", "prism_url",
-    "author_names", "creator", "authors_joined",
-    "xref_authors", "xref_journal", "xref_year", ...
+        "dedupe_key", "title", "publicationName", "year", "coverDate", "doi", "prism_url",
+        "author_names", "creator", "authors_joined",
+        "xref_journal", "xref_year", "xref_volume", "xref_issue", "xref_page", "xref_issn", "xref_abstract",
     ]
+
     cols = [c for c in preferred if c in df.columns] + [c for c in df.columns if c not in preferred]
     df_out = df[cols].copy()
     df_out.to_csv(out_csv, index=False)

@@ -18,10 +18,20 @@ run_step3 = 0  # Match/Enrich Benchmark DOIs
 run_step4 = 0  # Fetch Abstracts (APIs + Scraping)
 run_step5 = 0 # Eligibility Check (Screening)
 run_step6 = 0 # Visualization (HTML Heatmap)
-run_step7 = 1 # Benchmark Check (Stacked Bar Analysis) <--- Enabled
+run_step7 = 0 # Benchmark Check (Stacked Bar Analysis) <--- Enabled
+run_step8 = 0 # Clean Scopus
+run_step9 = 0 # Abstract Enrichment
+run_step10 = 1 # Title/abstract check (Step 10)
 
 # optional convenience list
-runsteps = [i for i, flag in enumerate([run_step1, run_step2, run_step3, run_step4, run_step5, run_step6, run_step7], start=1) if flag]
+runsteps = [
+    i for i, flag in enumerate(
+        [run_step1, run_step2, run_step3, run_step4, run_step5, run_step6, run_step7, run_step8, 
+         run_step9, run_step10],
+        start=1
+    )
+    if flag
+]
 
 # -----------------------------
 # Paths (rooted at scripts/)
