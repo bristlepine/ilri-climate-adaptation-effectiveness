@@ -33,6 +33,7 @@ import re
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from collections import Counter, defaultdict
 
 import pandas as pd
 import requests
@@ -44,13 +45,13 @@ from difflib import SequenceMatcher
 # SETTINGS (deterministic)
 # =============================================================================
 
-CHECK_XLSX = (Path(__file__).resolve().parent / "data" / "calibration_r1_205.xlsx").resolve()
+CHECK_RIS = (Path(__file__).resolve().parent / "data" / "calibration_r1_205.ris.txt").resolve()
 
 # If None -> run all rows, else run first N rows deterministically
-RUN_LIMIT: Optional[int] = 7
+RUN_LIMIT: Optional[int] = None
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-DEFAULT_MODEL = "qwen2.5:7b"
+DEFAULT_MODEL = "qwen2.5:14b"
 TEMPERATURE = 0.0
 OLLAMA_KEEP_ALIVE = "30m"
 OLLAMA_THINK = False
@@ -64,6 +65,70 @@ PRINT_BEFORE_OLLAMA = True
 # =============================================================================
 # Helpers
 # =============================================================================
+
+def _parse_ris_records(text: str) -> List[Dict[str, Any]]:
+    """
+    Minimal RIS parser.
+    Returns list of records as dict(tag -> value or list of values for repeated tags like AU).
+    """
+    records: List[Dict[str, Any]] = []
+    cur: Dict[str, Any] = {}
+    for line in text.splitlines():
+        line = line.rstrip("\n")
+        if line.startswith("ER  -"):
+            if cur:
+                records.append(cur)
+            cur = {}
+            continue
+
+        m = re.match(r"^([A-Z0-9]{2})\s{2}-\s?(.*)$", line)
+        if not m:
+            # continuation line: append to last tag if possible
+            if cur and "_last_tag" in cur:
+                t = cur["_last_tag"]
+                if isinstance(cur.get(t), list):
+                    cur[t][-1] = (cur[t][-1] + " " + line.strip()).strip()
+                else:
+                    cur[t] = (safe_str(cur.get(t)) + " " + line.strip()).strip()
+            continue
+
+        tag, val = m.group(1), m.group(2)
+        val = safe_str(val)
+        cur["_last_tag"] = tag
+
+        # repeated tags become lists (AU, KW, etc.)
+        if tag in cur and tag != "_last_tag":
+            if not isinstance(cur[tag], list):
+                cur[tag] = [cur[tag]]
+            cur[tag].append(val)
+        else:
+            cur[tag] = val
+
+    if cur:
+        records.append(cur)
+    # remove internal helper key
+    for r in records:
+        r.pop("_last_tag", None)
+    return records
+
+
+def _first_tag(rec: Dict[str, Any], tags: List[str]) -> str:
+    for t in tags:
+        v = rec.get(t)
+        if isinstance(v, list):
+            v = v[0] if v else ""
+        v = safe_str(v)
+        if v:
+            return v
+    return ""
+
+
+def _all_tag_join(rec: Dict[str, Any], tag: str, sep: str = "; ") -> str:
+    v = rec.get(tag)
+    if isinstance(v, list):
+        return sep.join([safe_str(x) for x in v if safe_str(x)])
+    return safe_str(v)
+
 
 def safe_str(x: Any) -> str:
     if x is None:
@@ -450,28 +515,59 @@ def load_step9_enriched(path: Path) -> pd.DataFrame:
 # Load calibration Excel
 # =============================================================================
 
-def load_check_data_excel(path: Path) -> pd.DataFrame:
+def load_check_data_ris(path: Path) -> pd.DataFrame:
     if not path.exists() or path.stat().st_size == 0:
-        raise SystemExit(f"Missing calibration Excel: {path}")
+        raise SystemExit(f"Missing calibration RIS: {path}")
 
-    df = pd.read_excel(path, sheet_name=0, engine="openpyxl")
-    if df.empty:
-        raise SystemExit(f"Calibration Excel is empty: {path}")
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    recs = _parse_ris_records(text)
+    if not recs:
+        raise SystemExit(f"No RIS records parsed from: {path}")
 
+    rows: List[Dict[str, Any]] = []
+    for idx, r in enumerate(recs, start=1):
+        # Common RIS tags:
+        # ID/AN = identifier (often numeric in EPPI exports)
+        # TI/T1 = title
+        # PY/Y1 = year/date
+        # DO = DOI
+        # AU = authors (repeatable)
+        # AB = abstract
+        rid = _first_tag(r, ["ID", "AN"])
+        title = _first_tag(r, ["TI", "T1"])
+        year = year_from_any(_first_tag(r, ["PY", "Y1"]))
+        doi = normalize_doi(_first_tag(r, ["DO"]))
+        authors = _all_tag_join(r, "AU")
+
+        abstract = safe_str(r.get("AB", ""))
+
+        # Keep some original-ish columns for traceability
+        rows.append(
+            {
+                "ID": rid,
+                "Title": title,
+                "Year": year,
+                "DOI": doi,
+                "Authors": authors,
+                "Abstract": abstract,
+                "Ref. Type": _first_tag(r, ["TY"]),
+                "_check_row_id": idx,
+            }
+        )
+
+    df = pd.DataFrame(rows)
+    # Preserve "original columns" concept (so your output ordering logic still works)
     df.attrs["original_cols"] = list(df.columns)
 
-    id_col = find_col(df, ["id", "scopus_id", "scopus id", "scopusid", "ID"])
-    title_col = find_col(df, ["title", "dc:title", "Title"])
-    year_col = find_col(df, ["year", "coverDate", "date", "Year"])
-    doi_col = find_col(df, ["doi", "DOI"])
-    author_col = find_col(df, ["author", "authors", "creator", "first author", "ShortTitle"])
+    # Standardize helper fields for matching (same names your code expects)
+    df["_check_scopus_id"] = df["ID"].apply(clean_id_digits)
+    df["_check_title"] = df["Title"].apply(safe_str)
+    df["_check_year"] = df["Year"].apply(year_from_any)
+    df["_check_doi"] = df["DOI"].apply(normalize_doi)
+    df["_check_author_hint"] = df["Authors"].apply(safe_str)
+    df["_check_abstract"] = df["Abstract"].apply(safe_str)
 
-    df["_check_scopus_id"] = df[id_col].apply(clean_id_digits) if id_col else ""
-    df["_check_title"] = df[title_col].apply(safe_str) if title_col else ""
-    df["_check_year"] = df[year_col].apply(year_from_any) if year_col else ""
-    df["_check_doi"] = df[doi_col].apply(normalize_doi) if doi_col else ""
-    df["_check_author_hint"] = df[author_col].apply(safe_str) if author_col else ""
-
+    # Precompute title keys (same as Excel path)
     df["_check_key_doi"] = df["_check_doi"].apply(lambda d: f"doi:{d}" if d else "")
     df["_check_key_ty"] = df.apply(
         lambda r: (
@@ -481,11 +577,11 @@ def load_check_data_excel(path: Path) -> pd.DataFrame:
         ),
         axis=1,
     )
-    df["_check_key_t"] = df["_check_title"].apply(lambda t: f"t:{clean_for_key_title(t)}" if clean_for_key_title(t) else "")
+    df["_check_key_t"] = df["_check_title"].apply(
+        lambda t: f"t:{clean_for_key_title(t)}" if clean_for_key_title(t) else ""
+    )
 
-    df["_check_row_id"] = range(1, len(df) + 1)
     return df
-
 
 # =============================================================================
 # Matching Step9 -> Excel rows
@@ -696,7 +792,14 @@ def apply_ollama_screening(check_df: pd.DataFrame, *, out_root: Path, model: str
 
 
     title_col = "step9__title" if "step9__title" in check_df.columns else "_check_title"
-    abs_col = "step9___abstract_best" if "step9___abstract_best" in check_df.columns else "_check_abstract"
+
+    # Prefer RIS Abstract; fallback to Step9 best; then anything else
+    if "_check_abstract" in check_df.columns:
+        abs_col = "_check_abstract"
+    elif "step9___abstract_best" in check_df.columns:
+        abs_col = "step9___abstract_best"
+    else:
+        abs_col = ""
 
     def _fallback_key(*, i: int, title: str, doi: str) -> str:
         base = f"{i}|{title}|{doi}".encode("utf-8", errors="ignore")
@@ -892,8 +995,9 @@ def apply_ollama_screening(check_df: pd.DataFrame, *, out_root: Path, model: str
                         final = "Exclude"
                         why = "; ".join([r for r in reasons_no if r]) or "Failed one or more criteria"
                     elif "unclear" in decisions:
-                        final = "MAYBE/UNCLEAR"
-                        why = "; ".join([r for r in reasons_unc if r]) or "Unclear on one or more criteria"
+                        # Minimize maybes: include on uncertainty at title/abstract stage
+                        final = "Include"
+                        why = "; ".join([r for r in reasons_unc if r]) or "Included despite some uncertainty"
                     else:
                         final = "Include"
                         why = "Meets all criteria"
@@ -934,69 +1038,178 @@ def apply_ollama_screening(check_df: pd.DataFrame, *, out_root: Path, model: str
 # Write outputs
 # =============================================================================
 
-def write_outputs(out_root: Path, check_df: pd.DataFrame, *, check_xlsx: Path, step9_csv: Path) -> Dict[str, object]:
+def _canonical_decision(x: Any) -> str:
+    v = safe_str(x).strip().lower()
+    if v in ("include",):
+        return "Include"
+    if v in ("exclude",):
+        return "Exclude"
+    if v in ("maybe/unclear", "maybe", "unclear"):
+        return "MAYBE/UNCLEAR"
+    if v == "":
+        return "BLANK"
+    return str(x)
+
+
+def summarize_existing_outputs(*, out_csv: Path) -> Dict[str, Any]:
+    if not out_csv.exists() or out_csv.stat().st_size == 0:
+        return {"error": f"Missing output CSV for summary: {out_csv}"}
+
+    df = pd.read_csv(out_csv, engine="python", on_bad_lines="skip")
+    if df.empty:
+        return {"error": f"Output CSV is empty: {out_csv}"}
+
+    decisions = df["screen_decision"].fillna("").astype(str).apply(_canonical_decision)
+    decision_counts = decisions.value_counts(dropna=False).to_dict()
+
+    # Count excluded criteria by scanning "1_population:" etc in screen_reasons
+    excluded_by_criterion = Counter()
+    model_errors = 0
+    parse_errors = 0
+
+    reasons = df["screen_reasons"].fillna("").astype(str)
+    for d, r in zip(decisions.tolist(), reasons.tolist()):
+        r = r.strip()
+        if "MODEL_ERROR:" in r:
+            model_errors += 1
+        if r.startswith("LLM parse/error:"):
+            parse_errors += 1
+        if d == "Exclude":
+            for m in re.finditer(r"\b([1-5]_[a-zA-Z0-9]+)\s*:", r):
+                excluded_by_criterion[m.group(1)] += 1
+
+    # Missing abstracts (based on screen_reasons == "Missing abstract")
+    missing_mask = reasons.str.strip().eq("Missing abstract")
+    missing_count = int(missing_mask.sum())
+
+    missing_list = []
+    if missing_count:
+        sub = df.loc[missing_mask, ["_check_row_id", "ID", "Title", "DOI"]].copy()
+        for _, row in sub.iterrows():
+            missing_list.append(
+                {
+                    "row_id": int(row.get("_check_row_id")) if str(row.get("_check_row_id", "")).isdigit() else safe_str(row.get("_check_row_id")),
+                    "id": safe_str(row.get("ID")),
+                    "title": safe_str(row.get("Title")),
+                    "doi": safe_str(row.get("DOI")),
+                }
+            )
+
+    return {
+        "rows": int(len(df)),
+        "decision_counts": {k: int(v) for k, v in decision_counts.items()},
+        "excluded_by_criterion": dict(sorted(excluded_by_criterion.items(), key=lambda kv: (-kv[1], kv[0]))),
+        "model_error_count": int(model_errors),
+        "parse_error_count": int(parse_errors),
+        "missing_abstract_count": int(missing_count),
+        "missing_abstract_list": missing_list,
+    }
+def write_outputs(
+    out_root: Path,
+    check_df: pd.DataFrame,
+    *,
+    check_ris: Path,
+    step9_csv: Path,
+    elapsed_seconds: Optional[float] = None,
+) -> Dict[str, object]:
     out_csv, out_meta = check_paths(out_root)
     out_csv.parent.mkdir(parents=True, exist_ok=True)
 
+    # Write CSV (current behavior)
     check_df.to_csv(out_csv, index=False)
 
-    rows_matched = int((check_df["match_source"].astype(str) != "no_match").sum())
-    rows_with_abs = int(check_df["step9___abstract_best"].fillna("").astype(str).str.strip().ne("").sum()) if "step9___abstract_best" in check_df.columns else 0
+    missing_csv = out_csv.parent / "step10_missing_abstracts.csv"
+    missing_mask = check_df.get("screen_reasons", "").fillna("").astype(str).str.strip().eq("Missing abstract")
+    check_df.loc[missing_mask].to_csv(missing_csv, index=False)
+
+    # Summary from the written CSV + JSONL cache
+    jsonl_path = check_jsonl_path(out_root)
+    summary = summarize_existing_outputs(out_csv=out_csv)
 
     meta: Dict[str, object] = {
         "input_step9_csv": str(step9_csv),
-        "input_check_xlsx": str(check_xlsx),
+        "input_check_ris": str(check_ris),
         "output_csv": str(out_csv),
+        "output_meta_json": str(out_meta),
+        "missing_abstracts_csv": str(missing_csv),
         "rows_output": int(len(check_df)),
-        "rows_matched_to_step9": rows_matched,
-        "rows_with_abstract_best": rows_with_abs,
         "timestamp_utc": _now_utc(),
-        "notes": "Step10 matches against Step9 enriched CSV and uses abstract/xref_abstract as best abstract. Ollama preflight fails fast if missing.",
+        "elapsed_seconds": float(elapsed_seconds) if elapsed_seconds is not None else None,
+        "elapsed_hms": (
+            time.strftime("%H:%M:%S", time.gmtime(elapsed_seconds))
+            if elapsed_seconds is not None
+            else None
+        ),
+        "summary": summary,
+        "notes": "Step10 matches against Step9 enriched CSV and uses abstract/xref_abstract as best abstract. Meta includes post-run summary from CSV + JSONL cache.",
     }
+
     with open(out_meta, "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2, ensure_ascii=False)
 
     print(f"[step10] Wrote: {out_csv}")
     print(f"[step10] Wrote: {out_meta}")
-    return meta
 
+    # Optional: show a tiny terminal summary too
+    if isinstance(summary, dict) and "decision_counts" in summary:
+        dc = summary["decision_counts"]
+        print(f"[step10] Summary decisions: {dc}")
+
+    return meta
 
 # =============================================================================
 # Entrypoints
 # =============================================================================
 
 def run(config: dict) -> dict:
+    t_start = time.time()
+
     out_root = Path(safe_str((config or {}).get("out_dir", "")) or "outputs")
     model = safe_str((config or {}).get("ollama_model", "")) or DEFAULT_MODEL
 
     step9_csv = step9_path(out_root)
     step9 = load_step9_enriched(step9_csv)
-    check = load_check_data_excel(CHECK_XLSX)
+    check = load_check_data_ris(CHECK_RIS)
 
     check_df = build_check_table_from_step9(step9=step9, check=check)
     check_df = apply_ollama_screening(check_df, out_root=out_root, model=model, run_limit=RUN_LIMIT)
 
-    return write_outputs(out_root=out_root, check_df=check_df, check_xlsx=CHECK_XLSX, step9_csv=step9_csv)
-
+    elapsed = time.time() - t_start
+    return write_outputs(
+        out_root=out_root,
+        check_df=check_df,
+        check_ris=CHECK_RIS,
+        step9_csv=step9_csv,
+        elapsed_seconds=elapsed,
+    )
 
 def run_check(config: dict) -> dict:
     return run(config)
 
 
 def main() -> int:
+    t_start = time.time()  # <-- ADD THIS
+
     out_root = default_outputs_root()
     model = DEFAULT_MODEL
 
     step9_csv = step9_path(out_root)
     step9 = load_step9_enriched(step9_csv)
-    check = load_check_data_excel(CHECK_XLSX)
+    check = load_check_data_ris(CHECK_RIS)
 
     check_df = build_check_table_from_step9(step9=step9, check=check)
     check_df = apply_ollama_screening(check_df, out_root=out_root, model=model, run_limit=RUN_LIMIT)
 
-    meta = write_outputs(out_root=out_root, check_df=check_df, check_xlsx=CHECK_XLSX, step9_csv=step9_csv)
-    return 0 if meta else 1
+    elapsed = time.time() - t_start  # <-- ADD THIS
 
+    meta = write_outputs(
+        out_root=out_root,
+        check_df=check_df,
+        check_ris=CHECK_RIS,
+        step9_csv=step9_csv,
+        elapsed_seconds=elapsed,  # <-- ADD THIS
+    )
+    return 0 if meta else 1
 
 if __name__ == "__main__":
     raise SystemExit(main())
