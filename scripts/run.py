@@ -25,6 +25,7 @@ import step7_scopus_check as step7
 import step8_clean_scopus as step8
 import step9_enrich_abstracts as step9
 import step10_check as step10
+import step11_analysis as step11
 
 # ----------------------------
 # Logging setup
@@ -67,6 +68,11 @@ def build_config_dict() -> dict:
         "run_step8": cfg.run_step8,
         "run_step9": cfg.run_step9,
         "run_step10": cfg.run_step10,
+        "run_step11": cfg.run_step11,
+
+        "step10_calibration_ris": cfg.step10_calibration_ris,
+        "step10_criteria_yml":    cfg.step10_criteria_yml,
+        "step10_run_label":       cfg.step10_run_label,
     }
 
 
@@ -206,6 +212,16 @@ def main() -> None:
         "Title/abstract step10_check",
         "step10_check",
         resolve_callable(step10, ["run", "main", "run_step10"]),
+        config,
+    )
+
+    # --- Added Step 11 ---
+    run_step(
+        config.get("run_step11", 0),
+        11,
+        "Inter-rater reliability analysis",
+        "step11_analysis",
+        resolve_callable(step11, ["run", "main", "run_step11"]),
         config,
     )
 

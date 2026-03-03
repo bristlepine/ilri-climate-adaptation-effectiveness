@@ -304,7 +304,11 @@ def _build_criteria_prompt(criteria_dict: dict) -> str:
         val = criteria_dict[key] or {}
         prompt_lines.append(f"{val.get('name', key)}:")
         prompt_lines.append(f"   - INCLUDE: {val.get('include','')}")
+        if extra := (val.get("r1_include_further_guidelines") or "").strip():
+            prompt_lines.append(f"     (further guidance: {extra})")
         prompt_lines.append(f"   - EXCLUDE: {val.get('exclude','')}")
+        if extra := (val.get("r1_exclude_further_guidelines") or "").strip():
+            prompt_lines.append(f"     (further guidance: {extra})")
         prompt_lines.append("")
     return "\n".join(prompt_lines).strip()
 
@@ -439,13 +443,15 @@ def step9_path(out_root: Path) -> Path:
     raise SystemExit(f"Missing Step 9 enriched CSV at {p1} or {p2}")
 
 
-def check_paths(out_root: Path) -> Tuple[Path, Path]:
+def check_paths(out_root: Path, run_label: str = "") -> Tuple[Path, Path]:
     d = out_root / "step10"
-    return d / "step10_check.csv", d / "step10_check.meta.json"
+    sfx = f"_{run_label}" if run_label else ""
+    return d / f"step10_check{sfx}.csv", d / f"step10_check{sfx}.meta.json"
 
 
-def check_jsonl_path(out_root: Path) -> Path:
-    return out_root / "step10" / "step10_check_details.jsonl"
+def check_jsonl_path(out_root: Path, run_label: str = "") -> Path:
+    sfx = f"_{run_label}" if run_label else ""
+    return out_root / "step10" / f"step10_check_details{sfx}.jsonl"
 
 
 # =============================================================================
@@ -760,9 +766,17 @@ def build_check_table_from_step9(step9: pd.DataFrame, check: pd.DataFrame) -> pd
 # Apply Ollama screening
 # =============================================================================
 
-def apply_ollama_screening(check_df: pd.DataFrame, *, out_root: Path, model: str, run_limit: Optional[int]) -> pd.DataFrame:
+def apply_ollama_screening(
+    check_df: pd.DataFrame,
+    *,
+    out_root: Path,
+    model: str,
+    run_limit: Optional[int],
+    criteria_yml_path: Optional[Path] = None,
+    run_label: str = "",
+) -> pd.DataFrame:
     here = Path(__file__).resolve().parent
-    criteria_yml = here / "criteria.yml"
+    criteria_yml = criteria_yml_path or (here / "criteria.yml")
     cfg = _load_yaml(criteria_yml)
 
     min_year = int((cfg.get("hard_filters", {}) or {}).get("min_year", 2005))
@@ -781,7 +795,7 @@ def apply_ollama_screening(check_df: pd.DataFrame, *, out_root: Path, model: str
     # FAIL FAST before doing anything expensive
     _ollama_fail_fast(model)
 
-    jsonl_path = check_jsonl_path(out_root)
+    jsonl_path = check_jsonl_path(out_root, run_label)
     jsonl_path.parent.mkdir(parents=True, exist_ok=True)
 
     last_by_key = _load_jsonl_last_by_key(jsonl_path)
@@ -1111,19 +1125,21 @@ def write_outputs(
     check_ris: Path,
     step9_csv: Path,
     elapsed_seconds: Optional[float] = None,
+    run_label: str = "",
 ) -> Dict[str, object]:
-    out_csv, out_meta = check_paths(out_root)
+    out_csv, out_meta = check_paths(out_root, run_label)
     out_csv.parent.mkdir(parents=True, exist_ok=True)
 
     # Write CSV (current behavior)
     check_df.to_csv(out_csv, index=False)
 
-    missing_csv = out_csv.parent / "step10_missing_abstracts.csv"
+    sfx = f"_{run_label}" if run_label else ""
+    missing_csv = out_csv.parent / f"step10_missing_abstracts{sfx}.csv"
     missing_mask = check_df.get("screen_reasons", "").fillna("").astype(str).str.strip().eq("Missing abstract")
     check_df.loc[missing_mask].to_csv(missing_csv, index=False)
 
     # Summary from the written CSV + JSONL cache
-    jsonl_path = check_jsonl_path(out_root)
+    jsonl_path = check_jsonl_path(out_root, run_label)
     summary = summarize_existing_outputs(out_csv=out_csv)
 
     meta: Dict[str, object] = {
@@ -1163,24 +1179,36 @@ def write_outputs(
 
 def run(config: dict) -> dict:
     t_start = time.time()
+    c = config or {}
 
-    out_root = Path(safe_str((config or {}).get("out_dir", "")) or "outputs")
-    model = safe_str((config or {}).get("ollama_model", "")) or DEFAULT_MODEL
+    out_root  = Path(safe_str(c.get("out_dir", "")) or "outputs")
+    model     = safe_str(c.get("ollama_model", "")) or DEFAULT_MODEL
+    run_label = safe_str(c.get("step10_run_label", ""))
+
+    ris_str  = safe_str(c.get("step10_calibration_ris", ""))
+    check_ris = Path(ris_str) if ris_str else CHECK_RIS
+
+    crit_str = safe_str(c.get("step10_criteria_yml", ""))
+    criteria_yml_path = Path(crit_str) if crit_str else None
 
     step9_csv = step9_path(out_root)
     step9 = load_step9_enriched(step9_csv)
-    check = load_check_data_ris(CHECK_RIS)
+    check = load_check_data_ris(check_ris)
 
     check_df = build_check_table_from_step9(step9=step9, check=check)
-    check_df = apply_ollama_screening(check_df, out_root=out_root, model=model, run_limit=RUN_LIMIT)
+    check_df = apply_ollama_screening(
+        check_df, out_root=out_root, model=model, run_limit=RUN_LIMIT,
+        criteria_yml_path=criteria_yml_path, run_label=run_label,
+    )
 
     elapsed = time.time() - t_start
     return write_outputs(
         out_root=out_root,
         check_df=check_df,
-        check_ris=CHECK_RIS,
+        check_ris=check_ris,
         step9_csv=step9_csv,
         elapsed_seconds=elapsed,
+        run_label=run_label,
     )
 
 def run_check(config: dict) -> dict:
@@ -1188,27 +1216,17 @@ def run_check(config: dict) -> dict:
 
 
 def main() -> int:
-    t_start = time.time()  # <-- ADD THIS
-
-    out_root = default_outputs_root()
-    model = DEFAULT_MODEL
-
-    step9_csv = step9_path(out_root)
-    step9 = load_step9_enriched(step9_csv)
-    check = load_check_data_ris(CHECK_RIS)
-
-    check_df = build_check_table_from_step9(step9=step9, check=check)
-    check_df = apply_ollama_screening(check_df, out_root=out_root, model=model, run_limit=RUN_LIMIT)
-
-    elapsed = time.time() - t_start  # <-- ADD THIS
-
-    meta = write_outputs(
-        out_root=out_root,
-        check_df=check_df,
-        check_ris=CHECK_RIS,
-        step9_csv=step9_csv,
-        elapsed_seconds=elapsed,  # <-- ADD THIS
-    )
+    try:
+        import config as _cfg
+        config = {
+            "out_dir":                 str(getattr(_cfg, "out_dir", "outputs")),
+            "step10_calibration_ris":  str(getattr(_cfg, "step10_calibration_ris", str(CHECK_RIS))),
+            "step10_criteria_yml":     str(getattr(_cfg, "step10_criteria_yml", "")),
+            "step10_run_label":        str(getattr(_cfg, "step10_run_label", "")),
+        }
+    except ImportError:
+        config = {}
+    meta = run(config)
     return 0 if meta else 1
 
 if __name__ == "__main__":

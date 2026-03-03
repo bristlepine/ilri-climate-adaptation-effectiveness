@@ -21,13 +21,14 @@ run_step6 = 0 # Visualization (HTML Heatmap)
 run_step7 = 0 # Benchmark Check (Stacked Bar Analysis) <--- Enabled
 run_step8 = 0 # Clean Scopus
 run_step9 = 0 # Abstract Enrichment
-run_step10 = 1 # Title/abstract check (Step 10)
+run_step10 = 0 # Title/abstract check (Step 10)
+run_step11 = 1 # Inter-rater reliability analysis (Step 11)
 
 # optional convenience list
 runsteps = [
     i for i, flag in enumerate(
-        [run_step1, run_step2, run_step3, run_step4, run_step5, run_step6, run_step7, run_step8, 
-         run_step9, run_step10],
+        [run_step1, run_step2, run_step3, run_step4, run_step5, run_step6, run_step7, run_step8,
+         run_step9, run_step10, run_step11],
         start=1
     )
     if flag
@@ -41,6 +42,14 @@ here = os.path.dirname(os.path.abspath(__file__))
 search_strings_yml = os.path.join(here, "search_strings.yml")
 benchmark_csv = os.path.join(here, "Benchmark List - List.csv")
 out_dir = os.path.join(here, "outputs")
+
+# -----------------------------
+# Step 10 inputs / run label
+# -----------------------------
+step10_calibration_ris = os.path.join(here, "data", "calibration_r2_103.ris.txt")
+step10_criteria_yml    = os.path.join(here, "criteria.yml")
+step10_run_label       = "r2"  # appended to all step10 output filenames (e.g. step10_check_r1b.csv)
+                                 # set to "" to use original names (will overwrite previous run)
 
 # -----------------------------
 # Endpoints
