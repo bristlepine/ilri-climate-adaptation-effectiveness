@@ -17,9 +17,6 @@ criteria:
       Purely agronomic or biophysical crop trials where farmers or households are not the unit of
       analysis (i.e., the study focuses only on plants, soils, or crop varieties — not on
       producer-level behavior, adoption, or welfare).
-      Crop variety or germplasm trials where smallholder farmers appear only as statistical
-      background (e.g., area under cultivation figures) but are not the subject of behavioral,
-      adoption, or livelihood analysis.
 
   2_concept:
     name: "CONCEPT (Adaptation)"
@@ -35,16 +32,6 @@ criteria:
       action or process (hazard impact only). General climate-smart agriculture (CSA) discussion
       that describes technologies or concepts but does not evaluate uptake, adoption process, or
       adaptation outcomes. Generic development resilience without any climate framing.
-      Vulnerability assessments (e.g., using Livelihood Vulnerability Index, LVI-IPCC, or similar
-      frameworks) that ONLY quantify exposure, sensitivity, or vulnerability scores without
-      measuring any adaptation action, adoption decision, or adaptation outcome -> EXCLUDE.
-      Key test: does the study measure "what adaptation was done or how effectively?" — if it
-      only measures "how vulnerable is this community?", exclude it.
-      Perception/awareness studies that document what farmers think or know about climate change
-      but do not measure any adoption behavior or adaptation response -> EXCLUDE.
-      Studies measuring how climate variability affects livelihoods, food security, or income
-      without any adaptation intervention, adoption measurement, or adaptive behavior -> EXCLUDE
-      (these are exposure/impact studies, not adaptation studies).
 
   3_context:
     name: "CONTEXT (Ag + Climate Risk)"
@@ -54,10 +41,6 @@ criteria:
       Climate change, climate variability, or specific climate hazards must be explicitly
       referenced as central to the study — not just incidental or background context.
       Adaptation (not just impact assessment) must be central to the study purpose.
-      Agricultural water management studies addressing increasing water scarcity, drought, or
-      salinity under variable/changing climate qualify even if "climate change" is not explicitly
-      named, provided the climate-linked hazard (e.g., groundwater depletion from erratic rainfall,
-      irrigation salinity in arid/semi-arid regions) is clearly described as the driver.
     r1_exclude_further_guidelines: >
       Studies where climate is mentioned only incidentally or as background context with no
       direct link to the agricultural problem being studied. Studies where climate is clearly
@@ -74,12 +57,6 @@ criteria:
       this review maps methods used to MEASURE adaptation — not the technologies themselves. A
       study evaluating 'how adoption is determined' or 'how effective an adaptation strategy is'
       qualifies even if a specific technology is the subject.
-      Narrative or scoping reviews that systematically document and synthesize adaptation
-      practices or adoption patterns across multiple empirical studies -> INCLUDE. The strict
-      exclusion is for purely theoretical or conceptual papers with no empirical grounding at all.
-      Agent-based models (ABMs) that simulate how smallholder farmers make adaptation or adoption
-      decisions, calibrated using survey data or empirical parameters -> INCLUDE (they model
-      adoption/adaptation processes at the producer level).
     r1_exclude_further_guidelines: >
       Pure technology performance modeling: simulates or optimizes how a crop variety or
       technology performs under climate scenarios without assessing producer-level adaptive
@@ -87,9 +64,6 @@ criteria:
       performs' but not 'how adaptation is measured or adopted' -> exclude. Strategy or policy
       documents lacking methodological implementation. Pure predictive adoption modeling without
       empirical measurement context.
-      Biophysical crop models (e.g., DSSAT, APSIM) that project yield under climate scenarios
-      but do not include farmer decision-making, adoption behavior, or adaptation measurement
-      at the household or producer level -> EXCLUDE.
 
   5_geography:
     name: "GEOGRAPHY (LMIC)"
@@ -98,14 +72,4 @@ criteria:
     r1_include_further_guidelines: >
       A clear LMIC rural context can simultaneously satisfy both the geography and population
       criteria. If the study covers multiple countries including both OECD and LMIC, include it.
-      IMPORTANT: China (all provinces and regions — Jiangsu, Shaanxi, Sichuan, northern, southern,
-      coastal zones, etc.) is a middle-income country and QUALIFIES as an LMIC. Do NOT exclude
-      China-based studies on geography grounds. Similarly, Thailand, Iran, Vietnam, Peru, Morocco,
-      Tunisia, and other upper-middle-income countries in Asia, Africa, and Latin America qualify.
-      For multi-country studies that include both LMIC and high-income countries (e.g., Peru +
-      Germany + USA): include at abstract stage if a substantial portion of primary data or main
-      conclusions relate to LMIC settings.
-    r1_exclude_further_guidelines: >
-      Exclude only when ALL study sites are exclusively in high-income OECD countries
-      (USA, Canada, UK, Germany, France, Australia, Japan, South Korea, etc.) with no LMIC
-      component. Do not exclude China or other middle-income Asian/African/Latin American countries.
+    r1_exclude_further_guidelines: ""
