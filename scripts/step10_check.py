@@ -299,16 +299,23 @@ def _load_yaml(path: Path) -> dict:
 
 
 def _build_criteria_prompt(criteria_dict: dict) -> str:
+    import re as _re
+    _guidance_pat = _re.compile(r'^r\d+[a-z]*_(include|exclude)_further_guidelines$')
+
     prompt_lines: List[str] = []
     for key in sorted(criteria_dict.keys()):
         val = criteria_dict[key] or {}
         prompt_lines.append(f"{val.get('name', key)}:")
+        # Base include rule + any r1/r2/r2a/… include guidance in round order
         prompt_lines.append(f"   - INCLUDE: {val.get('include','')}")
-        if extra := (val.get("r1_include_further_guidelines") or "").strip():
-            prompt_lines.append(f"     (further guidance: {extra})")
+        for fk in sorted(k for k in val if _guidance_pat.match(k) and "_include_" in k):
+            if extra := (val[fk] or "").strip():
+                prompt_lines.append(f"     (further guidance: {extra})")
+        # Base exclude rule + any round-specific exclude guidance
         prompt_lines.append(f"   - EXCLUDE: {val.get('exclude','')}")
-        if extra := (val.get("r1_exclude_further_guidelines") or "").strip():
-            prompt_lines.append(f"     (further guidance: {extra})")
+        for fk in sorted(k for k in val if _guidance_pat.match(k) and "_exclude_" in k):
+            if extra := (val[fk] or "").strip():
+                prompt_lines.append(f"     (further guidance: {extra})")
         prompt_lines.append("")
     return "\n".join(prompt_lines).strip()
 

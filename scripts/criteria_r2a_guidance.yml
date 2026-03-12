@@ -1,0 +1,583 @@
+LLM Calibration Addendum
+Supplement to Screening Calibration Guidance
+ Version: Post-Reconciliation (Mar 6 Discussion)
+Purpose
+This addendum supplements the existing Screening Calibration Guidance and is intended specifically to improve alignment between the LLM and the reconciled human screening decisions. It should be read together with the main guidance rather than as a replacement. The goal is to reduce recurring LLM errors in borderline cases where the human reviewers reached consensus after reconciliation.
+The main guidance already defines the core inclusion and exclusion logic for title–abstract screening. This addendum provides additional clarifications based on patterns observed during the second reconciliation process.
+
+Priority Principle for the LLM
+The LLM should prioritize the following question:
+Is this study actually measuring or analyzing adaptation processes or outcomes among relevant producer populations, rather than describing technologies, impacts, reviews, or broad policy/research agendas?
+If the abstract mainly describes:
+a technology,
+
+
+a review of prior literature,
+
+
+climate impacts without actual adaptation analysis,
+
+
+or a broad policy/planning exercise not tied to farmer- or household-level adaptation,
+
+
+the default decision should usually be Exclude.
+
+Addendum Rule 1: Reviews should almost always be excluded
+The LLM has been too likely to include systematic reviews and review-like papers. The human team excluded these unless they were very specifically and centrally about measurement methods themselves.
+Reviews of adaptation technologies, reviews of CSA adoption, reviews of ICT initiatives, and similar review papers should be excluded.
+LLM decision rule
+Exclude if the abstract identifies the paper as:
+a systematic review
+
+
+a review
+
+
+a review of academic or gray literature
+
+
+a meta-analysis
+
+
+an opinion piece
+
+
+unless the abstract makes clear that the central object of study is adaptation measurement methods themselves.
+Specific clarification
+A review of adoption, CSA practices, technologies, or interventions is not sufficient for inclusion. The study must specifically review methods used to measure adaptation.
+
+Addendum Rule 2: Policy- and planning-level decision support pieces should usually be excluded
+The LLM appears to over-include papers that sound methodological because they use tools such as cost-benefit analysis. However, if the paper uses such tools to advise governments or broad policy actors rather than measuring farmer or household adaptation, it should be excluded.
+LLM decision rule
+Exclude if the abstract mainly evaluates or recommends:
+national or regional planning pathways
+
+
+public investment programs
+
+
+government policy priorities
+
+
+broad stakeholder decision frameworks
+
+
+and does not clearly demonstrate farmer-, household-, or community-level measurement of adaptation processes or outcomes.
+
+Addendum Rule 3: Technology papers remain out, even if adaptation language is used
+The LLM still tends to over-include papers on the performance, development, or deployment of technologies. The human reviewers consistently excluded papers that evaluated technologies themselves rather than examining how people use them or how adaptation is measured.
+LLM decision rule
+Exclude if the abstract is primarily about:
+crop or variety trials
+
+
+aquaculture system trials
+
+
+performance of storage, cooling, or irrigation technologies
+
+
+research station experiments
+
+
+development or deployment of a technology
+
+
+pilot testing of a technology
+
+
+claims that a system “emerged as a potentially climate-resilient system”
+
+
+Key distinction
+Include only if the paper clearly studies:
+uptake or adoption
+
+
+determinants of use
+
+
+adaptation behavior
+
+
+adaptation outcomes
+
+
+or measurement of adaptation among producers or households.
+
+
+Do not include a study simply because it describes a technology as “climate resilient” or an “adaptation strategy.”
+
+Addendum Rule 4: Vulnerability papers should be included only when they also assess adaptation or adaptive capacity
+The LLM appears to under-include some vulnerability papers that human reviewers included. Vulnerability studies were included when they clearly assessed adaptation strategies, adaptation measures, adaptive capacity, livelihood responses, or coping responses.
+They were excluded when vulnerability or poverty was the dominant focus and adaptation was vague or incidental.
+LLM decision rule
+Include vulnerability papers when the abstract explicitly states that the study examines:
+adaptation measures implemented
+
+
+adaptation strategies
+
+
+adaptive capacity
+
+
+livelihood responses
+
+
+coping or anticipatory responses
+
+
+farmer responses to climate risk.
+
+
+Exclude vulnerability papers when the abstract mainly focuses on:
+poverty
+
+
+food insecurity
+
+
+generalized vulnerability
+
+
+climate impacts
+
+
+without clearly assessing adaptation processes or outcomes.
+
+Addendum Rule 5: Qualitative and anthropological studies can be included even without an external intervention
+The LLM should not assume that a study must include an externally introduced intervention. Autonomous or farmer-led adaptation also qualifies.
+A qualitative case study can be included if it examines adaptation strategies, responses, or behaviors in response to climate stressors.
+LLM decision rule
+Do not exclude a study simply because:
+there is no project intervention
+
+
+the study is qualitative
+
+
+the study is anthropological
+
+
+the study is descriptive in method.
+
+
+Include when the abstract clearly indicates that the study examines:
+adaptation strategies
+
+
+farmer or pastoralist responses
+
+
+adaptation behavior
+
+
+management responses to climate stress.
+
+
+
+Addendum Rule 6: Climate context must be explicit
+The LLM has sometimes over-included studies that use terms such as resilience, adaptive livelihoods, or environmental stress without clearly linking them to climate change.
+LLM decision rule
+Exclude if the abstract does not explicitly reference:
+climate change
+
+
+climate variability
+
+
+drought
+
+
+flooding
+
+
+extreme weather
+
+
+or other climate-related stressors.
+
+
+Do not infer climate adaptation from generic terms such as resilience or environmental change.
+
+Addendum Rule 7: Smallholder population must be plausible
+The LLM should be cautious when the abstract clearly refers to commercial agriculture or large-scale producers.
+LLM decision rule
+Exclude if the population clearly consists of:
+commercial growers
+
+
+large commercial farms
+
+
+non-smallholder production systems.
+
+
+Include when the population is mixed or unclear and a smallholder context remains plausible.
+
+Addendum Rule 8: A single sentence mentioning adaptation should not override the rest of the abstract
+Some abstracts mention adaptation briefly even though the paper primarily analyzes impacts, technologies, or environmental trends.
+LLM decision rule
+Exclude when:
+adaptation appears only briefly in the abstract,
+
+
+and the study mainly focuses on climate impacts, environmental trends, or technological performance.
+
+
+Adaptation must be part of the actual analysis, not simply mentioned as a motivation.
+
+Addendum Rule 9: Poorly written abstracts may still be eligible
+Some studies may be poorly written but still contain the required signals for inclusion.
+LLM decision rule
+Do not exclude a study solely because the abstract is poorly written or grammatically weak.
+If the abstract still clearly signals:
+climate adaptation context,
+
+
+relevant producer population,
+
+
+and examination of adaptation strategies or adaptive capacity,
+
+
+then it should be included.
+
+LLM Tie-Breaker Logic
+When uncertain, apply the following priority order:
+Explicit climate adaptation context
+
+
+Relevant smallholder or low-income producer population
+
+
+Adaptation processes or outcomes assessed
+
+
+Measurement or analysis of those processes or outcomes
+
+
+Not primarily a review, technology paper, impact-only study, or policy piece.
+
+
+If criteria 1 through 4 are present and criterion 5 is not violated, include.
+If criterion 5 is clearly violated, exclude.
+
+Compact LLM Checklist
+Before assigning Include, the LLM should verify the following:
+The abstract explicitly references climate risk, climate change, or climate hazards.
+
+
+The population plausibly includes smallholder or low-income producers.
+
+
+The study examines adaptation strategies, responses, uptake, adaptive capacity, or adaptation outcomes.
+
+
+The study is primary empirical research or a clearly relevant methodological study.
+
+
+The study is not primarily a review, policy note, opinion piece, technology trial, or impact-only study.
+
+
+If the final condition is violated, the study should usually be excluded.
+
+-----
+
+LLM Screening Prompt Block
+When screening a title and abstract, determine whether the study should be Included or Excluded based on the following rules:
+Include only studies that explicitly analyze climate adaptation processes or outcomes among agricultural producers.
+
+
+The study must reference climate change, climate variability, or climate hazards (e.g., drought, flooding, extreme weather); do not infer climate relevance from words like “resilience” alone.
+
+
+The population must plausibly include smallholder, subsistence, or low-income agricultural producers; exclude studies focused on commercial or large-scale farms.
+
+
+Include studies that measure or analyze adaptation, such as adaptation strategies, uptake/adoption of practices, determinants of adoption, adaptive capacity, coping responses, or adaptation outcomes.
+
+
+Exclude review papers, systematic reviews, meta-analyses, opinion pieces, or literature syntheses unless the review specifically examines methods used to measure adaptation.
+
+
+Exclude technology or agronomic performance studies, such as variety trials, system trials, technology pilots, or technical performance modeling, unless they analyze adoption, behavior, or adaptation outcomes among producers.
+
+
+Exclude climate impact-only studies that assess effects of climate hazards but do not analyze adaptation actions or responses.
+
+
+Exclude policy or planning analyses aimed primarily at national or regional decision-makers if they do not measure farmer or household adaptation processes.
+
+
+Include qualitative or case studies if they examine real adaptation behavior or strategies among producers, even without a formal intervention.
+
+
+If adaptation is mentioned only briefly but the study mainly analyzes impacts, technology performance, or environmental change, exclude.
+
+
+Decision rule:
+ Include only when the abstract clearly shows climate context + relevant producer population + analysis of adaptation processes or outcomes.
+
+
+
+-----
+
+Language for the methods section: “Following an initial round of double screening, the review team conducted structured calibration and reconciliation discussions to improve consistency in the application of eligibility criteria. These meetings were held on 23 February, 26 February, and 27 February 2026, during which disagreements were reviewed and operational decision rules were formalized (see Annex X. Screening Calibration and Operational Decision Rules).
+
+After a subsequent screening round, a second reconciliation discussion was held on 6 March 2026, where the team reviewed the remaining disagreements and cases where an LLM-assisted screening process diverged from the human reviewers. Additional operational clarifications were documented to further refine the interpretation of borderline cases and improve screening consistency (see Annex X Addendum).
+Annex X. Screening Calibration and Operational Decision Rules
+Title–Abstract Screening Stage
+Purpose
+Following an initial consistency check of title–abstract screening decisions, the review team conducted structured reconciliation discussions to clarify interpretation of the eligibility criteria. These discussions aimed to improve inter-rater reliability and ensure consistent operationalization of the review’s Population–Concept–Context–Methodological Focus (PCCM) framework.
+This annex documents the operational decision rules agreed upon during reconciliation. These rules do not modify the original eligibility criteria; rather, they clarify how the criteria are to be interpreted and applied during screening.
+
+Guiding Principle
+This systematic map focuses on methods used to measure, evaluate, or analyze climate adaptation processes and outcomes for smallholder agricultural producers.
+The review maps measurement approaches, not adaptation technologies per se and not climate impacts alone.
+
+Operational Inclusion Rules
+At title–abstract stage, a study should be included if all of the following conditions are met:
+1. Climate Adaptation Context
+Climate change, climate variability, or specific climate hazards (e.g., drought, heat, flooding, extreme rainfall) are explicitly referenced; and
+
+
+Adaptation is central to the study, not incidental or mentioned only in background.
+
+
+Studies in which climate is referenced only in introductory framing, without connection to measured processes or outcomes, are excluded.
+
+2. Smallholder Agricultural Producers
+The study focuses on smallholder farmers or equivalent producer categories; or
+
+
+The study clearly concerns rural agricultural producers in low- or middle-income country contexts where small-scale production is implicit.
+
+
+Mixed samples (small and larger producers) are retained at abstract stage unless clearly dominated by large commercial operations.
+Purely agronomic or biophysical crop trials without producer-level relevance are excluded.
+
+3. Measurement of Adaptation Processes or Outcomes
+The study must measure or analyze at least one of the following:
+Adaptation outcomes (e.g., yield under climate stress, income stability, vulnerability reduction, adaptive capacity, resilience linked to climate hazards);
+
+
+Implementation or effectiveness of an adaptation intervention;
+
+
+Adoption or uptake of adaptation technologies or practices;
+
+
+Determinants of adoption or uptake of adaptation technologies or practices.
+
+
+Clarification:
+ Studies identifying determinants of uptake are considered to be measuring an adaptation process and are therefore included.
+Descriptive reporting of adoption rates also qualifies as tracking adaptation processes.
+
+4. Application of a Measurement Method
+The study must apply or analyze a method used to measure adaptation processes or outcomes. This includes:
+Indicator-based assessments;
+
+
+Evaluation frameworks;
+
+
+Statistical or econometric analyses of adaptation outcomes or adoption;
+
+
+Participatory vulnerability or resilience assessments linked to climate hazards;
+
+
+Empirical evaluations of adaptation interventions.
+
+
+The review maps methodological approaches to measurement. Studies that only describe technologies, practices, or adaptation strategies without evaluating or measuring them are excluded.
+
+Operational Exclusion Rules
+A study is excluded at title–abstract stage if any of the following apply:
+1. Pure Technology Performance Modeling
+The study simulates, models, or optimizes performance of a crop, input, or technology under climate scenarios;
+
+
+The focus is on technical efficiency or agronomic response without assessing adaptive behavior or measuring adaptation processes or outcomes.
+
+
+Clarification:
+ If the study models “how the technology performs” but does not measure “how adaptation is assessed or evaluated,” it is excluded.
+
+2. Hazard Impact Only
+The study measures impacts of climate hazards on crops, production, or income;
+
+
+No adaptation action or adaptation process is evaluated.
+
+
+
+3. Conceptual or Framework-Only Studies
+The study presents conceptual frameworks or indicator sets without empirical application;
+
+
+The study is a policy or strategy document lacking applied methodological detail.
+
+
+
+4. General Adaptation or CSA Discussion Without Measurement
+The study discusses climate-smart agriculture or adaptation conceptually;
+
+
+No uptake, implementation, outcome, or measurement method is assessed.
+
+
+
+Borderline Clarifications
+The following clarifications were agreed upon to improve consistency:
+Determinants of adoption are considered adaptation process measurement and are included.
+
+
+Descriptive reporting of adoption rates qualifies as process tracking and is included.
+
+
+Predictive modeling of technology performance without measurement of adaptation processes or outcomes is excluded.
+
+
+Resilience studies are included only if resilience is explicitly linked to climate hazards and measured empirically.
+
+
+Generic development resilience studies without climate framing are excluded.
+
+
+
+Screening Heuristic
+At title–abstract stage, reviewers apply the following decision test:
+Does this study use a method to measure or analyze how smallholder agricultural producers adapt to climate risks?
+If yes → include.
+ If clearly no → exclude.
+ If unclear → retain for full-text screening.
+
+Role in Consistency Checking
+These operational rules were formalized after initial double-screening and reconciliation discussions among reviewers. They guide subsequent screening rounds and will be referenced when reporting consistency statistics in the final review.
+Annex X Addendum
+Additional Operational Clarifications Following Second Reconciliation
+Following a second consistency check and reconciliation exercise, the review team conducted an additional round of calibration discussions to further improve screening consistency and align interpretation of borderline cases. These discussions occurred after a subsequent batch of title–abstract screening, during which inter-rater agreement between human reviewers exceeded a kappa score of 0.7.
+The clarifications below refine the operational rules already described in this annex. They do not change the eligibility criteria but further specify how they should be interpreted during title–abstract screening.
+
+Additional Clarification 1: Review Articles
+Review papers should generally be excluded.
+This includes studies identified as:
+literature reviews
+
+
+systematic reviews
+
+
+meta-analyses
+
+
+syntheses of academic and grey literature
+
+
+unless the central focus of the review is methods used to measure climate adaptation.
+Reviews of adaptation technologies, climate-smart agriculture practices, ICT initiatives, or adaptation interventions do not meet the inclusion criteria unless they explicitly analyze or compare measurement approaches.
+
+Additional Clarification 2: Policy and Planning Analyses
+Studies focused primarily on policy planning, national strategies, or broad stakeholder decision-making processes should be excluded unless they clearly measure adaptation processes or outcomes among producer populations.
+Examples typically excluded include:
+national or regional adaptation planning frameworks
+
+
+cost–benefit analyses used for policy prioritization
+
+
+strategic investment or planning tools aimed primarily at government or institutional actors.
+
+
+Inclusion requires clear measurement or analysis of farmer- or household-level adaptation behavior or outcomes.
+
+Additional Clarification 3: Technology and System Performance Studies
+Studies that evaluate the technical performance of technologies or production systems should be excluded unless they examine adaptation behavior among producers.
+Examples include:
+crop or variety trials
+
+
+aquaculture or agricultural system trials
+
+
+pilot testing of technologies
+
+
+research-station experiments
+
+
+modeling of technical performance under climate scenarios.
+
+
+Such studies are excluded even if the technology is described as climate-resilient or an adaptation strategy.
+Studies are included only when they analyze:
+uptake or adoption of practices
+
+
+determinants of adoption
+
+
+adaptation behavior
+
+
+or adaptation outcomes among producers.
+
+
+
+Additional Clarification 4: Vulnerability Studies
+Vulnerability studies may be included when they explicitly analyze adaptation responses or adaptive capacity.
+Examples of acceptable adaptation-related measures include:
+adaptation strategies implemented
+
+
+coping or anticipatory responses
+
+
+adaptive capacity indicators
+
+
+livelihood responses to climate stress.
+
+
+Vulnerability studies should be excluded when the primary focus is:
+poverty or development vulnerability
+
+
+food insecurity
+
+
+climate impacts
+
+
+without assessing adaptation processes or responses.
+
+Additional Clarification 5: Qualitative and Autonomous Adaptation Studies
+Studies examining autonomous or farmer-led adaptation responses may be included even when no formal intervention or project is present.
+Qualitative, ethnographic, or case-study research may therefore be included when it clearly examines:
+adaptation strategies
+
+
+management responses to climate stress
+
+
+behavioral responses to climate variability.
+
+
+
+Additional Clarification 6: Explicit Climate Context
+Climate context must be explicit in the abstract.
+Studies should be excluded when climate relevance is only implied through general terms such as resilience, environmental change, or livelihood stress without clear reference to climate change, climate variability, or climate hazards.
+
+Additional Clarification 7: Producer Population
+Studies should be excluded when the population clearly consists of large-scale commercial producers or commercial agriculture systems.
+Studies with mixed or unclear populations may be retained at title–abstract stage when smallholder participation remains plausible.
+
+Additional Clarification 8: Incidental Mentions of Adaptation
+Studies should not be included solely because adaptation is mentioned briefly in the abstract.
+When the primary focus of the study concerns climate impacts, environmental change, or technological performance rather than analysis of adaptation processes or outcomes, the study should be excluded.
+
