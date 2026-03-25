@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-step4_abstracts.py
+step4_fetch_abstracts.py
 
 Step 4 (Abstracts):
   - Reads outputs/step3/step3_benchmark_list.csv

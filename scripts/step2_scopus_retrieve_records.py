@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-step2_retrieve.py
+step2_scopus_retrieve_records.py
 
 Step 2 (retrieve TOTAL__ALL records; streaming):
   - Avoid deep paging limits by slicing TOTAL query into PUBYEAR ranges (<= DEEP_PAGING_LIMIT)

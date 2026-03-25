@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-step3_benchmark.py
+step3_benchmark_match.py
 
 Step 3 (benchmark prep + DOI enrichment):
   - Load benchmark CSV (config.benchmark_csv)

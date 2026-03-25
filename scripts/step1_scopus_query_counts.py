@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-step1_counts.py
+step1_scopus_query_counts.py
 
 Step 1 (counts only):
 - Build subgroup queries + element aggregates + TOTAL combined query from search_strings.yml

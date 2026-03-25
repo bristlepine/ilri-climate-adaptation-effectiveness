@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-step12_screen_full.py
+step12_screen_abstracts.py
 
-Step 12: Full-corpus LLM screening using criteria.yml.
+Step 12: Full-corpus LLM abstract screening using criteria.yml.
 
 Reads the step9a enriched CSV (full list) and applies Ollama-based
 eligibility screening to every record that has an abstract.

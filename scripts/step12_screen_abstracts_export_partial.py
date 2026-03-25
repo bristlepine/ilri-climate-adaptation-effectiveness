@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-step12_export_partial.py
+step12_screen_abstracts_export_partial.py
 
-Export a partial step12_results.csv from the JSONL cache while step12 is
-still running. Safe to run at any time — read-only access to the cache.
+Export a partial step12_results.csv from the JSONL cache while step12_screen_abstracts
+is still running. Safe to run at any time — read-only access to the cache.
 
 Usage:
-    python step12_export_partial.py
+    python step12_screen_abstracts_export_partial.py
 
 Writes:
     outputs/step12/step12_results_partial.csv

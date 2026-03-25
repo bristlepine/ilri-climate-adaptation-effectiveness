@@ -26,12 +26,16 @@ run_step10 = 0 # Title/abstract check (Step 10)
 run_step11 = 0 # Inter-rater reliability analysis (Step 11)
 run_step12 = 1 # Full-corpus screening (Step 12)
 run_step13 = 0 # Full-text retrieval (Step 13)
+run_step14 = 0 # Full-text screening (Step 14)
+run_step15 = 0 # Data extraction / coding (Step 15)
+run_step16 = 0 # Systematic map visualisations (Step 16)
 
 # optional convenience list
 runsteps = [
     i for i, flag in enumerate(
         [run_step1, run_step2, run_step3, run_step4, run_step5, run_step6, run_step7, run_step8,
-         run_step9, run_step9a, run_step10, run_step11, run_step12, run_step13],
+         run_step9, run_step9a, run_step10, run_step11, run_step12, run_step13,
+         run_step14, run_step15, run_step16],
         start=1
     )
     if flag
@@ -71,6 +75,24 @@ step12_run_limit    = None        # None = all rows; set int for partial run
 # Step 13 inputs
 # -----------------------------
 step13_run_limit    = None        # None = all included rows; set int for partial run
+
+# -----------------------------
+# Step 14 inputs
+# -----------------------------
+step14_criteria_yml = os.path.join(here, "criteria.yml")
+step14_model        = ""          # leave blank to use DEFAULT_MODEL in step14
+step14_run_limit    = None        # None = all rows
+
+# -----------------------------
+# Step 15 inputs
+# -----------------------------
+step15_model        = ""          # leave blank to use DEFAULT_MODEL in step15
+step15_run_limit    = None        # None = all rows
+
+# -----------------------------
+# Step 16 inputs
+# -----------------------------
+# (no additional settings required yet)
 
 # -----------------------------
 # Endpoints

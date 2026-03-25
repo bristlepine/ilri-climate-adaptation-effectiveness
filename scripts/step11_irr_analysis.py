@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-step11_analysis.py
+step11_irr_analysis.py
 
 Step 11: Inter-rater reliability analysis for calibration rounds.
 

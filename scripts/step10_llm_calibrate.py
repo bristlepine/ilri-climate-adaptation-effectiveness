@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-step10_check.py
+step10_llm_calibrate.py
 
 Step 10: Check Eligibility + Ollama (Step9 matching + fail-fast Ollama preflight + progress logs)
 

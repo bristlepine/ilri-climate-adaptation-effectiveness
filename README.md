@@ -80,21 +80,21 @@ repo-root/
 │   ├── scopus.py                      # Scopus API wrapper
 │   ├── search_strings.yml             # Boolean search strings by database
 │   │
-│   ├── step1_counts.py                # Query Scopus for record counts
-│   ├── step2_retrieve.py              # Download full Scopus record set
-│   ├── step3_benchmark.py             # Benchmark against known-relevant papers
-│   ├── step4_abstracts.py             # Retrieve missing abstracts (multi-source)
-│   ├── step5_eligibility.py           # Rule-based pre-filter
-│   ├── step6_visualize.py             # Descriptive plots of raw corpus
-│   ├── step7_scopus_check.py          # Validate Scopus metadata completeness
-│   ├── step8_dedupe.py                # Deduplication across sources
-│   ├── step9_merge.py                 # Merge and consolidate records
-│   ├── step9a_enrich_from_ris.py      # Enrich corpus from EPPI-exported RIS files
-│   ├── step10_check.py                # LLM calibration screening (sample)
-│   ├── step11_irr.py                  # Inter-rater reliability analysis
-│   ├── step12_screen_full.py          # LLM full-corpus abstract screening (~17k)
-│   ├── step12_export_partial.py       # Export partial results from cache mid-run
-│   ├── step13_retrieve_fulltext.py    # Full-text retrieval (Unpaywall/Elsevier/S2/OA)
+│   ├── step1_scopus_query_counts.py         # Query Scopus for record counts
+│   ├── step2_scopus_retrieve_records.py     # Download full Scopus record set
+│   ├── step3_benchmark_match.py             # Benchmark against known-relevant papers
+│   ├── step4_fetch_abstracts.py             # Retrieve missing abstracts (multi-source)
+│   ├── step5_eligibility.py                 # Rule-based pre-filter
+│   ├── step6_visualize.py                   # Descriptive plots of raw corpus
+│   ├── step7_scopus_check.py                # Validate Scopus metadata completeness
+│   ├── step8_clean_scopus.py                # Deduplication and cleaning
+│   ├── step9_enrich_abstracts.py            # Merge and enrich abstracts
+│   ├── step9a_enrich_from_ris.py            # Enrich corpus from EPPI-exported RIS files
+│   ├── step10_llm_calibrate.py              # LLM calibration screening (sample set)
+│   ├── step11_irr_analysis.py               # Inter-rater reliability analysis
+│   ├── step12_screen_abstracts.py           # LLM full-corpus abstract screening (~17k)
+│   ├── step12_screen_abstracts_export_partial.py  # Export partial results from cache mid-run
+│   ├── step13_retrieve_fulltext.py          # Full-text retrieval (Unpaywall/Elsevier/S2/OA)
 │   │
 │   ├── data/                          # Input data files (RIS exports, calibration sets)
 │   └── results/                       # EPPI Reviewer exports and intermediate outputs
@@ -116,19 +116,19 @@ All steps are resume-safe via JSONL caching. Long-running steps (10, 12, 13) can
 
 | Step | Script | Description | Status |
 |------|--------|-------------|--------|
-| 1 | `step1_counts.py` | Scopus query counts | Complete |
-| 2 | `step2_retrieve.py` | Download Scopus corpus | Complete |
-| 3 | `step3_benchmark.py` | Benchmark against known papers | Complete |
-| 4 | `step4_abstracts.py` | Retrieve missing abstracts | Complete |
+| 1 | `step1_scopus_query_counts.py` | Scopus query counts | Complete |
+| 2 | `step2_scopus_retrieve_records.py` | Download Scopus corpus | Complete |
+| 3 | `step3_benchmark_match.py` | Benchmark against known papers | Complete |
+| 4 | `step4_fetch_abstracts.py` | Retrieve missing abstracts | Complete |
 | 5 | `step5_eligibility.py` | Rule-based pre-filter | Complete |
 | 6 | `step6_visualize.py` | Descriptive corpus plots | Complete |
 | 7 | `step7_scopus_check.py` | Metadata validation | Complete |
-| 8 | `step8_dedupe.py` | Deduplication | Complete |
-| 9 | `step9_merge.py` | Record consolidation | Complete |
+| 8 | `step8_clean_scopus.py` | Deduplication and cleaning | Complete |
+| 9 | `step9_enrich_abstracts.py` | Record consolidation and abstract enrichment | Complete |
 | 9a | `step9a_enrich_from_ris.py` | Enrich from EPPI RIS exports | Complete |
-| 10 | `step10_check.py` | LLM calibration screening | Complete |
-| 11 | `step11_irr.py` | Inter-rater reliability | Complete |
-| 12 | `step12_screen_full.py` | LLM full-corpus screening (17,021 records → 4,892 Include, 1,314 missing abstract, 10,815 Exclude) | Complete |
+| 10 | `step10_llm_calibrate.py` | LLM calibration screening | Complete |
+| 11 | `step11_irr_analysis.py` | Inter-rater reliability | Complete |
+| 12 | `step12_screen_abstracts.py` | LLM full-corpus abstract screening (17,021 records → 4,892 Include, 1,314 missing abstract, 10,815 Exclude) | Complete |
 | 13 | `step13_retrieve_fulltext.py` | Full-text retrieval for included records | Pending |
 | 14 | _(planned)_ | Full-text screening | Planned |
 | 15 | _(planned)_ | Data extraction and coding | Planned |

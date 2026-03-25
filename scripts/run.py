@@ -15,20 +15,23 @@ from dotenv import load_dotenv
 
 import config as cfg
 
-import step1_counts as step1
-import step2_retrieve as step2
-import step3_benchmark as step3
-import step4_abstracts as step4
+import step1_scopus_query_counts as step1
+import step2_scopus_retrieve_records as step2
+import step3_benchmark_match as step3
+import step4_fetch_abstracts as step4
 import step5_eligibility as step5
 import step6_visualize as step6
-import step7_scopus_check as step7  
+import step7_scopus_check as step7
 import step8_clean_scopus as step8
 import step9_enrich_abstracts as step9
 import step9a_enrich_from_ris as step9a
-import step10_check as step10
-import step11_analysis as step11
-import step12_screen_full as step12
+import step10_llm_calibrate as step10
+import step11_irr_analysis as step11
+import step12_screen_abstracts as step12
 import step13_retrieve_fulltext as step13
+import step14_screen_fulltext as step14
+import step15_extract_data as step15
+import step16_map_visualise as step16
 
 # ----------------------------
 # Logging setup
@@ -88,6 +91,17 @@ def build_config_dict() -> dict:
 
         "run_step13":       cfg.run_step13,
         "step13_run_limit": cfg.step13_run_limit,
+
+        "run_step14":        cfg.run_step14,
+        "step14_criteria_yml": cfg.step14_criteria_yml,
+        "step14_model":      cfg.step14_model,
+        "step14_run_limit":  cfg.step14_run_limit,
+
+        "run_step15":        cfg.run_step15,
+        "step15_model":      cfg.step15_model,
+        "step15_run_limit":  cfg.step15_run_limit,
+
+        "run_step16":        cfg.run_step16,
     }
 
 
@@ -139,8 +153,8 @@ def main() -> None:
     run_step(
         config.get("run_step1", 1),
         1,
-        "Counts only",
-        "step1_counts",
+        "Scopus query counts",
+        "step1_scopus_query_counts",
         resolve_callable(step1, ["run", "main", "run_step1", "step1_counts_only"]),
         config,
     )
@@ -148,8 +162,8 @@ def main() -> None:
     run_step(
         config.get("run_step2", 1),
         2,
-        "Retrieve TOTAL__ALL records",
-        "step2_retrieve",
+        "Scopus retrieve records",
+        "step2_scopus_retrieve_records",
         resolve_callable(step2, ["run", "main", "run_step2", "run_step1b_retrieve_total", "step2_retrieve_total"]),
         config,
     )
@@ -157,8 +171,8 @@ def main() -> None:
     run_step(
         config.get("run_step3", 1),
         3,
-        "Benchmark DOI match",
-        "step3_benchmark",
+        "Benchmark match",
+        "step3_benchmark_match",
         resolve_callable(step3, ["run", "main", "run_step3", "step3_benchmark_match"]),
         config,
     )
@@ -167,7 +181,7 @@ def main() -> None:
         config.get("run_step4", 1),
         4,
         "Fetch abstracts",
-        "step4_abstracts",
+        "step4_fetch_abstracts",
         resolve_callable(step4, ["run", "main", "run_step4", "step4_fetch_abstracts"]),
         config,
     )
@@ -228,43 +242,66 @@ def main() -> None:
         config,
     )
 
-    # --- Added Step 10 ---
     run_step(
         config.get("run_step10", 1),
         10,
-        "Title/abstract step10_check",
-        "step10_check",
+        "LLM calibration screening",
+        "step10_llm_calibrate",
         resolve_callable(step10, ["run", "main", "run_step10"]),
         config,
     )
 
-    # --- Added Step 11 ---
     run_step(
         config.get("run_step11", 0),
         11,
         "Inter-rater reliability analysis",
-        "step11_analysis",
+        "step11_irr_analysis",
         resolve_callable(step11, ["run", "main", "run_step11"]),
         config,
     )
 
-    # --- Added Step 12 ---
     run_step(
         config.get("run_step12", 0),
         12,
-        "Full-corpus screening",
-        "step12_screen_full",
+        "Full-corpus abstract screening",
+        "step12_screen_abstracts",
         resolve_callable(step12, ["run", "main", "run_step12"]),
         config,
     )
 
-    # --- Added Step 13 ---
     run_step(
         config.get("run_step13", 0),
         13,
         "Full-text retrieval",
         "step13_retrieve_fulltext",
         resolve_callable(step13, ["run", "main", "run_step13"]),
+        config,
+    )
+
+    run_step(
+        config.get("run_step14", 0),
+        14,
+        "Full-text screening",
+        "step14_screen_fulltext",
+        resolve_callable(step14, ["run", "main", "run_step14"]),
+        config,
+    )
+
+    run_step(
+        config.get("run_step15", 0),
+        15,
+        "Data extraction / coding",
+        "step15_extract_data",
+        resolve_callable(step15, ["run", "main", "run_step15"]),
+        config,
+    )
+
+    run_step(
+        config.get("run_step16", 0),
+        16,
+        "Systematic map visualisations",
+        "step16_map_visualise",
+        resolve_callable(step16, ["run", "main", "run_step16"]),
         config,
     )
 
