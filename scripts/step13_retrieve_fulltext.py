@@ -461,6 +461,9 @@ def retrieve_fulltexts(
                 n_skip += 1
                 continue
 
+            screen_reasons = safe_str(row.get("screen_reasons", ""))
+            is_missing_abstract = screen_reasons.startswith("Missing abstract")
+
             rec: Dict[str, Any] = {
                 "dedupe_key": dk,
                 "doi": doi,
@@ -468,6 +471,7 @@ def retrieve_fulltexts(
                 "title": title,
                 "year": year,
                 "pub": pub,
+                "missing_abstract": is_missing_abstract,
                 "timestamp_utc": _now_utc(),
                 "status": "pending",
                 "source": "",
@@ -618,7 +622,7 @@ def write_outputs(
 
     # Ensure consistent column order
     cols = ["dedupe_key", "doi", "scopus_id", "title", "year", "pub",
-            "status", "source", "file_path", "file_size_kb", "url", "note", "timestamp_utc"]
+            "missing_abstract", "status", "source", "file_path", "file_size_kb", "url", "note", "timestamp_utc"]
     for c in cols:
         if c not in df_out.columns:
             df_out[c] = ""
@@ -626,22 +630,34 @@ def write_outputs(
 
     # Manual retrieval list
     manual_df = df_out[df_out["status"] == "needs_manual"][
-        ["dedupe_key", "doi", "scopus_id", "title", "year", "pub", "note"]
+        ["dedupe_key", "doi", "scopus_id", "title", "year", "pub", "missing_abstract", "note"]
     ]
     manual_df.to_csv(manual_csv, index=False)
+
+    # Missing-abstract subset CSV
+    missing_abs_csv = base / "step13_missing_abstract_results.csv"
+    missing_df = df_out[df_out["missing_abstract"] == True]
+    missing_df[cols].to_csv(missing_abs_csv, index=False)
 
     # Summary
     status_counts = df_out["status"].value_counts(dropna=False).to_dict()
     source_counts = df_out[df_out["status"] == "retrieved"]["source"].value_counts(dropna=False).to_dict()
 
+    # Missing-abstract breakdown
+    ma = df_out[df_out["missing_abstract"] == True]
+    ma_status = ma["status"].value_counts(dropna=False).to_dict() if not ma.empty else {}
+
     summary = {
         "input_csv": str(input_csv),
         "manifest_csv": str(manifest_csv),
         "manual_csv": str(manual_csv),
+        "missing_abstract_csv": str(missing_abs_csv),
         "fulltext_dir": str(base / "fulltext"),
         "total_processed": int(len(df_out)),
         "status_counts": {k: int(v) for k, v in status_counts.items()},
         "source_breakdown": {k: int(v) for k, v in source_counts.items()},
+        "missing_abstract_count": int(len(ma)),
+        "missing_abstract_status": {k: int(v) for k, v in ma_status.items()},
         "elapsed_seconds": float(elapsed_seconds) if elapsed_seconds else None,
         "elapsed_hms": time.strftime("%H:%M:%S", time.gmtime(elapsed_seconds)) if elapsed_seconds else None,
         "timestamp_utc": _now_utc(),
@@ -651,8 +667,10 @@ def write_outputs(
 
     print(f"[step13] Wrote: {manifest_csv}")
     print(f"[step13] Wrote: {manual_csv}  ({len(manual_df):,} records need manual retrieval)")
+    print(f"[step13] Wrote: {missing_abs_csv}  ({len(missing_df):,} missing-abstract records)")
     print(f"[step13] Status: {status_counts}")
     print(f"[step13] By source: {source_counts}")
+    print(f"[step13] Missing-abstract retrieval: {ma_status}")
     return summary
 
 
