@@ -12,11 +12,11 @@ ID,Item,Caroline Staub,Jennifer Cisse,CJ Reconciled,LLM_r2,LLM_r2a
 125899099,"Agricultural resilience and adaptive capacity during severe drought in the Western Cape, South Africa",INCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125892550,"Agro-ecologic mapping of livestock system in smallholder crop-livestock mixed farming of Wolaita and Dawuro districts, Southern Ethiopia",EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125894736,Agro-pastoralists’ determinants of adaptation to climate change,INCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
-125905623,"An Analysis of the Acceptance of Water Management Systems among Smallholder Farmers in Numbi, Mpumalanga Province, South Africa",INCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
+125905623,"An Analysis of the Acceptance of Water Management Systems among Smallholder Farmers in Numbi, Mpumalanga Province, South Africa",INCLUDE,INCLUDE,INCLUDE,INCLUDE,Exclude
 125896231,Are perception and adaptation to climate variability and change of cowpea growers in Mali gender differentiated?,INCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
 125897200,Are there opportunities for climate-smart agriculture? Assessing costs and benefits of sustainability investments and planning policies in Southern Africa,INCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125892705,"Assessing environmental flow requirements and trade-offs for the lower Zambezi river and delta, Mozambique",EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
-125903091,Assessing the Implementation of Climate-Smart Agricultural Practices: Key Findings and Policy Strategies,INCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
+125903091,Assessing the Implementation of Climate-Smart Agricultural Practices: Key Findings and Policy Strategies,INCLUDE,INCLUDE,INCLUDE,INCLUDE,Exclude
 125899080,"Assessment of climatic risk and adaptation measures in rural India: A case study of Vanvasi village, Maharashtra",INCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
 125897196,Assessment of socioeconomic and climate change-related factors to meeting recommended energy intake (REI) of filipino households,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125905118,Benefits and barriers to the adoption of climate-smart agriculture practices in West Africa: A systematic review,EXCLUDE,EXCLUDE,EXCLUDE,INCLUDE,Exclude
@@ -38,15 +38,15 @@ ID,Item,Caroline Staub,Jennifer Cisse,CJ Reconciled,LLM_r2,LLM_r2a
 125901782,EVALUATING THE POTENTIAL FOR A NOVEL IRRIGATION SYSTEM CONTROLLER TO BE ADOPTED BY MEDIUM-SCALE CONTRACT FARMERS IN EAST AFRICA,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125906656,Evaluation of Farmers’ Strategies and Capacities in Adaptation to Climate Change and Water Scarcity in Agriculture of Iran,EXCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
 125901675,Exploring polyculture of small indigenous fishes with major carps in pens as a climate-resilient adaptation strategy for northeastern wetlands of India,EXCLUDE,EXCLUDE,EXCLUDE,INCLUDE,Include
-125903312,Exploring social resilience among small-scale agroforestry farmers: A case study from a remote Indonesian village,EXCLUDE,EXCLUDE,EXCLUDE,INCLUDE,Include
+125903312,Exploring social resilience among small-scale agroforestry farmers: A case study from a remote Indonesian village,EXCLUDE,EXCLUDE,EXCLUDE,INCLUDE,Exclude
 125902375,Exploring the association between socio-economic and environmental factors and food consumption in Iran: insights from time series data,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125902935,"Factors affecting climate-smart agriculture development in Fars Province, Iran",INCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
 125889958,"Farm-level adoption of sorghum technologies in Tigray, Ethiopia",INCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
 125905561,Farmers' mitigation strategies against climate change indices in Aceh Besar Regency,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125903361,Forecasting summer marine heatwaves in the South China Sea using explainable machine learning models,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125898374,Genetic diversity of the rain tree (Albizia saman) in Colombian seasonally dry tropical forest for informing conservation and restoration interventions,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
-125894281,Geographic information and communication technologies for supporting smallholder agriculture and climate resilience,EXCLUDE,INCLUDE,EXCLUDE,INCLUDE,Include
-125902251,Global chocolate supply is limited by low pollination and high temperatures,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
+125894281,Geographic information and communication technologies for supporting smallholder agriculture and climate resilience,EXCLUDE,INCLUDE,EXCLUDE,INCLUDE,Exclude
+125902251,Global chocolate supply is limited by low pollination and high temperatures,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Include
 125900514,"How climate change and insecurity pushed 5 million people to hunger in Chad, Africa",EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125898156,"Impact of selenium, zinc and their interaction on key enzymes, grain yield, selenium, zinc concentrations, and seedling vigor of biofortified rice",EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125892127,Impacts of Jatropha-based biodiesel production on above and below-ground carbon stocks: A case study from Mozambique,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
@@ -56,7 +56,7 @@ ID,Item,Caroline Staub,Jennifer Cisse,CJ Reconciled,LLM_r2,LLM_r2a
 125891046,Integrating marine biodiversity through philippine local development plans,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125891067,Land suitability modeling of shea (Vitellaria paradoxa) distribution across sub-Saharan Africa,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125898494,Livelihood impacts and adaptation in fishing practices as a response to recent climatic changes in the upwelling region of the East African Coastal Current,EXCLUDE,INCLUDE,EXCLUDE,INCLUDE,Include
-125904698,"Livelihood vulnerability household fishermen household due to climate change in Lampung Province, Indonesia",INCLUDE,INCLUDE,INCLUDE,EXCLUDE,Include
+125904698,"Livelihood vulnerability household fishermen household due to climate change in Lampung Province, Indonesia",INCLUDE,INCLUDE,INCLUDE,EXCLUDE,Exclude
 125898632,"Mitigating Striga hermonthica parasitism and damage in maize using soybean rotation, nitrogen application, and Striga-resistant varieties in the Nigerian savannas",EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125894391,Modelling the Great Australian Bight Ecosystem,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125890491,Nutrient management in African sorghum cropping systems: applying meta-analysis to assess yield and profitability,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
@@ -69,13 +69,13 @@ ID,Item,Caroline Staub,Jennifer Cisse,CJ Reconciled,LLM_r2,LLM_r2a
 125903831,"Remote Sensing Maize Water Stress in Smallholder Farms: A Systematic Review of Progress, Challenges, and the Way Forward Using Earth Observation Data",EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125902469,Remote sensing technologies for monitoring coral reef health under climate change,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125896145,RESILIENCE THROUGH ADAPTATION: INNOVATIONS IN MAASAI LIVELIHOOD STRATEGIES: Jacques Pollini and John G. Galaty,INCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
-125906013,Restoring Soil Health of Degraded Lands Through Eco-Friendly Nutrient Management Practices in Regenerative Agriculture,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Include
-125906823,Rethinking vulnerability and humanitarian assistance in the pastoral drylands: insights from northern Kenya and southern Ethiopia,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Include
+125906013,Restoring Soil Health of Degraded Lands Through Eco-Friendly Nutrient Management Practices in Regenerative Agriculture,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
+125906823,Rethinking vulnerability and humanitarian assistance in the pastoral drylands: insights from northern Kenya and southern Ethiopia,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125905971,Role of Gender in Sustainable Mitigation for Climate Change in Agriculture,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125895565,Rural household vulnerability to climate risk in Uganda,INCLUDE,INCLUDE,INCLUDE,EXCLUDE,Include
 125892461,"Rural livelihoods and household adaptation to extreme flooding in the Okavango Delta, Botswana",INCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
 125900337,Sea-Level Rise and Estuaries,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
-125906724,"Seasonal climate variability, production inefficiencies, and non-linear farm revenue responses: an SFA-Ricardian assessment across KP’s agro-ecological zones, Pakistan",EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Include
+125906724,"Seasonal climate variability, production inefficiencies, and non-linear farm revenue responses: an SFA-Ricardian assessment across KP’s agro-ecological zones, Pakistan",EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125890305,Seasonal drought predictability in Portugal using statistical–dynamical techniques,EXCLUDE,EXCLUDE,EXCLUDE,EXCLUDE,Exclude
 125905892,"Self-governance mediates small-scale fishing strategies, vulnerability and adaptive response",INCLUDE,INCLUDE,INCLUDE,INCLUDE,Include
 125903148,Shrimp Economies and Hydrosocial Lives in the Vietnamese Mekong Delta,EXCLUDE,INCLUDE,EXCLUDE,EXCLUDE,Exclude

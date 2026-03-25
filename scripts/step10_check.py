@@ -39,6 +39,11 @@ import pandas as pd
 import requests
 import yaml
 from difflib import SequenceMatcher
+try:
+    from json_repair import repair_json as _repair_json
+    _HAS_JSON_REPAIR = True
+except ImportError:
+    _HAS_JSON_REPAIR = False
 
 
 # =============================================================================
@@ -336,6 +341,12 @@ def call_ollama(
     system_prompt = f"""You are a strict research assistant screening papers for a systematic review.
 Analyze the Title and Abstract against these eligibility criteria:
 {criteria_prompt}
+
+DECISION RULES:
+- Return "no" when you can clearly identify that a criterion is not met. If your reason states that something is "not explicitly assessed", "not explicitly measured", "does not analyze adaptation", or similar — that is a "no", not "unclear".
+- Return "unclear" ONLY when there is genuine ambiguity that cannot be resolved from the abstract (e.g., the abstract is too short or vague to determine).
+- Do NOT return "unclear" when you have identified a clear exclusion signal. Commit to "no" in those cases.
+- A single "no" on any criterion results in EXCLUDE. Do not soften a clear "no" to "unclear" to avoid excluding.
 
 OUTPUT FORMAT:
 Return ONLY a valid JSON object. Do not use markdown blocks.
@@ -901,10 +912,12 @@ def apply_ollama_screening(
 
                     continue
 
-                # Cache hit (only if signature matches current run)
+                # Cache hit (only if signature matches current run and wasn't a parse error)
                 if k and k in processed:
                     cached = last_by_key.get(k, {})
-                    if safe_str(cached.get("run_signature")) == sig:
+                    _cr = safe_str(cached.get("screen_reasons", ""))
+                    _is_parse_error = _cr.startswith("LLM parse/error:")
+                    if safe_str(cached.get("run_signature")) == sig and not _is_parse_error:
                         cd = safe_str(cached.get("screen_decision"))
                         cr = safe_str(cached.get("screen_reasons"))
                         ch = safe_str(cached.get("screen_rule_hits"))
@@ -947,7 +960,16 @@ def apply_ollama_screening(
                 }
 
                 try:
-                    data = json.loads(llm_resp)
+                    try:
+                        data = json.loads(llm_resp)
+                    except json.JSONDecodeError:
+                        if _HAS_JSON_REPAIR:
+                            repaired = _repair_json(llm_resp, return_objects=True)
+                            if not isinstance(repaired, dict):
+                                raise ValueError(f"json_repair returned {type(repaired).__name__}, not dict")
+                            data = repaired
+                        else:
+                            raise
                     full_text = f"{title}\n{abstract}"
 
                     # --- NEW: detect Ollama failure payloads and mark explicitly

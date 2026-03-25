@@ -24,8 +24,11 @@ import step6_visualize as step6
 import step7_scopus_check as step7  
 import step8_clean_scopus as step8
 import step9_enrich_abstracts as step9
+import step9a_enrich_from_ris as step9a
 import step10_check as step10
 import step11_analysis as step11
+import step12_screen_full as step12
+import step13_retrieve_fulltext as step13
 
 # ----------------------------
 # Logging setup
@@ -67,27 +70,39 @@ def build_config_dict() -> dict:
         "run_step7": cfg.run_step7,
         "run_step8": cfg.run_step8,
         "run_step9": cfg.run_step9,
+        "run_step9a": cfg.run_step9a,
+        "step9a_iteration": cfg.step9a_iteration,
+        "step9a_ris_glob": cfg.step9a_ris_glob,
+        "step9a_update_ris": cfg.step9a_update_ris,
         "run_step10": cfg.run_step10,
         "run_step11": cfg.run_step11,
+        "run_step12": cfg.run_step12,
 
         "step10_calibration_ris": cfg.step10_calibration_ris,
         "step10_criteria_yml":    cfg.step10_criteria_yml,
         "step10_run_label":       cfg.step10_run_label,
+
+        "step12_criteria_yml": cfg.step12_criteria_yml,
+        "step12_model":        cfg.step12_model,
+        "step12_run_limit":    cfg.step12_run_limit,
+
+        "run_step13":       cfg.run_step13,
+        "step13_run_limit": cfg.step13_run_limit,
     }
 
 
-def log_step_header(step_num: int, title: str, module: str, skipped: bool) -> None:
+def log_step_header(step_num, title: str, module: str, skipped: bool) -> None:
     if skipped:
-        logger.info("%s Step %d: %s [%s] (skipped)\n%s", ICONS["skip"], step_num, title, module, STEP_DIV)
+        logger.info("%s Step %s: %s [%s] (skipped)\n%s", ICONS["skip"], step_num, title, module, STEP_DIV)
     else:
-        logger.info("%s Step %d: %s [%s]\n%s", ICONS["run"], step_num, title, module, STEP_DIV)
+        logger.info("%s Step %s: %s [%s]\n%s", ICONS["run"], step_num, title, module, STEP_DIV)
 
 
-def log_step_result(step_num: int, module: str, ok: bool, elapsed_s: Optional[float] = None, extra: str | None = None) -> None:
+def log_step_result(step_num, module: str, ok: bool, elapsed_s: Optional[float] = None, extra: str | None = None) -> None:
     icon = ICONS["ok"] if ok else ICONS["fail"]
     t = f" — {elapsed_s:.1f}s" if elapsed_s is not None else ""
     tail = f" — {extra}" if extra else ""
-    logger.info("%s Step %d complete [%s]%s%s", icon, step_num, module, t, tail)
+    logger.info("%s Step %s complete [%s]%s%s", icon, step_num, module, t, tail)
 
 
 def resolve_callable(module: Any, candidates: list[str]) -> Callable[[dict], Any]:
@@ -204,6 +219,14 @@ def main() -> None:
         config,
     )
 
+    run_step(
+        config.get("run_step9a", 0),
+        "9a",
+        "Abstract enrichment from RIS + API retry",
+        "step9a_enrich_from_ris",
+        resolve_callable(step9a, ["run", "main", "run_step9a", "step9a_enrich_from_ris"]),
+        config,
+    )
 
     # --- Added Step 10 ---
     run_step(
@@ -222,6 +245,26 @@ def main() -> None:
         "Inter-rater reliability analysis",
         "step11_analysis",
         resolve_callable(step11, ["run", "main", "run_step11"]),
+        config,
+    )
+
+    # --- Added Step 12 ---
+    run_step(
+        config.get("run_step12", 0),
+        12,
+        "Full-corpus screening",
+        "step12_screen_full",
+        resolve_callable(step12, ["run", "main", "run_step12"]),
+        config,
+    )
+
+    # --- Added Step 13 ---
+    run_step(
+        config.get("run_step13", 0),
+        13,
+        "Full-text retrieval",
+        "step13_retrieve_fulltext",
+        resolve_callable(step13, ["run", "main", "run_step13"]),
         config,
     )
 

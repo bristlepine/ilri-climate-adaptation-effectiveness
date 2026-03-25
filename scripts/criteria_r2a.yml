@@ -25,6 +25,9 @@ criteria:
       plausible should be retained at title-abstract stage.
       Do not exclude a study solely because the abstract is poorly written or grammatically weak —
       if it still signals a relevant producer population, retain it.
+      A label of "industrial" in the title does not automatically exclude a study if the abstract
+      explicitly discusses climate adaptation, resilience, or adaptive responses among producers
+      in an LMIC context — retain when the actual content concerns producer-level climate responses.
     r2_exclude_further_guidelines: >
       Exclude when the population clearly and unambiguously consists of commercial growers,
       large commercial farms, or non-smallholder production systems. Do not exclude when there
@@ -84,7 +87,11 @@ criteria:
       Studies where climate is mentioned only incidentally or as background context with no
       direct link to the agricultural problem being studied. Studies where climate is clearly
       peripheral and not driving the research question.
-    r2_include_further_guidelines: ""
+    r2_include_further_guidelines: >
+      A brief opening reference to climate change (e.g., "in the wake of recent climate changes")
+      is sufficient climate context if the study then measures adoption of agricultural practices
+      or adaptation responses — do not require climate change to be the primary focus of every
+      sentence in the abstract.
     r2_exclude_further_guidelines: >
       Climate context must be explicit in the abstract. Exclude if the abstract does not
       explicitly reference climate change, climate variability, drought, flooding, extreme weather,
@@ -124,9 +131,12 @@ criteria:
       strategies or farmer responses to climate stress qualify even without a formal intervention
       or quantitative method. Do not require a project or externally introduced treatment.
     r2_exclude_further_guidelines: >
-      Systematic reviews, literature reviews, meta-analyses, and opinion pieces -> EXCLUDE
-      unless the central focus of the review is specifically the methods used to measure climate
-      adaptation (not reviews of technologies, CSA practices, or adaptation interventions).
+      Systematic reviews, literature reviews, meta-analyses, and opinion pieces -> HARD EXCLUDE.
+      If the abstract identifies the paper as a "systematic review", "review with meta-analysis",
+      "literature review", or similar synthesis — exclude immediately, even if it sounds empirical
+      or uses quantitative methods. The only exception is a review whose central focus is
+      specifically the methods used to measure climate adaptation (not reviews of technologies,
+      CSA practices, or adaptation interventions).
       Policy and planning analyses aimed primarily at national or regional decision-makers
       (e.g., national adaptation planning frameworks, cost-benefit analyses for government
       investment priorities, broad stakeholder decision tools) -> EXCLUDE unless they clearly
