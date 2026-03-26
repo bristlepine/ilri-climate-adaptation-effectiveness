@@ -592,15 +592,14 @@ def screen_fulltext(
                     "file_path": file_path,
                 }
 
-                # No full text -> conservatively Include
+                # No full text -> Needs_Manual (cannot make a decision without text)
                 if not file_path:
-                    rec["s14_decision"] = "Include"
-                    rec["s14_reasons"] = "No full text retrieved — included for manual review"
+                    rec["s14_decision"] = "Needs_Manual"
+                    rec["s14_reasons"] = "No full text retrieved — manual screening required"
                     rec["s14_rule_hits"] = ""
                     rec["s14_fulltext_chars"] = 0
                     rec["s14_fulltext_note"] = "no_file"
                     n_no_text += 1
-                    n_include += 1
 
                 # Cache hit
                 elif k in processed:
@@ -614,8 +613,10 @@ def screen_fulltext(
                         n_cached += 1
                         if rec["s14_decision"] == "Include":
                             n_include += 1
-                        else:
+                        elif rec["s14_decision"] == "Exclude":
                             n_exclude += 1
+                        else:
+                            n_no_text += 1
 
                         df.at[i, "s14_decision"] = rec["s14_decision"]
                         df.at[i, "s14_reasons"] = rec["s14_reasons"]
@@ -634,12 +635,11 @@ def screen_fulltext(
                     rec["s14_fulltext_note"] = extract_note
 
                     if not fulltext.strip():
-                        # Extraction failed -> conservatively Include
-                        rec["s14_decision"] = "Include"
-                        rec["s14_reasons"] = f"Full text extraction failed — included for manual review ({extract_note or 'no text'})"
+                        # Extraction failed -> Needs_Manual (cannot screen without text)
+                        rec["s14_decision"] = "Needs_Manual"
+                        rec["s14_reasons"] = f"Full text extraction failed — manual screening required ({extract_note or 'no text'})"
                         rec["s14_rule_hits"] = ""
                         n_no_text += 1
-                        n_include += 1
                     else:
                         print(f"[step14]  -> LLM {i+1}/{n_run} | key={k[:50]} | chars={len(fulltext_raw):,}")
                         llm_resp = call_ollama(
@@ -773,26 +773,25 @@ def _plot_summary(meta: Dict[str, Any], out_dir: Path) -> None:
     fig.suptitle("Step 14 — Full-text Screening Summary", fontsize=14, fontweight="bold", y=1.01)
 
     ax1 = axes[0]
-    dec   = meta.get("decision_counts", {})
-    n_inc = dec.get("Include", 0)
-    n_exc = dec.get("Exclude", 0)
-    n_nft = meta.get("rows_no_fulltext", 0)
-    n_inc_screened = n_inc - n_nft
-    total = meta.get("rows_total", n_inc + n_exc)
+    dec     = meta.get("decision_counts", {})
+    n_inc   = dec.get("Include", 0)
+    n_exc   = dec.get("Exclude", 0)
+    n_man   = dec.get("Needs_Manual", 0)
+    total   = meta.get("rows_total", n_inc + n_exc + n_man)
 
-    labels = ["Include\n(screened)", "No Full Text\n(included)", "Exclude"]
-    values = [n_inc_screened, n_nft, n_exc]
+    labels = ["Include\n(screened)", "Needs Manual\n(no full text)", "Exclude"]
+    values = [n_inc, n_man, n_exc]
     colors = [BLUE, ORANGE, RED]
     bars = ax1.bar(labels, values, color=colors, edgecolor="white", linewidth=0.8, width=0.5)
     for bar, val in zip(bars, values):
         pct = val / total * 100 if total else 0
         ax1.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + total * 0.005,
                  f"{val:,}\n({pct:.1f}%)", ha="center", va="bottom", fontsize=10)
-    ax1.set_title(f"Screening Decisions  (n={total:,})", fontsize=11)
+    ax1.set_title(f"Full-text Screening Decisions  (n={total:,})", fontsize=11)
     ax1.set_ylabel("Records")
     ax1.set_ylim(0, max(values) * 1.18 if values else 1)
     ax1.spines[["top", "right"]].set_visible(False)
-    ax1.text(0.98, 0.98, "No-full-text records conservatively\nincluded for manual review",
+    ax1.text(0.98, 0.98, "Needs_Manual = no full text or\nextraction failed; requires manual review",
              transform=ax1.transAxes, fontsize=8, color=ORANGE, ha="right", va="top", style="italic")
 
     ax2 = axes[1]
