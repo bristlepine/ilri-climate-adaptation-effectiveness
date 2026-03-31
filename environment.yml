@@ -18,9 +18,9 @@ dependencies:
   - pip:
       - typer>=0.9
       - reportlab
-      - pypdf               # step14: PDF text extraction
-      - trafilatura         # step14: HTML text extraction (optional but recommended)
-      - beautifulsoup4      # step14: HTML fallback parser
+      - pypdf               # step14/15: PDF text extraction
+      - trafilatura         # step14/15: HTML text extraction
+      - beautifulsoup4      # step14/15: HTML fallback parser
       - json-repair         # step12/14: LLM JSON response repair
       - geopandas           # step16: geographic mapping
       - plotly              # step16: interactive figures

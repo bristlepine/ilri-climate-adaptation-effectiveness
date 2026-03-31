@@ -24,11 +24,11 @@ run_step9 = 0 # Abstract Enrichment
 run_step9a = 0 # Abstract Enrichment from RIS + API retry (supplements step9)
 run_step10 = 0 # Title/abstract check (Step 10)
 run_step11 = 0 # Inter-rater reliability analysis (Step 11)
-run_step12 = 1 # Full-corpus screening (Step 12)
-run_step13 = 0 # Full-text retrieval (Step 13)
-run_step14 = 0 # Full-text screening (Step 14)
+run_step12 = 0 # Full-corpus screening (Step 12)
+run_step13 = 1 # Full-text retrieval (Step 13)
+run_step14 = 1 # Full-text screening (Step 14)
 run_step15 = 0 # Data extraction / coding (Step 15)
-run_step16 = 0 # Systematic map visualisations (Step 16)
+run_step16 = 1 # Systematic map visualisations (Step 16)
 
 # optional convenience list
 runsteps = [
