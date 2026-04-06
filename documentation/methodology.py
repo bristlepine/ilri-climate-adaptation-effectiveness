@@ -5,10 +5,14 @@ Generates a Word document (.docx) describing the full systematic review pipeline
 methodology. Loads actual run statistics from step output JSON files and embeds
 pipeline figures so the document is self-contained.
 
-Run from the scripts/ directory:
-    python methodology.py
+Run from anywhere:
+    conda run -n ilri01 python documentation/methodology.py
 
-Output: outputs/methodology/Methodology_Appendix.docx
+Outputs:
+    documentation/methodology/
+        Methodology_Appendix.docx
+        METHODOLOGY.md
+        figures/
 """
 
 import io
@@ -34,8 +38,8 @@ from docx.shared import Pt, RGBColor, Inches
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-HERE    = Path(__file__).resolve().parent.parent
-OUTPUTS = HERE / "outputs"
+HERE    = Path(__file__).resolve().parent.parent  # project root
+OUTPUTS = HERE / "scripts" / "outputs"
 OUT_DIR = Path(__file__).resolve().parent / "methodology"
 FIG_DIR = OUT_DIR / "figures"
 OUT_DIR.mkdir(parents=True, exist_ok=True)

@@ -7,10 +7,10 @@ generates supporting figures (kappa convergence chart).
 The markdown file is the canonical response document.
 
 Run from anywhere:
-    conda run -n ilri01 python scripts/documentation/neal_response.py
+    conda run -n ilri01 python documentation/neal_response.py
 
 Outputs:
-    scripts/documentation/neal_response/
+    documentation/neal_response/
         RESPONSE_TO_NEAL.md
         figures/
             kappa_convergence.png
@@ -30,13 +30,13 @@ from PIL import Image
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-HERE    = Path(__file__).resolve().parent.parent   # scripts/
-OUTPUTS = HERE / "outputs"
+HERE    = Path(__file__).resolve().parent.parent   # project root
+OUTPUTS = HERE / "scripts" / "outputs"
 OUT_DIR = Path(__file__).resolve().parent / "neal_response"
 FIG_DIR = OUT_DIR / "figures"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 FIG_DIR.mkdir(parents=True, exist_ok=True)
-MD_SRC  = HERE.parent / "RESPONSE_TO_NEAL.md"
+MD_SRC  = HERE / "RESPONSE_TO_NEAL.md"
 
 # ---------------------------------------------------------------------------
 # Load calibration data
