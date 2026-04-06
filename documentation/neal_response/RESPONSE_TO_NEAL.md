@@ -55,26 +55,30 @@ Conventional minimum for proceeding to full-corpus screening: **κ ≥ 0.60**.
 
 ### Our results vs benchmarks
 
-All our metrics computed from confusion matrices against the reconciled human gold standard. Benchmarks from published literature shown in the same table for direct comparison.
+All our metrics computed from confusion matrices against the reconciled human gold standard. Benchmarks from published literature shown in the same table for direct comparison. Dashes indicate the metric was not reported in that study for the relevant task.
 
 | | n | Sensitivity | Specificity | Precision | F1 | κ |
 |---|---|---|---|---|---|---|
-| **Cochrane / O'Mara-Eves target** | — | **≥ 0.95** | — | — | — | — |
+| **Cochrane / O'Mara-Eves target** | — | **≥ 0.95** | — | — | — | **≥ 0.60** |
 | **Human screeners** (Hanegraaf et al. 2024) | — | — | — | — | — | 0.82 (abstract) / 0.77 (full-text) |
 | **AI tool — GPT-4** (Zhan et al. 2025) | — | 0.992 | 0.836 | — | — | 0.83 |
-| **AI average across 172 studies** (Scherbakov et al. 2025) | — | 0.804 | — | 0.632 | — | — |
-| **AI — data extraction** (Jensen et al. 2025) | — | 0.924* | — | — | — | 0.93† |
+| **AI mean, 172 studies** (Scherbakov et al. 2025) | — | 0.804 | — | 0.632 | 0.708§ | — |
+| **AI — data extraction** (Jensen et al. 2025) | — | 0.924\* | — | — | — | 0.93† |
 | | | | | | | |
 | Our pipeline — R1 (initial criteria) | 205 | 0.776 | 0.703 | 0.559 | 0.650 | 0.436 *(moderate)* |
 | Our pipeline — R1b (revised criteria) | 205 | 0.866 | 0.819 | 0.699 | 0.774 | 0.645 *(substantial)* |
 | Our pipeline — **R2a (2nd revision)** | 103 | **0.897** | **0.905** | **0.788** | **0.839** | **0.770** *(substantial)* |
 | Our pipeline — R3a (stability check)‡ | 107 | — | — | — | — | avg 0.682 *(substantial)* |
+| | | | | | | |
+| **Benchmark reached? (R2a)** | | ⚠ **Near miss** | ✓ **Yes** | ✓ **Yes** | ~ **No target** | ⚠ **Near miss** |
+| **Notes** | | 0.897 < 0.95 target; above 172-study mean (0.804); conservative defaults raise effective sensitivity in production | 0.905 exceeds GPT-4 tool (0.836) | 0.788 exceeds 172-study mean (0.632) | No T/A screening F1 benchmark reported in literature; our 0.839 exceeds the only available figure (Scherbakov 0.708, computed) | Above min. threshold (0.60); 0.770 vs human 0.82 and GPT-4 0.83; within one further calibration round of human-level |
 
-*Jensen et al. 2025: 92.4% overall agreement; false data rate 5.2% vs 17.7% for a single human reviewer.*
-†Jensen et al. 2025: reproducibility kappa between two independent GPT sessions.
+\*Jensen et al. 2025: 92.4% overall agreement rate for data extraction, not T/A screening sensitivity.
+†Jensen et al. 2025: reproducibility κ between two independent GPT-4o sessions on data extraction.
 ‡R3a: no reconciled gold standard collected by design. LLM κ is the mean of κ vs Jennifer Cisse (0.690) and κ vs Caroline Staub (0.674).
+§Scherbakov et al. 2025: F1 computed from reported sensitivity (0.804) and precision (0.632) — not directly reported. Both figures are for title/abstract screening, mean across all AI tools in the meta-review.
 
-**Reading this table:** Our R2a sensitivity of 0.897 is above the Scherbakov et al. mean across 172 studies (0.804) and within the range of a purpose-built GPT-4 tool (Zhan et al. 0.992). Our specificity of 0.905 exceeds the Zhan et al. benchmark (0.836). Our R2a κ of 0.770 is close to the human abstract screening benchmark of 0.82 [Hanegraaf et al. 2024] and the Zhan et al. AI benchmark of 0.83. The gap to the 0.95 sensitivity Cochrane target is noted — it reflects the genuine challenge of multi-dimensional eligibility criteria for a diffuse-concept topic — and is the reason the conservative inclusion default is in place throughout full-corpus screening.
+**Reading this table:** Two benchmarks were not met at R2a — sensitivity (0.897 vs ≥0.95) and κ (0.770 vs human 0.82). Both are near misses with clear mitigations: the conservative inclusion default raises effective sensitivity above the calibration figure, and κ improved by 0.334 points across three rounds through criteria revision alone. Specificity (0.905) and precision (0.788) both exceed available benchmarks. F1 (0.839) has no published T/A screening target but exceeds the only computable peer figure (Scherbakov 0.708).
 
 ---
 

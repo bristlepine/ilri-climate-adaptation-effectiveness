@@ -185,16 +185,25 @@ Conventional minimum for proceeding to full-corpus screening: **κ ≥ 0.60**. H
 
 *Note: these figures reflect a preliminary pilot run (see Section 1.3). The calibration process itself is not affected by API access constraints.*
 
-| Round | n | Sensitivity | Specificity | Precision | F1 | κ vs gold | Human κ |
+| | n | Sensitivity | Specificity | Precision | F1 | κ vs gold | Human κ |
 |---|---|---|---|---|---|---|---|
+| **Cochrane / O'Mara-Eves target** | — | **≥ 0.95** | — | — | — | **≥ 0.60** | — |
+| **Human screeners** (Hanegraaf et al. 2024) | — | — | — | — | — | — | 0.82 (abstract) / 0.77 (full-text) |
+| **AI — GPT-4** (Zhan et al. 2025) | — | 0.992 | 0.836 | — | — | 0.83 | — |
+| **AI mean, 172 studies** (Scherbakov et al. 2025) | — | 0.804 | — | 0.632 | 0.708§ | — | — |
+| | | | | | | | |
 | R1 — initial criteria | 205 | 0.776 | 0.703 | 0.559 | 0.650 | 0.436 | 0.500 |
 | R1b — revised criteria | 205 | 0.866 | 0.819 | 0.699 | 0.774 | 0.645 | 0.500 |
-| R2a — 2nd revision | 103 | 0.897 | 0.905 | 0.788 | 0.839 | 0.770 | 0.765 |
+| **R2a — 2nd revision** | 103 | **0.897** | **0.905** | **0.788** | **0.839** | **0.770** | 0.765 |
 | R3a — stability check† | 107 | — | — | — | — | avg 0.682 | 0.703 |
+| | | | | | | | |
+| **Benchmark reached? (R2a)** | | ⚠ Near miss | ✓ Yes | ✓ Yes | ~ No target | ⚠ Near miss | ✓ Yes |
+| **Notes** | | 0.897 < 0.95; above 172-study mean (0.804); conservative defaults raise effective sensitivity | Exceeds GPT-4 (0.836) | Exceeds 172-study mean (0.632) | No T/A screening F1 benchmark reported; our 0.839 exceeds Scherbakov computed 0.708 | Above min. threshold (0.60); below human 0.82 | Meets threshold |
 
-†R3a: designed to verify criteria stability, not generate a new gold standard. Sensitivity/specificity/P/R/F1 not computable. LLM κ is the mean of κ vs Jennifer Cisse (0.690) and κ vs Caroline Staub (0.674).
+†R3a: designed to verify criteria stability, not generate a new gold standard. P/R/F1/specificity not computable. LLM κ is mean of κ vs Jennifer Cisse (0.690) and κ vs Caroline Staub (0.674).
+§Scherbakov et al. 2025: F1 computed from reported sensitivity (0.804) and precision (0.632) — not directly reported in the paper.
 
-**Reading the table:** LLM sensitivity rose from 0.776 → 0.897 and κ rose from 0.436 → 0.770 through criteria revision alone — no additional training data was used. R2a specificity (0.905) and sensitivity (0.897) compare favourably to both the human benchmark (κ = 0.82) and validated AI screening tools (Zhan et al. 2025: sensitivity 0.992, specificity 0.836, κ = 0.83 for a GPT-4-powered tool).
+**Reading the table:** Two benchmarks were not met at R2a — sensitivity (0.897 vs ≥0.95) and LLM κ (0.770 vs human 0.82). Both are near misses: κ improved by 0.334 points across three rounds through criteria revision alone, and the conservative inclusion default raises effective sensitivity above the calibration figure. Specificity (0.905) and precision (0.788) both exceed available benchmarks. F1 (0.839) has no published T/A screening target but exceeds the only computable peer figure (Scherbakov 0.708).
 
 ![Kappa convergence figure](figures/kappa_convergence.png)
 *Figure 3. Cohen's κ convergence across calibration rounds. Blue circles: LLM vs reconciled gold standard. Red squares: human inter-rater κ. Shaded bands: Landis & Koch (1977) thresholds. Annotated labels: criteria revision points.*
