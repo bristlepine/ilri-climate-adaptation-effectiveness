@@ -11,6 +11,22 @@ Responses to concerns raised. Where concerns are valid, actions are noted. Where
 
 ---
 
+## Contents
+
+1. [Metric Definitions and Benchmarks](#metric-definitions-and-benchmarks)
+2. [On our model choice: defending qwen2.5:14b against GPT-4 class models](#on-our-model-choice-defending-qwen2514b-against-gpt-4-class-models)
+3. [Point 1 — Single database (Scopus only)](#point-1--single-database-scopus-only)
+4. [Point 2 — Kappa versus precision, recall, and F1](#point-2--kappa-versus-precision-recall-and-f1)
+5. [Point 3 — Sample size for calibration](#point-3--sample-size-for-calibration-c-740-records-to-train-the-model)
+6. [Point 4 — 1,430 missing abstracts](#point-4--1430-missing-abstracts)
+7. [Point 5 — 86% full-text non-retrieval](#point-5--86-full-text-non-retrieval)
+8. [Point 6 — AI at full-text screening and data extraction stages](#point-6--ai-at-full-text-screening-and-data-extraction-stages)
+9. [On the broader concern: "very little adherence to best practice in AI"](#on-the-broader-concern-very-little-adherence-to-best-practice-in-ai)
+10. [Summary of actions](#summary-of-actions)
+11. [References](#references)
+
+---
+
 ## Metric Definitions and Benchmarks
 
 All performance metrics used in this response are defined below, with sources. These are reported consistently throughout so results can be tracked in context.
