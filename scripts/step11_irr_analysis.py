@@ -131,6 +131,11 @@ def confusion_vs_reconciled(
         ea, eb = encode(rv), encode(rc)
         valid = ~(np.isnan(ea) | np.isnan(eb))
         k = cohen_kappa(ea[valid], eb[valid]) if valid.sum() >= 2 else None
+        precision = round(tp / (tp + fp), 3) if (tp + fp) > 0 else None
+        recall    = round(tp / (tp + fn), 3) if (tp + fn) > 0 else None
+        f1        = round(2 * precision * recall / (precision + recall), 3) \
+                    if (precision is not None and recall is not None
+                        and (precision + recall) > 0) else None
         out[r] = {
             "both_include":   tp,
             "both_exclude":   tn,
@@ -138,6 +143,9 @@ def confusion_vs_reconciled(
             "under_include":  fn,
             "pct_agreement":  round(100 * (tp + tn) / total, 1) if total else 0.0,
             "kappa_vs_reconciled": round(k, 3) if k is not None else None,
+            "precision":      precision,
+            "recall":         recall,
+            "f1":             f1,
         }
     return out
 
@@ -291,20 +299,25 @@ def build_figure(
         ax.barh(y, fp_v,  left=left2, color=C_OVER,     label="Over-include",   height=0.6)
         ax.barh(y, fn_v,  left=left3, color=C_MISS,     label="Under-include",  height=0.6)
 
-        # Annotate % agreement + kappa
+        # Annotate % agreement + kappa + P/R/F1
         for i, r in enumerate(reviewer_cols):
-            pct_a = conf[r]["pct_agreement"]
-            k_val = conf[r]["kappa_vs_reconciled"]
-            k_str = f"  κ={k_val:.2f}" if k_val is not None else ""
-            ax.text(n_total * 1.01, i, f"{pct_a:.0f}%{k_str}",
-                    va="center", ha="left", fontsize=8)
+            pct_a  = conf[r]["pct_agreement"]
+            k_val  = conf[r]["kappa_vs_reconciled"]
+            prec   = conf[r].get("precision")
+            rec    = conf[r].get("recall")
+            f1     = conf[r].get("f1")
+            k_str  = f" κ={k_val:.2f}" if k_val is not None else ""
+            prf_str = (f" P={prec:.2f} R={rec:.2f} F1={f1:.2f}"
+                       if all(v is not None for v in (prec, rec, f1)) else "")
+            ax.text(n_total * 1.01, i, f"{pct_a:.0f}%{k_str}{prf_str}",
+                    va="center", ha="left", fontsize=7.5)
 
         ax.set_yticks(y)
         ax.set_yticklabels(rnames)
         rec_short = short_name(reconciled_col)
         ax.set_title(f"Agreement vs {rec_short}")
         ax.set_xlabel("Papers")
-        ax.set_xlim(0, n_total * 1.3)
+        ax.set_xlim(0, n_total * 1.6)
         ax.legend(loc="lower right", fontsize=7.5, ncol=2)
         ax.invert_yaxis()
 
@@ -342,7 +355,11 @@ def process_file(csv_path: Path, out_dir: Path) -> None:
     if reconciled_col:
         print(f"[step11]   Agreement vs reconciled:")
         for r, c in stats["confusion_vs_reconciled"].items():
-            print(f"           {short_name(r):15s}  {c['pct_agreement']:.0f}%  κ={c['kappa_vs_reconciled']}")
+            p_str  = f"{c['precision']:.3f}" if c['precision']  is not None else "N/A"
+            r_str  = f"{c['recall']:.3f}"    if c['recall']     is not None else "N/A"
+            f1_str = f"{c['f1']:.3f}"        if c['f1']         is not None else "N/A"
+            print(f"           {short_name(r):15s}  {c['pct_agreement']:.0f}%  "
+                  f"κ={c['kappa_vs_reconciled']}  P={p_str}  R={r_str}  F1={f1_str}")
 
     stem = csv_path.stem.replace(" ", "_")
     out_dir.mkdir(parents=True, exist_ok=True)
