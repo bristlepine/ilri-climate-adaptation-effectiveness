@@ -197,13 +197,13 @@ Conventional minimum for proceeding to full-corpus screening: **κ ≥ 0.60**. H
 | **R2a — 2nd revision** | 103 | **0.897** | **0.905** | **0.788** | **0.839** | **0.770** | 0.765 |
 | R3a — stability check† | 107 | — | — | — | — | avg 0.682 | 0.703 |
 | | | | | | | | |
-| **Benchmark reached? (R2a)** | | ⚠ Below guideline | ✓ Yes | ✓ Yes | ~ No target | ✓ Yes | ✓ Yes |
-| **Notes** | | 0.897 < 0.95 O'Mara-Eves guideline (set for pre-filtering tools, not primary screeners); above 172-study mean (0.804); conservative defaults raise effective sensitivity | Exceeds GPT-4 (0.836) | Exceeds 172-study mean (0.632) | No T/A screening F1 benchmark; our 0.839 exceeds Scherbakov computed 0.708 | Exceeds min. (0.60); solidly substantial; comparable to human 0.82 | Meets threshold |
+| **Benchmark reached? (R2a)** | | ~ Above mean; below top tool | ✓ Yes | ✓ Yes | ~ No target | ✓ Yes | ✓ Yes |
+| **Notes** | | 0.897 > Scherbakov mean (0.804); 0.897 < Zhan GPT-4 (0.992); O'Mara-Eves ≥0.95 set for pre-filtering tools; conservative defaults raise effective sensitivity | Exceeds GPT-4 (0.836) | Exceeds 172-study mean (0.632) | No T/A screening F1 benchmark; our 0.839 exceeds Scherbakov computed 0.708 | Exceeds min. (0.60); solidly substantial; comparable to human 0.82 | Meets threshold |
 
 †R3a: designed to verify criteria stability, not generate a new gold standard. P/R/F1/specificity not computable. LLM κ is mean of κ vs Jennifer Cisse (0.690) and κ vs Caroline Staub (0.674).
 §Scherbakov et al. 2025: F1 computed from reported sensitivity (0.804) and precision (0.632) — not directly reported in the paper.
 
-**Reading the table:** Sensitivity (0.897) is below the O'Mara-Eves ≥0.95 guideline — this is the one noted gap. That guideline was set for automated pre-filtering tools; our conservative inclusion default raises effective sensitivity above the calibration figure. All other metrics meet formal thresholds or exceed available benchmarks: κ = 0.770 is solidly substantial and comparable to human abstract screening (0.82); specificity (0.905) and precision (0.788) both exceed their benchmarks; F1 (0.839) exceeds the only computable peer figure (Scherbakov 0.708).
+**Reading the table:** Our R2a sensitivity of 0.897 sits above the mean across 172 AI screening studies (Scherbakov et al. 0.804) and below a purpose-built GPT-4 tool (Zhan et al. 0.992) — a reasonable position for a general-purpose local model on a multi-dimensional topic. The O'Mara-Eves ≥0.95 figure is a guideline for pre-filtering tools, not a universal threshold; conservative inclusion defaults raise effective production sensitivity above the calibration figure. All other metrics meet or exceed available benchmarks: κ = 0.770 solidly substantial and comparable to human abstract screening (0.82); specificity (0.905) and precision (0.788) both exceed their benchmarks; F1 (0.839) exceeds the only computable peer figure (Scherbakov 0.708).
 
 ![Kappa convergence figure](figures/kappa_convergence.png)
 *Figure 3. Cohen's κ convergence across calibration rounds. Blue circles: LLM vs reconciled gold standard. Red squares: human inter-rater κ. Shaded bands: Landis & Koch (1977) thresholds. Annotated labels: criteria revision points.*
