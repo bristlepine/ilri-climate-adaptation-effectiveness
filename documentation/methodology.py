@@ -1376,9 +1376,10 @@ def build_md():
     ]))
 
     lines = []
-    def h(level, text):   lines.append(f"{'#' * level} {text}\n")
-    def p(text=""):        lines.append(f"{text}\n")
-    def hr():              lines.append("---\n")
+    def h(level, text):   lines.append(f"\n{'#' * level} {text}\n\n")
+    def p(text=""):        lines.append(f"{text}\n" if text else "\n")
+    def hr():              lines.append("\n---\n\n")
+    def row(text):         lines.append(f"{text}\n")   # table row — no blank line after
 
     # ---------------------------------------------------------------------------
     h(1, "Methodology Appendix: Computational Pipeline for the Systematic Map on Climate Adaptation Effectiveness among Smallholder Producers")
@@ -1432,8 +1433,8 @@ def build_md():
     p()
 
     h(3, "Pipeline Summary Statistics")
-    p("| Stage | Count |")
-    p("|---|---|")
+    row("| Stage | Count |")
+    row("|---|---|")
     for label, value in [
         ("Records returned by Scopus (raw)",                   SCOPUS_RAW),
         ("Records after deduplication",                        SCOPUS_DEDUPED),
@@ -1450,21 +1451,21 @@ def build_md():
         ("— Coded from full text",                             CODED_FT),
         ("— Coded from abstract only",                         CODED_ABS),
     ]:
-        p(f"| {label} | {value} |")
+        row(f"| {label} | {value} |")
     p()
     hr()
 
     # ---------------------------------------------------------------------------
     h(2, "Computational Efficiency and the Case for Automation")
-    p("| Stage | Estimated manual person-hours | Actual pipeline compute |")
-    p("|---|---|---|")
+    row("| Stage | Estimated manual person-hours | Actual pipeline compute |")
+    row("|---|---|---|")
     for stage, human, actual in [
         ("Title/abstract screening (17,021 records)", "~1,135 h (2 min × 2 reviewers)", s12.get("elapsed_hms", "03:04:54")),
         ("Full-text screening (6,206 records)",        "~2,069 h (10 min × 2 reviewers)", s14.get("elapsed_hms", "03:50:05")),
         ("Data extraction (6,076 records)",            "~2,532 h (25 min × 1 coder)",     s15.get("elapsed_hms", "00:13:58")),
         ("Full-text retrieval",                        "~1,552 h (15 min × 6,206)",        s13.get("elapsed_hms", "05:23:07")),
     ]:
-        p(f"| {stage} | {human} | {actual} |")
+        row(f"| {stage} | {human} | {actual} |")
     p()
     p("![Time comparison figure](figures/time_comparison.png)")
     p("*Figure 1. Estimated manual person-hours vs actual pipeline compute time.*")
@@ -1520,24 +1521,24 @@ def build_md():
     p()
 
     h(3, "Metric Definitions and Interpretation")
-    p("| Metric | What it measures | Formula | Priority in screening |")
-    p("|---|---|---|---|")
-    p("| Sensitivity / Recall | Of all truly relevant records, what proportion were correctly included? | TP / (TP + FN) | **Highest** — missing a relevant study is the most serious error |")
-    p("| Specificity | Of all truly irrelevant records, what proportion were correctly excluded? | TN / (TN + FP) | Secondary — false positives caught at full-text stage |")
-    p("| Precision | Of all included records, what proportion are truly relevant? | TP / (TP + FP) | Secondary |")
-    p("| F1 | Harmonic mean of precision and recall | 2PR / (P+R) | Balanced single score |")
-    p("| Cohen's κ | Agreement beyond chance between two raters | (p_o − p_e) / (1 − p_e) | Standard for inter-rater reliability (EPPI Reviewer, Cochrane) |")
+    row("| Metric | What it measures | Formula | Priority in screening |")
+    row("|---|---|---|---|")
+    row("| Sensitivity / Recall | Of all truly relevant records, what proportion were correctly included? | TP / (TP + FN) | **Highest** — missing a relevant study is the most serious error |")
+    row("| Specificity | Of all truly irrelevant records, what proportion were correctly excluded? | TN / (TN + FP) | Secondary — false positives caught at full-text stage |")
+    row("| Precision | Of all included records, what proportion are truly relevant? | TP / (TP + FP) | Secondary |")
+    row("| F1 | Harmonic mean of precision and recall | 2PR / (P+R) | Balanced single score |")
+    row("| Cohen's κ | Agreement beyond chance between two raters | (p_o − p_e) / (1 − p_e) | Standard for inter-rater reliability (EPPI Reviewer, Cochrane) |")
     p()
     p("**Kappa interpretation (Landis & Koch 1977):**")
     p()
-    p("| κ range | Interpretation | Screening implication |")
-    p("|---|---|---|")
-    p("| < 0.00 | Less than chance | Systematic disagreement |")
-    p("| 0.01–0.20 | Slight | Do not proceed |")
-    p("| 0.21–0.40 | Fair | Major revision needed |")
-    p("| 0.41–0.60 | Moderate | Acceptable for early calibration |")
-    p("| 0.61–0.80 | **Substantial** | Approaching deployment threshold |")
-    p("| 0.81–1.00 | Almost perfect | Criteria clear and consistently applied |")
+    row("| κ range | Interpretation | Screening implication |")
+    row("|---|---|---|")
+    row("| < 0.00 | Less than chance | Systematic disagreement |")
+    row("| 0.01–0.20 | Slight | Do not proceed |")
+    row("| 0.21–0.40 | Fair | Major revision needed |")
+    row("| 0.41–0.60 | Moderate | Acceptable for early calibration |")
+    row("| 0.61–0.80 | **Substantial** | Approaching deployment threshold |")
+    row("| 0.81–1.00 | Almost perfect | Criteria clear and consistently applied |")
     p()
     p("Conventional minimum for proceeding to full-corpus screening: **κ ≥ 0.60**. Human benchmark (Hanegraaf et al. 2024, n=12–16 published systematic reviews): κ = 0.82 abstract screening, 0.77 full-text screening, 0.88 data extraction.")
     p()
@@ -1545,12 +1546,12 @@ def build_md():
     h(3, "Calibration Results")
     p("*Note: these figures reflect a preliminary pilot run (see Section 1.3). The calibration process itself is not affected by API access constraints.*")
     p()
-    p(f"| Round | n | Sensitivity | Specificity | Precision | F1 | κ vs gold | Human κ |")
-    p(f"|---|---|---|---|---|---|---|---|")
-    p(f"| R1 — initial criteria | 205 | {llm_r1_r} | {r1_spec} | {llm_r1_p} | {llm_r1_f1} | {pk1.get('LLM vs CJ Reconciled',0.436):.3f} | {pk1.get('Caroline Staub vs Jennifer Cisse',0.500):.3f} |")
-    p(f"| R1b — revised criteria | 205 | {llm_r1b_r} | {r1b_spec} | {llm_r1b_p} | {llm_r1b_f1} | {pk1b.get('LLMr1b vs CJ Reconciled',0.645):.3f} | {pk1b.get('Caroline Staub vs Jennifer Cisse',0.500):.3f} |")
-    p(f"| R2a — 2nd revision | 103 | {llm_r2a_r} | {r2a_spec} | {llm_r2a_p} | {llm_r2a_f1} | {pk2a.get('LLM_r2a vs CJ Reconciled',0.770):.3f} | {pk2a.get('Caroline Staub vs Jennifer Cisse',0.765):.3f} |")
-    p(f"| R3a — stability check† | 107 | — | — | — | — | avg {r3a_avg:.3f} | {pk3.get('Jennifer Cisse vs Caroline Staub',0.703):.3f} |")
+    row(f"| Round | n | Sensitivity | Specificity | Precision | F1 | κ vs gold | Human κ |")
+    row(f"|---|---|---|---|---|---|---|---|")
+    row(f"| R1 — initial criteria | 205 | {llm_r1_r} | {r1_spec} | {llm_r1_p} | {llm_r1_f1} | {pk1.get('LLM vs CJ Reconciled',0.436):.3f} | {pk1.get('Caroline Staub vs Jennifer Cisse',0.500):.3f} |")
+    row(f"| R1b — revised criteria | 205 | {llm_r1b_r} | {r1b_spec} | {llm_r1b_p} | {llm_r1b_f1} | {pk1b.get('LLMr1b vs CJ Reconciled',0.645):.3f} | {pk1b.get('Caroline Staub vs Jennifer Cisse',0.500):.3f} |")
+    row(f"| R2a — 2nd revision | 103 | {llm_r2a_r} | {r2a_spec} | {llm_r2a_p} | {llm_r2a_f1} | {pk2a.get('LLM_r2a vs CJ Reconciled',0.770):.3f} | {pk2a.get('Caroline Staub vs Jennifer Cisse',0.765):.3f} |")
+    row(f"| R3a — stability check† | 107 | — | — | — | — | avg {r3a_avg:.3f} | {pk3.get('Jennifer Cisse vs Caroline Staub',0.703):.3f} |")
     p()
     p("†R3a: designed to verify criteria stability, not generate a new gold standard. Sensitivity/specificity/P/R/F1 not computable. LLM κ is the mean of κ vs Jennifer Cisse (0.690) and κ vs Caroline Staub (0.674).")
     p()
@@ -1639,9 +1640,9 @@ def build_md():
 
     # ---------------------------------------------------------------------------
     h(2, "Software and Dependencies")
-    p("| Component | Library / Service | Purpose |")
-    p("|---|---|---|")
-    for row in [
+    row("| Component | Library / Service | Purpose |")
+    row("|---|---|---|")
+    for r in [
         ("LLM inference",       "Ollama (qwen2.5:14b)",                 "Local LLM for screening and extraction"),
         ("Scopus API",          "Elsevier REST API",                    "Record retrieval and abstract enrichment"),
         ("DOI enrichment",      "Crossref, OpenAlex, Semantic Scholar", "DOI lookup and abstract retrieval"),
@@ -1654,13 +1655,13 @@ def build_md():
         ("IRR statistics",      "Custom Python (Cohen's kappa)",       "Inter-rater reliability analysis"),
         ("Reference management","EPPI Reviewer",                       "Human screening and RIS exports"),
     ]:
-        p(f"| {row[0]} | {row[1]} | {row[2]} |")
+        row(f"| {r[0]} | {r[1]} | {r[2]} |")
     p()
     hr()
     p(f"*Generated programmatically from pipeline output files on {datetime.utcnow().strftime('%d %B %Y')}. Source: [`scripts/documentation/methodology.py`]({REPO_URL}/blob/{REPO_BRANCH}/scripts/documentation/methodology.py)*")
 
     with open(MD_PATH, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
+        f.write("".join(lines).lstrip("\n"))
     print(f"Saved: {MD_PATH}")
 
 
