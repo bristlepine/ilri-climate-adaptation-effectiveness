@@ -589,6 +589,8 @@ def step9_enrich_abstracts(
     inst_token = os.getenv("SCOPUS_INST_TOKEN", "").strip() or None
     email = os.getenv("CONTACT_EMAIL", "").strip() or None
     auth = ScopusAuth(api_key=api_key, inst_token=inst_token)
+    print(f"[step9] Elsevier API key : {'set' if api_key else 'NOT SET'}")
+    print(f"[step9] Inst token       : {'set ✓' if inst_token else 'NOT SET — abstract access may be limited'}")
 
     df = pd.read_csv(in_csv, dtype=str, keep_default_na=False, na_filter=False)
 

@@ -5,10 +5,12 @@ step13_retrieve_fulltext.py
 Step 13: Full-text retrieval for all "Include" records from step12.
 
 For each included record, tries these sources in order:
-  1. Unpaywall  — best open-access URL (PDF or HTML), free, no key needed
-  2. Elsevier   — full-text PDF via Scopus API key + institutional token
+  1. Unpaywall       — best open-access URL (PDF or HTML), free, no key needed
+  2. Elsevier        — full-text PDF via Scopus API key + institutional token
   3. Semantic Scholar — openAccessPdf link
-  4. OpenAlex   — open_access.oa_url
+  4. OpenAlex        — open_access.oa_url
+  5. Frontiers       — direct PDF for 10.3389 DOIs (frontiersin.org/articles/{doi}/pdf)
+  6. CORE.ac.uk      — institutional repository aggregator, strong for dev/ag literature
 
 Downloads available PDFs/HTML to outputs/step13/fulltext/.
 Records that cannot be retrieved automatically are flagged as "needs_manual".
@@ -131,6 +133,7 @@ def step13_dirs(out_root: Path) -> Tuple[Path, Path, Path, Path]:
     base = out_root / "step13"
     fulltext = base / "fulltext"
     fulltext.mkdir(parents=True, exist_ok=True)
+    (base / "manual").mkdir(parents=True, exist_ok=True)
     manifest_csv = base / "step13_manifest.csv"
     summary_json = base / "step13_summary.json"
     manual_csv   = base / "step13_manual.csv"
@@ -402,6 +405,64 @@ def try_openalex(
         return None, f"openalex_error:{type(e).__name__}"
 
 
+def try_frontiers(
+    session: requests.Session,
+    doi: str,
+) -> Tuple[Optional[str], str]:
+    """
+    Frontiers journals (10.3389) serve PDFs directly at a predictable URL.
+    No API needed — fully open access, no Cloudflare block on their PDF endpoint.
+    """
+    if not doi or not doi.startswith("10.3389"):
+        return None, "frontiers_not_applicable"
+    url = f"https://www.frontiersin.org/articles/{doi}/pdf"
+    return url, "frontiers"
+
+
+def try_core(
+    session: requests.Session,
+    doi: str,
+    title: str,
+    *,
+    base_url: str = "https://api.core.ac.uk/v3/",
+) -> Tuple[Optional[str], str]:
+    """
+    CORE.ac.uk — aggregates open-access full texts from institutional
+    repositories worldwide. Free, no API key required for basic use.
+    Particularly good for development/agriculture/CGIAR literature.
+    Tries DOI lookup first, then title search fallback.
+    """
+    # 1. DOI lookup
+    if doi:
+        try:
+            url = f"{base_url.rstrip('/')}/works/doi:{quote(doi, safe='')}"
+            r = session.get(url, timeout=API_TIMEOUT)
+            if r.status_code == 200:
+                data = r.json()
+                pdf_url = safe_str(data.get("downloadUrl") or data.get("pdfUrl") or "")
+                if pdf_url:
+                    return pdf_url, "core_doi"
+        except Exception:
+            pass
+
+    # 2. Title search fallback
+    if title:
+        try:
+            url = f"{base_url.rstrip('/')}/search/works"
+            params = {"q": f'title:"{title[:120]}"', "limit": 1}
+            r = session.get(url, params=params, timeout=API_TIMEOUT)
+            if r.status_code == 200:
+                results = r.json().get("results") or []
+                for hit in results:
+                    pdf_url = safe_str(hit.get("downloadUrl") or hit.get("pdfUrl") or "")
+                    if pdf_url:
+                        return pdf_url, "core_title"
+        except Exception:
+            pass
+
+    return None, "core_not_found"
+
+
 # =============================================================================
 # Main retrieval loop
 # =============================================================================
@@ -417,9 +478,71 @@ def retrieve_fulltexts(
     run_limit: Optional[int] = None,
 ) -> List[dict]:
     base, fulltext_dir, _, _ = step13_dirs(out_root)
+    manual_dir = base / "manual"
     cache = load_manifest_cache(base)
     already_done = set(cache.keys())
     print(f"[step13] Cache: {len(already_done):,} records already retrieved")
+
+    # ---- Register manually downloaded files ----
+    # Drop PDFs/HTMLs into outputs/step13/manual/ named by DOI:
+    #   doi_10.1016_j.agsy.2021.103149.pdf
+    # Step13 will match them to records and register as source=manual.
+    manual_files = list(manual_dir.glob("*"))
+    if manual_files:
+        print(f"[step13] Manual folder: {len(manual_files)} file(s) found — registering...")
+        # Build DOI → dedupe_key lookup from input df
+        doi_to_dk = {}
+        for _, row in df.iterrows():
+            d = normalize_doi(row.get("doi", ""))
+            dk = safe_str(row.get("dedupe_key", ""))
+            if d and dk:
+                doi_to_dk[d] = dk
+
+        n_manual_registered = 0
+        for mf in manual_files:
+            if mf.suffix.lower() not in (".pdf", ".html", ".htm", ".txt"):
+                continue
+            # Extract DOI from filename: doi_10.1016_j.agsy.2021.103149.pdf
+            stem = mf.stem  # e.g. doi_10.1016_j.agsy.2021.103149
+            if stem.startswith("doi_"):
+                doi_from_name = stem[4:].replace("_", "/", 1).replace("_", ".")
+                # re-normalise: first _ is the 10.XXXX separator
+                # pattern: doi_10.NNNN_rest → 10.NNNN/rest
+                parts = stem[4:].split("_", 1)
+                doi_from_name = parts[0] + "/" + parts[1].replace("_", ".") if len(parts) == 2 else stem[4:]
+            else:
+                doi_from_name = stem.replace("_", "/", 1)
+
+            doi_from_name = normalize_doi(doi_from_name)
+            dk = doi_to_dk.get(doi_from_name, "")
+
+            if not dk or dk in already_done:
+                continue
+
+            rec = {
+                "dedupe_key": dk,
+                "doi": doi_from_name,
+                "scopus_id": "",
+                "title": "",
+                "year": "",
+                "pub": "",
+                "missing_abstract": False,
+                "status": "retrieved",
+                "source": "manual",
+                "file_path": str(mf),
+                "file_size_kb": round(mf.stat().st_size / 1024, 1),
+                "url": "",
+                "note": f"manually downloaded: {mf.name}",
+                "timestamp_utc": "",
+            }
+            append_manifest(base, rec)
+            already_done.add(dk)
+            n_manual_registered += 1
+            print(f"[step13]   Registered manual: {mf.name} → {doi_from_name}")
+
+        print(f"[step13] Manual: {n_manual_registered} new file(s) registered (source=manual)")
+    else:
+        print(f"[step13] Manual folder: empty (drop PDFs into outputs/step13/manual/ to register)")
 
     # Filter to Include only
     inc_mask = df["screen_decision"].str.strip().str.lower() == "include"
@@ -435,7 +558,15 @@ def retrieve_fulltexts(
     n_got = n_skip = n_fail = n_manual = 0
 
     with requests.Session() as session:
-        session.headers.update({"User-Agent": f"systematic-map-pipeline/1.0 ({email})"})
+        session.headers.update({
+            "User-Agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/124.0.0.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/pdf,*/*;q=0.9",
+            "Accept-Language": "en-US,en;q=0.9",
+        })
 
         for i in range(n_run):
             row = inc_df.iloc[i]
@@ -582,6 +713,50 @@ def retrieve_fulltexts(
                         n_got += 1
                     else:
                         rec["note"] = (rec["note"] + f" | openalex_dl_fail: {detail}").strip(" |")
+
+            # ---- Source 5: Frontiers direct PDF ----
+            if not retrieved:
+                front_url, front_note = try_frontiers(session, doi)
+                if front_url:
+                    dest = fulltext_dir / safe_filename(fname_base)
+                    ok, detail = _download_file(session, front_url, dest)
+                    if ok:
+                        actual_path = Path(detail)
+                        rec.update({
+                            "status": "retrieved",
+                            "source": front_note,
+                            "file_path": str(actual_path),
+                            "file_size_kb": round(actual_path.stat().st_size / 1024, 1),
+                            "url": front_url,
+                        })
+                        retrieved = True
+                        n_got += 1
+                    else:
+                        rec["note"] = (rec["note"] + f" | frontiers_dl_fail: {detail}").strip(" |")
+
+            # ---- Source 6: CORE.ac.uk ----
+            if not retrieved:
+                core_url, core_note = try_core(
+                    session, doi, title,
+                    base_url=endpoints.get("core_url", "https://api.core.ac.uk/v3/"),
+                )
+                time.sleep(SLEEP_S)
+                if core_url:
+                    dest = fulltext_dir / safe_filename(fname_base)
+                    ok, detail = _download_file(session, core_url, dest)
+                    if ok:
+                        actual_path = Path(detail)
+                        rec.update({
+                            "status": "retrieved",
+                            "source": core_note,
+                            "file_path": str(actual_path),
+                            "file_size_kb": round(actual_path.stat().st_size / 1024, 1),
+                            "url": core_url,
+                        })
+                        retrieved = True
+                        n_got += 1
+                    else:
+                        rec["note"] = (rec["note"] + f" | core_dl_fail: {detail}").strip(" |")
 
             # ---- Not retrieved ----
             if not retrieved:
