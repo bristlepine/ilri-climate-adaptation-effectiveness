@@ -7,6 +7,162 @@ This repository hosts the methods, workflows, protocols, documentation, and outp
 
 ---
 
+## Table of Contents
+
+- [Running the Pipeline: Step-by-Step Guide for Collaborators](#running-the-pipeline-step-by-step-guide-for-collaborators)
+- [Contributors](#contributors)
+- [How to Cite This Repository](#how-to-cite-this-repository)
+- [Repository & Output Locations](#repository--output-locations)
+- [Deliverables Summary](#deliverables-summary-aligned-to-contract)
+- [Repository Structure](#repository-structure)
+- [Pipeline Overview](#pipeline-overview)
+
+---
+
+## Running the Pipeline: Step-by-Step Guide for Collaborators
+
+This guide is for team members who need to run a pipeline step on their own computer — no prior programming experience required.
+
+> **Why this matters:** Running the full-text retrieval step (`step13`) from an institutional network connection (on campus or via institutional VPN) unlocks access to Wiley, Springer, Taylor & Francis, SAGE, and other publishers via your institution's IP agreements — no additional login required. This can recover full texts for 60–80% of the ~6,000 included papers.
+
+---
+
+### Part 1: Install the required software (one-time setup)
+
+You will need three things installed on your computer. If you already have them, skip ahead.
+
+**A. Git** — used to download the project code
+
+- Mac: Open the **Terminal** app (search "Terminal" in Spotlight). Type `git --version` and press Enter. If you see a version number, you already have it. If not, it will prompt you to install it — click Install.
+- Windows: Download from [git-scm.com/download/win](https://git-scm.com/download/win) and run the installer with default settings.
+
+**B. Miniconda** — used to set up the Python environment
+
+- Download the installer for your system from [docs.conda.io/en/latest/miniconda.html](https://docs.conda.io/en/latest/miniconda.html)
+- Run the installer with default settings. When asked "Add Miniconda to PATH", say **Yes**.
+- After installing, close and reopen Terminal (or Command Prompt on Windows).
+
+**C. Terminal / Command Prompt**
+
+- **Mac:** Press `Cmd + Space`, type `Terminal`, press Enter.
+- **Windows:** Press the Windows key, type `Anaconda Prompt`, open it. Use this instead of Command Prompt for all steps below.
+
+---
+
+### Part 2: Download the project code (one-time setup)
+
+In Terminal, type the following commands one at a time, pressing Enter after each:
+
+```bash
+git clone https://github.com/bristlepine/ilri-climate-adaptation-effectiveness.git
+```
+
+This downloads the project into a new folder called `ilri-climate-adaptation-effectiveness`. Then navigate into it:
+
+```bash
+cd ilri-climate-adaptation-effectiveness
+```
+
+You should now be "inside" the project folder. You can verify this by typing `ls` (Mac) or `dir` (Windows) — you should see files like `README.md` and `environment.yml`.
+
+---
+
+### Part 3: Set up the Python environment (one-time setup)
+
+This installs all the Python packages the project needs:
+
+```bash
+conda env create -f environment.yml
+```
+
+This will take a few minutes. When it finishes, activate the environment:
+
+```bash
+conda activate ilri01
+```
+
+You should see `(ilri01)` appear at the start of your command line. **You need to run this activation command every time you open a new Terminal window before running any scripts.**
+
+---
+
+### Part 4: Add the credentials file (one-time setup)
+
+The pipeline needs API keys to access Elsevier and OpenAI. The project coordinator will send you a small text file called `.env`. Place this file in the main project folder (the same folder that contains `README.md`).
+
+> **Mac tip:** Files starting with a dot (`.`) are hidden by default. To see them in Finder: press `Cmd + Shift + .` to toggle hidden files visible.
+
+The `.env` file should look like this (Zarrar will fill in the actual values):
+
+```
+SCOPUS_API_KEY=your_key_here
+SCOPUS_INST_TOKEN=your_token_here
+OPENAI_API_KEY=your_key_here
+```
+
+Do not share this file or commit it to GitHub — it contains private credentials.
+
+---
+
+### Part 5: Download the data outputs (one-time setup)
+
+The pipeline's intermediate data files are too large for GitHub. The project coordinator will share a folder called `outputs` via Google Drive (or similar). Download it and place it here:
+
+```
+ilri-climate-adaptation-effectiveness/
+  scripts/
+    outputs/        ← place the shared folder here
+```
+
+So the full path would be: `ilri-climate-adaptation-effectiveness/scripts/outputs/`
+
+---
+
+### Part 6: Connect to your institutional VPN (before running step13)
+
+For full-text retrieval to work at its best, your computer needs to appear to publishers as being on your institution's network. This happens automatically if you are:
+
+- **On campus** — no extra steps needed
+- **Off campus** — connect to your institution's VPN first (contact your IT department for instructions)
+
+Once connected, publishers like Wiley, Springer, and Taylor & Francis will automatically grant full-text access based on your institution's IP agreements — no login required on their sites.
+
+---
+
+### Part 7: Run the full-text retrieval
+
+Make sure:
+- Your Terminal shows `(ilri01)` at the start of the line
+- You are inside the project folder (`cd ilri-climate-adaptation-effectiveness`)
+- You are connected to Cornell VPN (or on campus)
+
+Then run:
+
+```bash
+python scripts/step13_retrieve_fulltext.py
+```
+
+You will see progress printed to the screen as it processes each paper. It is normal for this to take several hours — it is downloading PDFs for thousands of papers one by one.
+
+**If it stops or you need to close your laptop:** Don't worry. The script saves its progress as it goes. Just run the same command again and it will pick up exactly where it left off — it will not re-download anything it already retrieved.
+
+---
+
+### Part 8: Share the results with your team
+
+When the script finishes (or even partway through if you need to stop), zip the output folder and send it to Zarrar:
+
+**Mac:**
+```bash
+zip -r step13_outputs.zip scripts/outputs/step13/
+```
+
+**Windows:**
+Right-click the `step13` folder inside `scripts/outputs/` → Send to → Compressed (zipped) folder.
+
+Then share the zip file with the project coordinator. Even a partial run is very useful — every paper retrieved helps.
+
+---
+
 ## Contributors
 
 ### Principal Investigators & Authors  

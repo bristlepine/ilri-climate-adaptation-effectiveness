@@ -48,13 +48,14 @@ load_dotenv()
 
 HERE      = Path(__file__).resolve().parent
 OUT_ROOT  = HERE / "outputs"
-STEP9_CSV = OUT_ROOT / "step9" / "step9_scopus_enriched.csv"
+STEP9_CSV     = OUT_ROOT / "step9a" / "step9a_scopus_enriched.csv"  # preferred: final after step9a
+STEP9_MISSING = OUT_ROOT / "step9" / "step9_missing.csv"           # fallback: missing list from step9
 OUT_DIR   = OUT_ROOT / "step9b"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 PAGE_TIMEOUT  = 15_000   # ms — max wait for page load
 SLEEP_MS      = 1_500    # ms — polite delay between pages
-MAX_RECORDS   = 10       # set to None to run all
+MAX_RECORDS   = None       # set to None to run all
 
 # CSS selectors to try for abstract text, by publisher pattern
 ABSTRACT_SELECTORS = [
@@ -134,7 +135,7 @@ async def scrape_abstract(page, url: str) -> Optional[str]:
             except Exception:
                 continue
 
-    except Exception as e:
+    except Exception:
         pass
 
     return None
@@ -160,6 +161,7 @@ async def run_browser_scraping(missing_df: pd.DataFrame) -> list[dict]:
         )
         page = await context.new_page()
 
+        t_start = time.time()
         for i, (_, row) in enumerate(missing_df.iterrows()):
             doi   = str(row.get("doi", "") or "").strip()
             sid   = str(row.get("scopus_id", "") or "").strip()
@@ -167,16 +169,22 @@ async def run_browser_scraping(missing_df: pd.DataFrame) -> list[dict]:
 
             url = doi_to_url(doi)
             if not url:
-                print(f"  [{i+1}/{n}] No URL for: {title}... — skipping")
                 results.append({"doi": doi, "scopus_id": sid, "abstract": None, "source": "no_url"})
                 continue
 
-            print(f"  [{i+1}/{n}] {title}...")
+            # Progress line with % and ETA
+            done = i + 1
+            pct = done / n * 100
+            elapsed = time.time() - t_start
+            eta_s = (elapsed / done) * (n - done) if done > 1 else 0
+            eta_str = time.strftime("%H:%M:%S", time.gmtime(eta_s))
+            print(f"  [{done}/{n}] {pct:.1f}% | ETA {eta_str} | {title}...")
+
             abstract = await scrape_abstract(page, url)
 
             if abstract:
                 recovered += 1
-                print(f"    ✓ Got abstract ({len(abstract)} chars)")
+                print(f"    ✓ Got abstract ({len(abstract)} chars) | {recovered}/{done} recovered ({recovered/done*100:.0f}%)")
             else:
                 print(f"    ✗ No abstract found")
 
@@ -201,19 +209,72 @@ async def run_browser_scraping(missing_df: pd.DataFrame) -> list[dict]:
 # Main
 # =============================================================================
 
-def main():
-    if not STEP9_CSV.exists():
-        print(f"ERROR: {STEP9_CSV} not found. Run step9 first.")
-        return
+CACHE_FILE = OUT_DIR / "step9b_cache.json"
 
-    df = pd.read_csv(STEP9_CSV, dtype=str, keep_default_na=False)
-    missing = df[df["abstract"].str.strip() == ""].copy()
-    print(f"\nStep 9b: Browser-based abstract scraping")
-    print(f"  Total records  : {len(df):,}")
-    print(f"  Missing abstracts: {len(missing):,}")
+
+def load_cache() -> dict:
+    if CACHE_FILE.exists():
+        try:
+            return json.loads(CACHE_FILE.read_text())
+        except Exception:
+            pass
+    return {}
+
+
+def save_cache(cache: dict):
+    CACHE_FILE.write_text(json.dumps(cache, indent=2))
+
+
+def main():
+    # Determine input source: prefer step9a output, fall back to step9 missing list
+    def is_missing(row) -> bool:
+        """True if the record has no usable abstract in any column."""
+        for col in ("abstract", "xref_abstract", "scopus_abstract"):
+            val = str(row.get(col, "") or "").strip()
+            if val and val.lower() not in ("nan", "none", "n/a"):
+                return False
+        return True
+
+    if STEP9_CSV.exists():
+        df = pd.read_csv(STEP9_CSV, dtype=str, keep_default_na=False)
+        missing = df[df.apply(is_missing, axis=1)].copy()
+        print(f"\nStep 9b: Browser-based abstract scraping")
+        print(f"  Input  : {STEP9_CSV}")
+        print(f"  Total records  : {len(df):,}")
+        print(f"  Missing abstracts: {len(missing):,}")
+    elif STEP9_MISSING.exists():
+        missing = pd.read_csv(STEP9_MISSING, dtype=str, keep_default_na=False)
+        if "abstract" not in missing.columns:
+            missing["abstract"] = ""
+        missing = missing[missing.apply(is_missing, axis=1)].copy()
+        df = None
+        print(f"\nStep 9b: Browser-based abstract scraping (fallback mode)")
+        print(f"  Input  : {STEP9_MISSING}")
+        print(f"  Missing records: {len(missing):,}")
+    else:
+        print(f"ERROR: Neither {STEP9_CSV} nor {STEP9_MISSING} found. Run step9 first.")
+        return
 
     if missing.empty:
         print("  Nothing to do — all abstracts present.")
+        return
+
+    # Load cache and skip already-attempted records
+    cache = load_cache()
+    cached_keys = set(cache.keys())
+    def cache_key(row):
+        doi = str(row.get("doi", "") or "").strip()
+        sid = str(row.get("scopus_id", "") or "").strip()
+        return doi or sid
+
+    before = len(missing)
+    missing = missing[missing.apply(lambda r: cache_key(r) not in cached_keys, axis=1)].copy()
+    skipped = before - len(missing)
+    if skipped:
+        print(f"  Skipping {skipped} already-attempted records (cached)")
+
+    if missing.empty:
+        print("  Nothing new to scrape — all remaining records already attempted.")
         return
 
     if MAX_RECORDS:
@@ -225,11 +286,18 @@ def main():
 
     results = asyncio.run(run_browser_scraping(missing))
 
-    # Update main CSV
+    # Update cache
+    for r in results:
+        key = r.get("doi") or r.get("scopus_id") or ""
+        if key:
+            cache[key] = {"abstract": r.get("abstract"), "source": r.get("source")}
+    save_cache(cache)
+
+    # Update main CSV if we have it
     recovered_df = pd.DataFrame([r for r in results if r.get("abstract")])
     n_recovered = len(recovered_df)
 
-    if n_recovered > 0:
+    if n_recovered > 0 and df is not None:
         # Update abstract column in main df
         doi_to_abstract = {r["doi"]: r["abstract"] for r in results if r.get("abstract")}
         sid_to_abstract = {r["scopus_id"]: r["abstract"] for r in results if r.get("abstract") and r.get("scopus_id")}
