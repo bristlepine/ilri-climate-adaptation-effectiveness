@@ -24,3 +24,4 @@ dependencies:
       - json-repair         # step12/14: LLM JSON response repair
       - geopandas           # step16: geographic mapping
       - plotly              # step16: interactive figures
+      - playwright          # step9b: browser-based abstract scraping for Cloudflare-protected publishers
