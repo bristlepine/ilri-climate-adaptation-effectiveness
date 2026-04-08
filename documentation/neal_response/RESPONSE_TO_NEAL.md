@@ -14,7 +14,7 @@ This document responds to reviewer concerns about the use of AI-assisted screeni
 **Addressed:**
 - Kappa vs P/R/F1: both metric sets now reported with full confusion matrices and benchmarks (Point 2)
 - Sample size / "training the model": supervised ML training vs LLM validation distinction explained; calibration records are a validation set, not a training corpus (Point 3)
-- Missing abstracts (1,314): confirmed as API access limitation; Elsevier institutional token now active (Point 4)
+- Missing abstracts: confirmed as API access limitation; Elsevier institutional token now active, enrichment re-run — missing count reduced from 1,430 to 341 (2.0% of corpus) (Point 4)
 - Calibration sensitivity meets threshold: R2b sensitivity 0.966 meets the O'Mara-Eves ≥0.95 target (R2a: 0.897, below threshold; criteria revised → R2b: 0.966); R3a (0.970) independently confirms stability on a separate sample with the same criteria (Points 2–3)
 - Full-text retrieval: Elsevier token active; ~2,065 of 6,218 records retrieved (~33%) and rising; Cochrane "awaiting classification" guidance applied; impact on conclusions minimal (Schmucker et al. 2017) (Point 5)
 - AI at full-text and extraction stages: supervised vs autonomous distinction explained; literature benchmarks cited (Point 6)
@@ -200,9 +200,9 @@ The analogy in conventional systematic review practice is calibration training: 
 
 > *"1,430 missing abstracts is incredibly high for Scopus, for which most abstracts are available — did you check if this is the API failing? How does the API compare with manual extraction?"*
 
-**Valid flag. The cause is an API access limitation, not a data availability problem.** The Elsevier Abstract Retrieval API requires an institutional token to return full abstract content for many records. This preliminary run was conducted without an institutional token. Spot-checks confirm the abstracts are present on the Scopus web interface — the gap is access-gated, not a systematic API failure.
+**Valid flag. The cause was an API access limitation, not a data availability problem.** The Elsevier Abstract Retrieval API requires an institutional token to return full abstract content for many records. The initial run was conducted without one. Spot-checks confirmed the abstracts were present on the Scopus web interface — the gap was access-gated, not a systematic API failure.
 
-An application for an Elsevier institutional token through Cornell University is in progress. Once active, the enrichment step will be re-run and this figure is expected to fall substantially. All statistics dependent on this limitation are labelled as preliminary in the revised appendix.
+The Elsevier institutional token (Cornell University) is now active. The enrichment step has been re-run: missing abstracts have fallen from 1,430 to **341 (2.0% of the 17,021-record corpus)**. The small residual reflects records with no abstract on Scopus itself (conference abstracts, data papers, and older records). All downstream statistics have been updated accordingly.
 
 **Appendix reference:** Sections 1.3 and 5.1.
 
@@ -279,8 +279,8 @@ On the alternative of manual screening at this scale: adding reviewers addresses
 | Revise appendix — supervised ML vs LLM distinction | **Done** | Zarrar |
 | Revise appendix — preliminary figures labelled | **Done** | Zarrar |
 | Revise appendix — human oversight section | **Done** | Zarrar |
-| Elsevier institutional token (Cornell) | In progress | Zarrar |
-| Re-run enrichment + retrieval under full access | Pending token | Zarrar |
+| Elsevier institutional token (Cornell) | **Done** | Zarrar |
+| Re-run enrichment under full access (missing abstracts: 1,430 → 341) | **Done** | Zarrar |
 | WoS / AGRIS / OpenAlex coverage checks | In progress | Zarrar |
 | Grey literature manual search (CGIAR, World Bank, 3ie) | To assign | Colleagues |
 | Integrate verified AI literature citations into appendix Section 2 | In progress | Zarrar |
