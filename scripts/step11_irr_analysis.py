@@ -131,21 +131,23 @@ def confusion_vs_reconciled(
         ea, eb = encode(rv), encode(rc)
         valid = ~(np.isnan(ea) | np.isnan(eb))
         k = cohen_kappa(ea[valid], eb[valid]) if valid.sum() >= 2 else None
-        precision = round(tp / (tp + fp), 3) if (tp + fp) > 0 else None
-        recall    = round(tp / (tp + fn), 3) if (tp + fn) > 0 else None
-        f1        = round(2 * precision * recall / (precision + recall), 3) \
-                    if (precision is not None and recall is not None
-                        and (precision + recall) > 0) else None
+        sensitivity = round(tp / (tp + fn), 3) if (tp + fn) > 0 else None
+        specificity = round(tn / (tn + fp), 3) if (tn + fp) > 0 else None
+        precision   = round(tp / (tp + fp), 3) if (tp + fp) > 0 else None
+        f1          = round(2 * precision * sensitivity / (precision + sensitivity), 3) \
+                      if (precision is not None and sensitivity is not None
+                          and (precision + sensitivity) > 0) else None
         out[r] = {
-            "both_include":   tp,
-            "both_exclude":   tn,
-            "over_include":   fp,
-            "under_include":  fn,
-            "pct_agreement":  round(100 * (tp + tn) / total, 1) if total else 0.0,
+            "both_include":        tp,
+            "both_exclude":        tn,
+            "over_include":        fp,
+            "under_include":       fn,
+            "pct_agreement":       round(100 * (tp + tn) / total, 1) if total else 0.0,
             "kappa_vs_reconciled": round(k, 3) if k is not None else None,
-            "precision":      precision,
-            "recall":         recall,
-            "f1":             f1,
+            "sensitivity":         sensitivity,
+            "specificity":         specificity,
+            "precision":           precision,
+            "f1":                  f1,
         }
     return out
 
@@ -196,20 +198,24 @@ def build_figure(
     has_rec    = reconciled_col is not None
 
     sns.set_theme(style="whitegrid", font_scale=0.95)
-    n_panels = 3 if has_rec else 2
-    w_ratios = [3.5, max(n_raters * 1.1, 2.5), 3.2] if has_rec else [3.5, max(n_raters * 1.1, 2.5)]
-    fig, axes = plt.subplots(
-        1, n_panels, figsize=(sum(w_ratios) * 1.6, 5.5),
-        gridspec_kw={"width_ratios": w_ratios},
-    )
-    axes = list(axes)
-    fig.suptitle(title, fontsize=11, fontweight="bold", y=1.02)
+
+    if has_rec:
+        fig, axes_grid = plt.subplots(
+            2, 2, figsize=(14, 10),
+            gridspec_kw={"width_ratios": [1, 1], "height_ratios": [1, 1]},
+        )
+        axes = [axes_grid[0, 0], axes_grid[0, 1], axes_grid[1, 0], axes_grid[1, 1]]
+    else:
+        fig, axes_grid = plt.subplots(1, 2, figsize=(10, 5))
+        axes = list(axes_grid)
+
+    fig.suptitle(title, fontsize=12, fontweight="bold", y=1.01)
 
     n_total = stats["n_items"]
     shorts  = [short_name(r) for r in all_raters]
 
     # ------------------------------------------------------------------
-    # Panel A – decision distribution (stacked horizontal bar)
+    # Panel A (top-left) – decision distribution (stacked horizontal bar)
     # ------------------------------------------------------------------
     ax = axes[0]
     n_inc = [stats["rater_stats"][r]["n_include"] for r in all_raters]
@@ -235,7 +241,7 @@ def build_figure(
     ax.invert_yaxis()
 
     # ------------------------------------------------------------------
-    # Panel B – Cohen's kappa heatmap (lower triangle + diagonal)
+    # Panel B (top-right) – Cohen's kappa heatmap (lower triangle + diagonal)
     # ------------------------------------------------------------------
     ax = axes[1]
     kappa_pairs = {(a, b): v
@@ -277,7 +283,7 @@ def build_figure(
     ax.tick_params(axis="y", rotation=0)
 
     # ------------------------------------------------------------------
-    # Panel C – confusion breakdown vs reconciled
+    # Panel C (bottom-left) – confusion breakdown vs reconciled
     # ------------------------------------------------------------------
     if has_rec:
         ax = axes[2]
@@ -299,27 +305,99 @@ def build_figure(
         ax.barh(y, fp_v,  left=left2, color=C_OVER,     label="Over-include",   height=0.6)
         ax.barh(y, fn_v,  left=left3, color=C_MISS,     label="Under-include",  height=0.6)
 
-        # Annotate % agreement + kappa + P/R/F1
+        # Annotate % agreement only (metrics now in Panel D)
         for i, r in enumerate(reviewer_cols):
-            pct_a  = conf[r]["pct_agreement"]
-            k_val  = conf[r]["kappa_vs_reconciled"]
-            prec   = conf[r].get("precision")
-            rec    = conf[r].get("recall")
-            f1     = conf[r].get("f1")
-            k_str  = f" κ={k_val:.2f}" if k_val is not None else ""
-            prf_str = (f" P={prec:.2f} R={rec:.2f} F1={f1:.2f}"
-                       if all(v is not None for v in (prec, rec, f1)) else "")
-            ax.text(n_total * 1.01, i, f"{pct_a:.0f}%{k_str}{prf_str}",
-                    va="center", ha="left", fontsize=7.5)
+            pct_a = conf[r]["pct_agreement"]
+            k_val = conf[r]["kappa_vs_reconciled"]
+            k_str = f" κ={k_val:.2f}" if k_val is not None else ""
+            ax.text(n_total * 1.01, i, f"{pct_a:.0f}%{k_str}",
+                    va="center", ha="left", fontsize=8)
 
         ax.set_yticks(y)
         ax.set_yticklabels(rnames)
         rec_short = short_name(reconciled_col)
         ax.set_title(f"Agreement vs {rec_short}")
         ax.set_xlabel("Papers")
-        ax.set_xlim(0, n_total * 1.6)
+        ax.set_xlim(0, n_total * 1.45)
         ax.legend(loc="lower right", fontsize=7.5, ncol=2)
         ax.invert_yaxis()
+
+        # ------------------------------------------------------------------
+        # Panel D (bottom-right) – metrics table (Sensitivity, Specificity, Precision, F1, κ)
+        # ------------------------------------------------------------------
+        ax = axes[3]
+        ax.axis("off")
+
+        # Metric | (benchmark display string, threshold for colouring or None = no formal threshold)
+        BENCHMARKS = {
+            "Sensitivity": ("≥ 0.95 [a]",  0.95),
+            "Specificity": ("No threshold [b]", None),
+            "Precision":   ("0.632 [c]",    0.632),
+            "F1":          ("0.708 [c]",    0.708),
+            "κ":           ("≥ 0.60 [d]",   0.60),
+        }
+
+        metric_keys = {
+            "Sensitivity": "sensitivity",
+            "Specificity": "specificity",
+            "Precision":   "precision",
+            "F1":          "f1",
+            "κ":           "kappa_vs_reconciled",
+        }
+
+        col_labels = ["Metric", "Benchmark"] + [short_name(r) for r in reviewer_cols]
+        table_data = []
+        cell_colors = []
+
+        for metric_name, (bench_str, bench_val) in BENCHMARKS.items():
+            key = metric_keys[metric_name]
+            row_vals = [metric_name, bench_str]
+            row_colors = [["#f0f0f0", "#f0f0f0"]]
+            for r in reviewer_cols:
+                val = conf[r].get(key)
+                val_str = f"{val:.3f}" if val is not None else "—"
+                if val is not None and bench_val is not None:
+                    color = "#d5f5d5" if val >= bench_val else "#fde0dc"
+                else:
+                    color = "#ffffff"
+                row_vals.append(val_str)
+                row_colors[0].append(color)
+            table_data.append(row_vals)
+            cell_colors.append(row_colors[0])
+
+        tbl = ax.table(
+            cellText=table_data,
+            colLabels=col_labels,
+            cellLoc="center",
+            loc="center",
+            cellColours=cell_colors,
+            bbox=[0.0, 0.25, 1.0, 0.65],  # [left, bottom, width, height] in axes coords
+        )
+        tbl.auto_set_font_size(False)
+        tbl.set_fontsize(8.5)
+        tbl.scale(1, 1.6)
+
+        # Bold header
+        for j in range(len(col_labels)):
+            tbl[0, j].set_text_props(fontweight="bold")
+            tbl[0, j].set_facecolor("#d0d8e8")
+
+        ax.set_title("Performance metrics vs reconciled", fontsize=9, fontweight="bold")
+
+        footnotes = (
+            "[a] O'Mara-Eves et al. 2015 / Cochrane Handbook — minimum sensitivity for T/A screening\n"
+            "[b] No formal minimum specificity exists in SR methodology. Sensitivity-specificity tradeoff\n"
+            "    is intentional: maximising sensitivity (recall) reduces specificity by design.\n"
+            "    Ref: Zhan et al. 2025 GPT-4 tool reported 0.836; Scherbakov et al. 2025 do not report specificity.\n"
+            "[c] Scherbakov et al. 2025 — mean across 172 AI screening studies (precision 0.632; "
+            "F1 computed from reported sensitivity & precision)\n"
+            "[d] Landis & Koch 1977 — minimum κ for substantial agreement\n"
+            "Green = meets/exceeds benchmark   White = no formal threshold   Red = below benchmark"
+        )
+        ax.text(0.01, 0.22, footnotes, transform=ax.transAxes,
+                fontsize=6.5, va="top", ha="left",
+                color="#333333", linespacing=1.5,
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#f9f9f9", edgecolor="#cccccc"))
 
     plt.tight_layout()
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
@@ -355,11 +433,13 @@ def process_file(csv_path: Path, out_dir: Path) -> None:
     if reconciled_col:
         print(f"[step11]   Agreement vs reconciled:")
         for r, c in stats["confusion_vs_reconciled"].items():
-            p_str  = f"{c['precision']:.3f}" if c['precision']  is not None else "N/A"
-            r_str  = f"{c['recall']:.3f}"    if c['recall']     is not None else "N/A"
-            f1_str = f"{c['f1']:.3f}"        if c['f1']         is not None else "N/A"
+            sens_str = f"{c['sensitivity']:.3f}" if c['sensitivity'] is not None else "N/A"
+            spec_str = f"{c['specificity']:.3f}" if c['specificity'] is not None else "N/A"
+            prec_str = f"{c['precision']:.3f}"   if c['precision']   is not None else "N/A"
+            f1_str   = f"{c['f1']:.3f}"          if c['f1']          is not None else "N/A"
             print(f"           {short_name(r):15s}  {c['pct_agreement']:.0f}%  "
-                  f"κ={c['kappa_vs_reconciled']}  P={p_str}  R={r_str}  F1={f1_str}")
+                  f"κ={c['kappa_vs_reconciled']}  Sensitivity={sens_str}  "
+                  f"Specificity={spec_str}  Precision={prec_str}  F1={f1_str}")
 
     stem = csv_path.stem.replace(" ", "_")
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -377,6 +457,204 @@ def process_file(csv_path: Path, out_dir: Path) -> None:
         title=csv_path.stem,
         out_path=fig_path,
     )
+
+
+# =============================================================================
+# EVOLUTION FIGURE — metrics across calibration rounds
+# =============================================================================
+
+# Which LLM column to use per file (last/best column for each round)
+# Maps (filename, llm_column) -> round_label for the evolution figure.
+# Use a list of tuples to allow the same file to appear more than once
+# (R2a and R2b share the same EPPI CSV but different LLM columns).
+ROUND_LLM_COL = [
+    ("EPPI Review - R1.csv",   "LLM",     "R1"),
+    ("EPPI Review - R1a.csv",  "LLMr1a",  "R1a"),
+    ("EPPI Review - R1b.csv",  "LLMr1b",  "R1b"),
+    ("EPPI Review - R2a.csv",  "LLM_r2a", "R2a"),
+    ("EPPI Review - R2b.csv",  "LLM_r2b", "R2b"),
+    ("EPPI Review - R3a.csv",  "LLM",     "R3a"),
+]
+
+
+def _round_metrics(df: pd.DataFrame, llm_col: str, rec_col: str) -> Optional[Dict]:
+    mask = df[llm_col].notna() & df[rec_col].notna()
+    pred  = _upper(df.loc[mask, llm_col])
+    truth = _upper(df.loc[mask, rec_col])
+    tp = int(((pred == INCLUDE_LABEL) & (truth == INCLUDE_LABEL)).sum())
+    tn = int(((pred == EXCLUDE_LABEL) & (truth == EXCLUDE_LABEL)).sum())
+    fp = int(((pred == INCLUDE_LABEL) & (truth == EXCLUDE_LABEL)).sum())
+    fn = int(((pred == EXCLUDE_LABEL) & (truth == INCLUDE_LABEL)).sum())
+    total = tp + tn + fp + fn
+    if total == 0:
+        return None
+    sens = tp / (tp + fn) if (tp + fn) > 0 else 0
+    spec = tn / (tn + fp) if (tn + fp) > 0 else 0
+    prec = tp / (tp + fp) if (tp + fp) > 0 else 0
+    f1   = 2 * prec * sens / (prec + sens) if (prec + sens) > 0 else 0
+    ea   = encode(df.loc[mask, llm_col])
+    eb   = encode(df.loc[mask, rec_col])
+    valid = ~(np.isnan(ea) | np.isnan(eb))
+    k = cohen_kappa(ea[valid], eb[valid]) if valid.sum() >= 2 else None
+    return {"sensitivity": sens, "specificity": spec, "precision": prec,
+            "f1": f1, "kappa": k}
+
+
+def build_evolution_figure(out_path: Path) -> None:
+    rounds, metrics_by_round = [], {}
+
+    for fname, llm_col, label in ROUND_LLM_COL:
+        csv_path = RESULTS_DIR / fname
+        if not csv_path.exists():
+            continue
+        df = pd.read_csv(csv_path, dtype=str, keep_default_na=False)
+        rec_cols = [c for c in df.columns if "reconcil" in c.lower()]
+        if not rec_cols or llm_col not in df.columns:
+            continue
+        m = _round_metrics(df, llm_col, rec_cols[0])
+        if m:
+            rounds.append(label)
+            for k, v in m.items():
+                metrics_by_round.setdefault(k, []).append(v)
+
+    if len(rounds) < 2:
+        print("[step11] Not enough rounds for evolution figure — skipping.")
+        return
+
+    x = np.arange(len(rounds))
+
+    METRICS = [
+        ("sensitivity", "Sensitivity",  "#27ae60", "≥ 0.95",  0.95),
+        ("specificity", "Specificity",  "#2980b9", None,       None),
+        ("precision",   "Precision",    "#8e44ad", "≥ 0.632", 0.632),
+        ("f1",          "F1",           "#e67e22", "≥ 0.708", 0.708),
+        ("kappa",       "κ (Kappa)",    "#c0392b", "≥ 0.60",  0.60),
+    ]
+
+    sns.set_theme(style="whitegrid", font_scale=0.95)
+    fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+    fig.suptitle("LLM Screening Performance: Evolution Across Calibration Rounds",
+                 fontsize=12, fontweight="bold")
+
+    # One subplot per metric
+    for idx, (key, label, color, bench_label, bench_val) in enumerate(METRICS):
+        ax = axes[idx // 3][idx % 3]
+        vals = metrics_by_round.get(key, [])
+        if not vals:
+            ax.axis("off")
+            continue
+
+        ax.plot(x, vals, color=color, marker="o", linewidth=2, markersize=7, zorder=3)
+
+        # Annotate values
+        for xi, v in zip(x, vals):
+            ax.annotate(f"{v:.3f}", (xi, v),
+                        textcoords="offset points", xytext=(0, 8),
+                        ha="center", fontsize=8, fontweight="bold", color=color)
+
+        # Benchmark line
+        if bench_val is not None:
+            ax.axhline(bench_val, color="gray", linestyle="--", linewidth=1.2, zorder=2)
+            ax.text(len(rounds) - 0.05, bench_val + 0.01, bench_label,
+                    ha="right", va="bottom", fontsize=7.5, color="gray", style="italic")
+
+            # Shade the "pass" zone above the benchmark
+            ax.axhspan(bench_val, 1.02, alpha=0.06, color="#27ae60", zorder=1)
+
+        ax.set_title(label, fontweight="bold")
+        ax.set_xticks(x)
+        ax.set_xticklabels(rounds)
+        ax.set_ylim(0, 1.05)
+        ax.set_ylabel("Score")
+        ax.set_xlabel("Calibration round")
+        ax.grid(axis="y", alpha=0.4)
+
+    # Last panel — all-rounds summary table
+    ax = axes[1][2]
+    ax.axis("off")
+
+    # Build: rows = metrics, cols = Metric | Benchmark | R1 | R1a | ... | Rna
+    col_labels_tbl = ["Metric", "Benchmark"] + rounds
+    n_cols = len(col_labels_tbl)
+    table_data = []
+    cell_colors_tbl = []
+
+    for key, label, _, bench_label, bench_val in METRICS:
+        bench_str = bench_label if bench_label else "No threshold"
+        row = [label, bench_str]
+        row_colors = ["#f0f0f0", "#f0f0f0"]
+        vals = metrics_by_round.get(key, [])
+        for v in vals:
+            val_str = f"{v:.3f}" if v is not None else "—"
+            if bench_val is not None and v is not None:
+                color = "#d5f5d5" if v >= bench_val else "#fde0dc"
+            else:
+                color = "#ffffff"
+            row.append(val_str)
+            row_colors.append(color)
+        table_data.append(row)
+        cell_colors_tbl.append(row_colors)
+
+    # Use abbreviated metric names to avoid overflow
+    METRIC_SHORT = {
+        "Sensitivity": "Sensitivity",
+        "Specificity": "Specificity",
+        "Precision":   "Precision",
+        "F1":          "F1",
+        "κ (Kappa)":   "Kappa (κ)",
+    }
+    for row in table_data:
+        row[0] = METRIC_SHORT.get(row[0], row[0])
+
+    tbl = ax.table(
+        cellText=table_data,
+        colLabels=col_labels_tbl,
+        cellLoc="center",
+        loc="center",
+        bbox=[0.0, 0.15, 1.0, 0.80],
+        cellColours=cell_colors_tbl,
+    )
+    tbl.auto_set_font_size(False)
+    tbl.set_fontsize(7.5)
+    tbl.scale(1, 1.6)
+
+    # Set column widths: wider for Metric and Benchmark, narrower for round cols
+    col_widths = [0.22, 0.20] + [0.12] * len(rounds)
+    for j, w in enumerate(col_widths):
+        for i in range(len(table_data) + 1):
+            tbl[i, j].set_width(w)
+
+    for j in range(n_cols):
+        tbl[0, j].set_text_props(fontweight="bold")
+        tbl[0, j].set_facecolor("#d0d8e8")
+
+    ax.set_title("All-rounds performance summary", fontweight="bold", fontsize=9)
+
+    ax.text(0.01, 0.12,
+            "Green = meets benchmark   Red = below benchmark   No threshold = no formal minimum\n"
+            "Sensitivity benchmark: O'Mara-Eves et al. 2015 / Cochrane Handbook (>=0.95)\n"
+            "Kappa benchmark: Landis & Koch 1977 (>=0.60 substantial agreement)\n"
+            "Precision & F1 benchmarks: Scherbakov et al. 2025 (mean across 172 AI screening studies)\n"
+            "Specificity: no formal minimum — sensitivity-specificity tradeoff is intentional by design",
+            transform=ax.transAxes, fontsize=6.5, va="top", color="#555555",
+            linespacing=1.5)
+
+    plt.tight_layout()
+    fig.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[step11] Saved evolution figure: {out_path}")
+
+    # Write CSV with all numbers
+    rows = []
+    for key, label, _, bench_label, bench_val in METRICS:
+        vals = metrics_by_round.get(key, [])
+        row = {"metric": label, "benchmark": bench_label if bench_label else "No threshold"}
+        for round_label, val in zip(rounds, vals):
+            row[round_label] = round(val, 4) if val is not None else None
+        rows.append(row)
+    csv_path = out_path.with_suffix(".csv")
+    pd.DataFrame(rows).to_csv(csv_path, index=False)
+    print(f"[step11] Saved evolution CSV: {csv_path}")
 
 
 def run(config: dict) -> dict:
@@ -397,6 +675,7 @@ def run(config: dict) -> dict:
         process_file(csv_path, out_dir)
         results[csv_path.name] = "ok"
 
+    build_evolution_figure(out_dir / "step11_evolution.png")
     print("[step11] Done.")
     return {"status": "ok", "files": results}
 
@@ -411,6 +690,7 @@ def main() -> int:
     for csv_path in csv_files:
         process_file(csv_path, out_dir)
 
+    build_evolution_figure(out_dir / "step11_evolution.png")
     print("[step11] Done.")
     return 0
 

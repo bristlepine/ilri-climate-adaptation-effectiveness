@@ -67,8 +67,8 @@ All LLM steps used a locally hosted model (Ollama; qwen2.5:14b) at temperature 0
 | Records screened at title/abstract stage | 17,021 |
 | — Included | 6,206 |
 | — Excluded | 10,815 |
-| Full texts retrieved *(preliminary)* | 929 |
-| Records with no full text available *(preliminary)* | 5,277 |
+| Full texts retrieved | 2,644 |
+| Records without full text (awaiting classification) | 3,574 |
 | — Included after full-text screening | 184 |
 | — Excluded after full-text screening | 130 |
 | Records coded in systematic map | 6,076 |
@@ -91,7 +91,7 @@ All LLM steps used a locally hosted model (Ollama; qwen2.5:14b) at temperature 0
 ![Time comparison figure](figures/time_comparison.png)
 *Figure 1. Estimated manual person-hours vs actual pipeline compute time.*
 
-LLM agreement with reconciled human decisions reached substantial kappa levels (κ > 0.77) before full-corpus screening proceeded. Where the LLM was uncertain, the conservative default was to include rather than exclude, minimising false negatives.
+LLM agreement with reconciled human decisions reached substantial kappa levels (κ = 0.720) before full-corpus screening proceeded, with sensitivity of 0.966 meeting the O'Mara-Eves ≥0.95 threshold. Where the LLM was uncertain, the conservative default was to include rather than exclude, minimising false negatives.
 
 
 ---
@@ -193,17 +193,24 @@ Conventional minimum for proceeding to full-corpus screening: **κ ≥ 0.60**. H
 | **AI mean, 172 studies** (Scherbakov et al. 2025) | — | 0.804 | — | 0.632 | 0.708§ | — | — |
 | | | | | | | | |
 | R1 — initial criteria | 205 | 0.776 | 0.703 | 0.559 | 0.650 | 0.436 | 0.500 |
-| R1b — revised criteria | 205 | 0.866 | 0.819 | 0.699 | 0.774 | 0.645 | 0.500 |
-| **R2a — 2nd revision** | 103 | **0.897** | **0.905** | **0.788** | **0.839** | **0.770** | 0.765 |
-| R3a — stability check† | 107 | — | — | — | — | avg 0.682 | 0.703 |
+| R1a — 1st revision | 205 | 0.761 | 0.797 | 0.646 | 0.699 | 0.534 | 0.500 |
+| R1b — 2nd revision | 205 | 0.866 | 0.819 | 0.699 | 0.773 | 0.645 | 0.500 |
+| R2a — 3rd revision† | 103 | 0.897 | 0.905 | 0.788 | 0.839 | 0.770 | 0.765 |
+| **R2b — 4th revision** | 103 | **0.966** | **0.838** | **0.700** | **0.812** | **0.720** | 0.765 |
+| R3a — stability check‡ | 107 | 0.970 | 0.824 | 0.711 | 0.821 | 0.721 | 0.703 |
 | | | | | | | | |
-| **Benchmark reached? (R2a)** | | ~ Above mean; below top tool | ✓ Yes | ✓ Yes | ~ No target | ✓ Yes | ✓ Yes |
-| **Notes** | | 0.897 > Scherbakov mean (0.804); 0.897 < Zhan GPT-4 (0.992); O'Mara-Eves ≥0.95 set for pre-filtering tools; conservative defaults raise effective sensitivity | Exceeds GPT-4 (0.836) | Exceeds 172-study mean (0.632) | No T/A screening F1 benchmark; our 0.839 exceeds Scherbakov computed 0.708 | Exceeds min. (0.60); solidly substantial; comparable to human 0.82 | Meets threshold |
+| **Benchmark reached? (R2b)** | | ✓ Yes | ✓ Yes | ✓ Yes | ~ No target | ✓ Yes | ✓ Yes |
+| **Notes** | | 0.966 > O'Mara-Eves ≥0.95; confirmed stable R3a (0.970) | Meets GPT-4 (0.836) | Exceeds 172-study mean (0.632) | No T/A screening F1 benchmark; our 0.812 exceeds Scherbakov computed 0.708 | Exceeds min. (0.60); solidly substantial | Meets threshold |
 
-†R3a: designed to verify criteria stability, not generate a new gold standard. P/R/F1/specificity not computable. LLM κ is mean of κ vs Jennifer Cisse (0.690) and κ vs Caroline Staub (0.674).
+†R2a: metrics at time of initial submission (sensitivity 0.897, below ≥0.95 threshold); eligibility criteria subsequently revised.
+‡R3a: same criteria as R2b; separate 107-paper sample with independent reconciled gold standard; confirms stability. n=33 true positives (1 miss); sensitivity 95% CI (Wilson): 0.847–0.995.
+**Note on CI width:** R2b sensitivity 95% CI (Wilson): 0.828–0.994 (n=29 true positives). R3a: 0.847–0.995 (n=33). Pooled across both independent samples (60/62 true positives): 0.890–0.991. The point estimates of both samples exceed ≥0.95; the lower CI bounds reflect the inherent uncertainty of calibration samples of this size. No published CI-based threshold exists for this task; O'Mara-Eves et al. [2015] set a point-estimate target only.
 §Scherbakov et al. 2025: F1 computed from reported sensitivity (0.804) and precision (0.632) — not directly reported in the paper.
 
-**Reading the table:** Our R2a sensitivity of 0.897 sits above the mean across 172 AI screening studies (Scherbakov et al. 0.804) and below a purpose-built GPT-4 tool (Zhan et al. 0.992) — a reasonable position for a general-purpose local model on a multi-dimensional topic. The O'Mara-Eves ≥0.95 figure is a guideline for pre-filtering tools, not a universal threshold; conservative inclusion defaults raise effective production sensitivity above the calibration figure. All other metrics meet or exceed available benchmarks: κ = 0.770 solidly substantial and comparable to human abstract screening (0.82); specificity (0.905) and precision (0.788) both exceed their benchmarks; F1 (0.839) exceeds the only computable peer figure (Scherbakov 0.708).
+![LLM screening performance evolution](figures/step11_evolution.png)
+*Figure: Sensitivity, specificity, precision, F1, and κ across all six calibration rounds. Shaded bands indicate published benchmarks. All five metrics exceed their respective targets at R2b; R3a confirms stability with the same criteria on a separate sample.*
+
+**Reading the table:** After five structured rounds of criteria revision, our R2b sensitivity of 0.966 meets the O'Mara-Eves ≥0.95 threshold; R3a (0.970) confirms this is stable on an independent sample using the same criteria. The progression (R1: 0.776 → R1a: 0.761 → R1b: 0.866 → R2a: 0.897 → R2b: 0.966) reflects criteria refinement only — the model's parameters were never updated. All five metrics meet or exceed their published benchmarks at R2b: κ = 0.720 solidly substantial; specificity (0.838) meets the GPT-4 tool benchmark (0.836); precision (0.700) exceeds the 172-study mean (0.632); F1 (0.812) exceeds the only computable peer figure (Scherbakov 0.708). The expanded R2b criteria are deliberately more inclusive to achieve ≥0.95 sensitivity; the resulting additional false positives are caught at full-text screening.
 
 ![Kappa convergence figure](figures/kappa_convergence.png)
 *Figure 3. Cohen's κ convergence across calibration rounds. Blue circles: LLM vs reconciled gold standard. Red squares: human inter-rater κ. Shaded bands: Landis & Koch (1977) thresholds. Annotated labels: criteria revision points.*
@@ -211,7 +218,7 @@ Conventional minimum for proceeding to full-corpus screening: **κ ≥ 0.60**. H
 
 ### Relationship to Supervised Machine-Learning Screeners
 
-Supervised ML screeners (e.g. EPPI Reviewer, Juno) are classifiers trained from near-scratch on labelled examples and require 2,000–7,000 training records before reaching adequate performance. qwen2.5:14b is a pre-trained large language model — its parameters are never updated. The ~415 calibration records are a **validation set** for prompt and criteria design, not a training corpus. The analogy in conventional systematic review practice is calibration training: verifying that a reviewer correctly understands the eligibility criteria before beginning independent screening.
+Supervised ML screeners (e.g. EPPI Reviewer, Juno) are classifiers trained from near-scratch on labelled examples and require 2,000–7,000 training records before reaching adequate performance. qwen2.5:14b is a pre-trained large language model — its parameters are never updated. The ~515 calibration records across four rounds (R1/R1a/R1b/R2a) are a **validation set** for prompt and criteria design, not a training corpus. The analogy in conventional systematic review practice is calibration training: verifying that a reviewer correctly understands the eligibility criteria before beginning independent screening.
 
 
 ---
@@ -234,7 +241,7 @@ Step 12 applied the finalised LLM screener to all 17,021 records. Each record wa
 
 Step 13 attempted to download full texts for all 6,206 included records via: Unpaywall (open-access by DOI), Elsevier Full-Text API, Semantic Scholar, and OpenAlex. Downloads capped at 25 MB.
 
-> **Preliminary note:** 929 full texts were retrieved; 5,277 could not be retrieved automatically. These figures reflect constrained API access without the Elsevier token. Retrieval will improve materially once the institutional token is active.
+> **Updated note (April 2026):** Full-text retrieval is complete. **2,644 of 6,218 records retrieved (42.5%)**, up from 929 (15%) in the preliminary run. Sources: Unpaywall (1,756), Elsevier DOI API (706), Semantic Scholar (123), OpenAlex (32), CORE (25), OpenAlex location (2). The 3,574 records without a retrieved full text are classified as "awaiting classification" per Cochrane guidance and retained as included by default.
 
 
 ---
