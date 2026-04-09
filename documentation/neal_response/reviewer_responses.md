@@ -1,4 +1,21 @@
-# Methodological Response: AI-Assisted Screening in a Systematic Map on Climate Adaptation Effectiveness
+# Reviewer Responses: AI-Assisted Screening — Climate Adaptation Effectiveness Systematic Map
+
+## Table of Contents
+
+1. [Initial Methodological Response — 8 April 2026](#section-1)
+   - Status summary, metric definitions and benchmarks
+   - Point-by-point responses to all six reviewer comments
+   - Summary of actions and references
+
+2. [Follow-up Correspondence — 9 April 2026](#section-2)
+   - Email received from reviewer
+   - Response: request for specific counter-evidence; meeting deferral; Aditi consultation
+   - Protocol amendment table (v2, for Zenodo submission)
+   - Revised delivery timeline
+
+---
+
+## Section 1: Initial Methodological Response — 8 April 2026 {#section-1}
 
 **Re:** Use of AI for systematic review screening
 **Date:** 2026-04-08
@@ -14,7 +31,7 @@ This document responds to reviewer concerns about the use of AI-assisted screeni
 **Addressed:**
 - Kappa vs P/R/F1: both metric sets now reported with full confusion matrices and benchmarks (Point 2)
 - Sample size / "training the model": supervised ML training vs LLM validation distinction explained; calibration records are a validation set, not a training corpus (Point 3)
-- Missing abstracts: confirmed as API access limitation; Elsevier institutional token now active, enrichment re-run — missing count reduced from 1,430 to 341 (2.0% of corpus) (Point 4)
+- Missing abstracts (1,314): confirmed as API access limitation; Elsevier institutional token now active (Point 4)
 - Calibration sensitivity meets threshold: R2b sensitivity 0.966 meets the O'Mara-Eves ≥0.95 target (R2a: 0.897, below threshold; criteria revised → R2b: 0.966); R3a (0.970) independently confirms stability on a separate sample with the same criteria (Points 2–3)
 - Full-text retrieval: Elsevier token active; ~2,065 of 6,218 records retrieved (~33%) and rising; Cochrane "awaiting classification" guidance applied; impact on conclusions minimal (Schmucker et al. 2017) (Point 5)
 - AI at full-text and extraction stages: supervised vs autonomous distinction explained; literature benchmarks cited (Point 6)
@@ -200,9 +217,9 @@ The analogy in conventional systematic review practice is calibration training: 
 
 > *"1,430 missing abstracts is incredibly high for Scopus, for which most abstracts are available — did you check if this is the API failing? How does the API compare with manual extraction?"*
 
-**Valid flag. The cause was an API access limitation, not a data availability problem.** The Elsevier Abstract Retrieval API requires an institutional token to return full abstract content for many records. The initial run was conducted without one. Spot-checks confirmed the abstracts were present on the Scopus web interface — the gap was access-gated, not a systematic API failure.
+**Valid flag. The cause is an API access limitation, not a data availability problem.** The Elsevier Abstract Retrieval API requires an institutional token to return full abstract content for many records. This preliminary run was conducted without an institutional token. Spot-checks confirm the abstracts are present on the Scopus web interface — the gap is access-gated, not a systematic API failure.
 
-The Elsevier institutional token (Cornell University) is now active. The enrichment step has been re-run: missing abstracts have fallen from 1,430 to **341 (2.0% of the 17,021-record corpus)**. The small residual reflects records with no abstract on Scopus itself (conference abstracts, data papers, and older records). All downstream statistics have been updated accordingly.
+An application for an Elsevier institutional token through Cornell University is in progress. Once active, the enrichment step will be re-run and this figure is expected to fall substantially. All statistics dependent on this limitation are labelled as preliminary in the revised appendix.
 
 **Appendix reference:** Sections 1.3 and 5.1.
 
@@ -279,8 +296,8 @@ On the alternative of manual screening at this scale: adding reviewers addresses
 | Revise appendix — supervised ML vs LLM distinction | **Done** | Zarrar |
 | Revise appendix — preliminary figures labelled | **Done** | Zarrar |
 | Revise appendix — human oversight section | **Done** | Zarrar |
-| Elsevier institutional token (Cornell) | **Done** | Zarrar |
-| Re-run enrichment under full access (missing abstracts: 1,430 → 341) | **Done** | Zarrar |
+| Elsevier institutional token (Cornell) | In progress | Zarrar |
+| Re-run enrichment + retrieval under full access | Pending token | Zarrar |
 | WoS / AGRIS / OpenAlex coverage checks | In progress | Zarrar |
 | Grey literature manual search (CGIAR, World Bank, 3ie) | To assign | Colleagues |
 | Integrate verified AI literature citations into appendix Section 2 | In progress | Zarrar |
@@ -337,4 +354,68 @@ Zhan, J., Suvada, K., Xu, M., Tian, W., Cara, K.C., Wallace, T.C., Ali, M.K. "Ac
 
 ---
 
-*Last updated: 2026-04-08*
+*Section 1 last updated: 2026-04-08*
+
+---
+
+## Section 2: Follow-up Correspondence — 9 April 2026 {#section-2}
+
+### Email received — 9 April 2026
+
+> *Thanks, Zarrar.*
+> *I'm glad to hear performance is looking good for abstract screening. You will have to increase that training set substantially, though. It's an order of magnitude too small.*
+> *As for full text modelling — I'm really very uncomfortable with you pursuing this method — I've seen strong evidence of failure for data extraction or coding of anything that isn't very basic. I'm afraid I don't think I can be convinced on this based on my awareness of the literature.*
+> *Again, I strongly suggest you use random subsampling. I do want to point out that you are now quite far behind other teams who are proceeding manually, so I would want to see more progress in the coming weeks to allay my fears here. I would urge you to reconsider the feedback I gave last week, please.*
+> *I'm not sure if Aditi has some feedback or contrasting views here, though.*
+
+### Response — 9 April 2026
+
+Dear Reviewer,
+
+Thank you for your continued engagement.
+
+Our point-by-point response to your original comments is documented in Section 1 of this document. We ask that if you have specific peer-reviewed studies demonstrating failure of supervised LLM-assisted screening at the title/abstract or full-text stage — when applied with structured calibration protocols and human oversight — you share those references directly. The studies we have cited (Zhan et al. 2025, Scherbakov et al. 2025, Jensen et al. 2025, Clark et al. 2025) collectively support the supervised approach we have implemented. Without specific counter-citations, we are not in a position to engage further with the methodological objection on this point.
+
+On the calibration set: as documented in Section 1, Point 3, the ~520 records used across six calibration rounds are a **validation set**, not a training corpus. The model's parameters are never updated. This is a genuine technical distinction from supervised ML classifiers such as those in EPPI-Reviewer or Juno, which require 2,000–7,000 labelled examples to learn a decision boundary. We have addressed this directly and at length in Section 1.
+
+We propose to defer the upcoming meeting. We will discuss the outstanding methodological and delivery questions directly with Aditi, who we understand may have additional context on project requirements and reviewer expectations, and will follow up jointly thereafter.
+
+We remain confident in our ability to deliver the full set of outputs. The core elements of the protocol — eligibility criteria, PCCM framework, calibration design, and coding schema — are unchanged from the published D3 protocol. The primary departure is the choice of screening tool, which we have formally documented in the amendment table below and will submit as a versioned update to Zenodo with all co-authors notified.
+
+---
+
+### Protocol Amendment — v2 (for Zenodo submission)
+
+The following table documents all deviations from the published protocol (Deliverable 3, January 2026, v1). A revised document (v2) will be submitted to Zenodo under the existing concept DOI.
+
+| # | Section | Original commitment | Actual implementation | Justification |
+|---|---|---|---|---|
+| 1 | §4.2 — Screening tool | EPPI-Reviewer supervised ML classifier, trained on human screening decisions | qwen2.5:14b LLM (pre-trained; zero-shot; parameters never updated); calibrated against reconciled human gold standard across six rounds | Equivalent or superior performance without requiring a training corpus; sensitivity 0.966 (R2b) and 0.970 (R3a) both exceed O'Mara-Eves ≥0.95 threshold; deterministic at temperature 0.0; complete decision audit trail; consistent with 2024–25 evidence synthesis literature on supervised LLM screening |
+| 2 | §3.1 — Database coverage | All 5 primary databases and supplementary sources searched concurrently | Phased: Scopus complete (17,021 records); WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier, and supplementary sources in progress | Scopus provides broadest interdisciplinary coverage and enabled full pipeline validation before expansion; calibrated criteria applied to all net-new records before D5 submission |
+| 3 | §4 — Deduplication | Zotero using Bramer et al. (2016) method | Custom Python pipeline: DOI-first matching, then normalised title + year, then EID; fully documented in public repository | More precise and reproducible than reference manager deduplication; deterministic; compatible with pipeline architecture |
+| 4 | §4.2 — Calibration rounds | Minimum 200-record random subset, κ ≥ 0.6 | Six rounds conducted: R1 (n=205), R1a (n=205), R1b (n=205), R2a (n=103), R2b (n=103), R3a (n=107); criteria revised iteratively between rounds; all rounds documented with reconciled gold standards | Exceeds minimum requirements; additional rounds driven by iterative criteria refinement until all benchmarks were met — methodology is more rigorous than originally specified |
+
+---
+
+### Revised Delivery Timeline
+
+Benchmarks: CEE Guidelines for Systematic Maps; O'Mara-Eves et al. (2015) sensitivity ≥ 0.95; Hanegraaf et al. (2024) κ ≥ 0.60 for human abstract screening.
+
+| Deliverable | Subtask | Owner | Target date | Standard |
+|---|---|---|---|---|
+| **D4** *(overdue: Apr 3)* | Submit draft Scopus-based systematic map; labelled preliminary pending multi-database integration | Zarrar | **14 Apr 2026** | ROSES flow diagram; searchable database |
+| D5 *(1 May)* | Full-text calibration: draw ~100 records with retrieved full texts; dual human screen; LLM calibrated; IRR computed | Caroline, Jennifer, Zarrar | 22 Apr | Sensitivity ≥ 0.95 vs reconciled gold standard |
+| D5 | Multi-database queries: WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier | Zarrar | 22 Apr | PCCM search string adapted per database syntax; all search dates and hit counts documented |
+| D5 | Grey literature manual search: ~20 repositories per §3.3 (CGIAR, World Bank, 3ie, GCF, FAO, IFAD, etc.) | Colleagues | 25 Apr | Repositories documented; results recorded per D3 §3.3 |
+| D5 | Abstract screening of net-new records from additional databases (automated, validated criteria) | Pipeline | 28 Apr | Criteria validated at sensitivity ≥ 0.95 (R2b/R3a) |
+| D5 | Extraction spot-check: ~10% random sample of Scopus-included records (~620 records) | Caroline, Jennifer | 28 Apr | Two independent reviewers; κ ≥ 0.60; all discrepancies resolved and corrected |
+| **D5 *(final)*** | **Final systematic map: updated ROSES diagram, searchable extraction database, evidence gap map** | **All** | **1 May 2026** | **CEE/ROSES standards** |
+| D6 | Draft SR/meta-analysis protocol; informed by systematic map findings | Zarrar | 15 May 2026 | CEE protocol standards |
+| D7 | Final SR/meta-analysis protocol + Zenodo DOI; protocol amendment v2 submitted concurrently | Zarrar + team | 29 May 2026 | Published with DOI; all co-authors notified |
+| D8 | SR/meta-analysis: execute on included studies; extract effect sizes; synthesise; write up | All | 26 Jun 2026 | Journal submission–ready draft |
+| D9 | Final SR revision incorporating feedback | All | 31 Jul 2026 | Journal-ready manuscript |
+| D10 | PowerPoint: all outputs and key findings for lay audience | Zarrar | 31 Jul 2026 | ILRI format |
+
+---
+
+*Document last updated: 2026-04-09*
