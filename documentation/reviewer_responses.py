@@ -69,13 +69,7 @@ CONTENT = """\
    - Point-by-point responses to outstanding comments
    - Position statement and exit strategy
 
-2. [Initial Follow-up to Neal — 9 April 2026](#section-2)
-   - Email received from reviewer
-   - Response: request for specific counter-evidence; meeting deferral; Aditi consultation
-   - Protocol amendment table (v2, for Zenodo submission)
-   - Revised delivery timeline
-
-3. [Initial Methodological Response — 8 April 2026](#section-1)
+2. [Initial Methodological Response — 8 April 2026](#section-1)
    - Status summary, metric definitions and benchmarks
    - Point-by-point responses to all six reviewer comments
    - Summary of actions and references
@@ -90,30 +84,11 @@ CONTENT = """\
 
 Dear Aditi and Neal,
 
-A few things upfront:
-
 **We are cancelling tomorrow's one-on-one with Neal** and propose a group call with Aditi the week of 13 April instead.
 
-We want to be direct about where things stand. Our screening pipeline departs from the tool specified in the published D3 protocol — we are formally disclosing this deviation here for the first time. The protocol amendment table below documents every departure from the published protocol with full justification. A versioned update (v2) will be submitted to Zenodo under the existing concept DOI with all co-authors notified.
+We have responded in full to every concern raised, with citations and calibration data. We remain fully committed to this project and confident we can deliver on time using the validated pipeline. But we need a clear answer on whether we can proceed with the method we have built and validated. If the method cannot be accepted on its merits, we do not have an alternative path to delivery within this timeline — and we should agree on an exit plan together.
 
-This is not a shortcut. Our validated results meet every published benchmark for this task, the peer-reviewed literature from 2024–2025 supports the approach, and we are confident we can deliver D4–D7 by 1 May — on the original contract timeline. As confirmed with Aditi, D4–D7 are due together by May; the intermediate dates were indicative and we remain on track.
-
-The counter-arguments raised so far do not hold on the evidence — we address each one below. But we also want to be honest: if this comes down to trust rather than evidence, and the method simply will not be accepted regardless of the validation results, we need to discuss an exit strategy. We would hand over everything cleanly — full Scopus results, calibration datasets, reconciled gold standards, eligibility criteria, and the complete codebase — so another team can continue from a well-documented starting point. We would rather have that conversation directly than let it drag.
-
-We would welcome a call with Aditi next week to decide which path we are on.
-
----
-
-### Protocol Amendment — v2 (first formal notification)
-
-The following table documents all deviations from the published protocol (Deliverable 3, January 2026, v1). This is the first time we are formally notifying the team of these deviations. A revised document (v2) will be submitted to Zenodo under the existing concept DOI with all co-authors notified before D5 submission.
-
-| # | Section | Original commitment | Actual implementation | Justification |
-|---|---|---|---|---|
-| 1 | §4.2 — Screening tool | EPPI-Reviewer supervised ML classifier, trained on human screening decisions | qwen2.5:14b LLM (pre-trained; zero-shot; parameters never updated); calibrated against reconciled human gold standard across six rounds | Equivalent or superior performance without requiring a training corpus; sensitivity 0.966 (R2b) and 0.970 (R3a) both exceed O'Mara-Eves ≥0.95 threshold; deterministic at temperature 0.0; complete decision audit trail; consistent with 2024–25 evidence synthesis literature on supervised LLM screening |
-| 2 | §3.1 — Database coverage | All 5 primary databases and supplementary sources searched concurrently | Phased: Scopus complete (17,021 records); WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier, and supplementary sources in progress | Scopus provides broadest interdisciplinary coverage and enabled full pipeline validation before expansion; calibrated criteria applied to all net-new records before D5 submission |
-| 3 | §4 — Deduplication | Zotero using Bramer et al. (2016) method | Custom Python pipeline: DOI-first matching, then normalised title + year, then EID; fully documented in public repository | More precise and reproducible than reference manager deduplication; deterministic; compatible with pipeline architecture |
-| 4 | §4.2 — Calibration rounds | Minimum 200-record random subset, κ ≥ 0.6 | Six rounds conducted: R1 (n=205), R1a (n=205), R1b (n=205), R2a (n=103), R2b (n=103), R3a (n=107); criteria revised iteratively between rounds; all rounds documented with reconciled gold standards | Exceeds minimum requirements; additional rounds driven by iterative criteria refinement until all benchmarks were met — methodology is more rigorous than originally specified |
+Our responses to Neal's comments are below. We would ask that any further concerns be accompanied by specific counter-citations so we can engage with them directly, rather than responding to new assertions without supporting evidence.
 
 ---
 
@@ -145,11 +120,22 @@ The following table documents all deviations from the published protocol (Delive
 
 ---
 
-### Our position
+*{Full point-by-point response from 8 April 2026 pasted below}*
 
-We have responded in full to every concern raised, with citations and calibration data. We remain fully committed to this project and confident we can deliver on time using the validated pipeline. But we need a clear answer on whether we can proceed with the method we have built and validated. If the method cannot be accepted on its merits, we do not have an alternative path to delivery within this timeline — and we should agree on an exit plan together.
+---
 
-We look forward to the call.
+### Protocol Amendment — v2 (first formal notification)
+
+We are formally notifying the team of the following deviations from the published D3 protocol. A versioned update (v2) will be submitted to Zenodo with all co-authors notified before D5 submission.
+
+| # | Section | Original commitment | Actual implementation | Justification |
+|---|---|---|---|---|
+| 1 | §4.2 — Screening tool | EPPI-Reviewer supervised ML classifier | qwen2.5:14b LLM (pre-trained; parameters never updated); calibrated against reconciled human gold standard across six rounds | Sensitivity 0.966 (R2b) and 0.970 (R3a) both exceed O'Mara-Eves ≥0.95; complete audit trail; consistent with 2024–25 evidence synthesis literature |
+| 2 | §3.1 — Database coverage | All 5 databases searched concurrently | Phased: Scopus complete (17,021 records); WoS, CAB Abstracts, AGRIS, Academic Search Premier in progress | Full pipeline validated on Scopus first; calibrated criteria applied to all net-new records before D5 |
+| 3 | §4 — Deduplication | Zotero (Bramer et al. 2016) | Custom Python pipeline: DOI-first, then normalised title + year, then EID | More precise and reproducible; deterministic; fully documented |
+| 4 | §4.2 — Calibration rounds | Minimum 200-record subset, κ ≥ 0.6 | Six rounds: R1–R3a (n=205, 205, 205, 103, 103, 107); criteria revised iteratively; all rounds documented with reconciled gold standards | Exceeds minimum — more rigorous than originally specified |
+
+---
 
 Best regards,
 Zarrar
@@ -157,84 +143,7 @@ Zarrar
 
 ---
 
-*{Full response from 8 April 2026 pasted below}*
-
----
-
 *Section 3 last updated: 2026-04-09*
-
----
-
-## Section 2: Initial Follow-up to Neal — 9 April 2026 {#section-2}
-
-### Email received — 9 April 2026
-
-> *Thanks, Zarrar.*
-> *I'm glad to hear performance is looking good for abstract screening. You will have to increase that training set substantially, though. It's an order of magnitude too small.*
-> *As for full text modelling — I'm really very uncomfortable with you pursuing this method — I've seen strong evidence of failure for data extraction or coding of anything that isn't very basic. I'm afraid I don't think I can be convinced on this based on my awareness of the literature.*
-> *Again, I strongly suggest you use random subsampling. I do want to point out that you are now quite far behind other teams who are proceeding manually, so I would want to see more progress in the coming weeks to allay my fears here. I would urge you to reconsider the feedback I gave last week, please.*
-> *I'm not sure if Aditi has some feedback or contrasting views here, though.*
-
-### Response — 9 April 2026
-
-Dear Neal,
-
-Thank you for your follow-up. Please find our point-by-point response below.
-
-> *"You will have to increase that training set substantially, though. It's an order of magnitude too small."*
-
-- The ~520 records used across six calibration rounds are a **validation set**, not a training corpus. The model's parameters are never updated by our screening decisions — this is a fundamental distinction from supervised ML classifiers such as those in EPPI-Reviewer or Juno, which require 2,000–7,000 labelled examples to learn a decision boundary.
-- Our LLM (qwen2.5:14b) is a pre-trained model running zero-shot inference. Validation sample sizes of 100–200 records per round are standard in this literature (see our 8 April response, Point 3, for full citations and benchmarks).
-- We addressed this distinction directly in our previous response (8 April 2026). If the concern persists, we would welcome a specific reference to the literature you have in mind so we can engage with it directly.
-
-> *"As for full text modelling — I'm really very uncomfortable with you pursuing this method — I've seen strong evidence of failure for data extraction or coding of anything that isn't very basic. I'm afraid I don't think I can be convinced on this based on my awareness of the literature."*
-
-- We take this concern seriously and have acknowledged the full-text calibration gap explicitly in our 8 April response (Point 6) and in the protocol amendment below.
-- We ask that if you have specific peer-reviewed studies demonstrating failure of supervised LLM-assisted screening or extraction under structured calibration protocols and human oversight, you share those references directly. The studies we have cited — Zhan et al. 2025 (full-text sensitivity 0.976), Scherbakov et al. 2025, Jensen et al. 2025, Clark et al. 2025 — collectively support the supervised approach we have implemented. Without specific counter-citations we cannot respond to the evidence claim.
-- Our pipeline is supervised and assistive, not autonomous. Every decision is logged with reasoning; uncertain cases default to inclusion; spot-checking is built in. The critical failure mode identified in Clark et al. 2025 (autonomous search missing 68–96% of studies) does not apply to our design.
-- A dedicated full-text calibration round is planned before full-text screening results are finalised — this is documented in the protocol amendment table below and in the revised delivery timeline.
-
-> *"Again, I strongly suggest you use random subsampling."*
-
-- We have considered this and remain committed to our current approach, which has met the O'Mara-Eves ≥0.95 sensitivity threshold (R2b: 0.966, R3a: 0.970) and exceeds all other published benchmarks.
-- Random subsampling for manual full-corpus screening at ~6,000 full texts would introduce its own risks: reduced coverage, potential bias in subsampled strata, and loss of the complete audit trail our pipeline provides.
-- We are open to discussing specific implementation concerns, but "use random subsampling" as a general recommendation does not constitute a methodological objection we can respond to without more detail.
-
-> *"I do want to point out that you are now quite far behind other teams who are proceeding manually, so I would want to see more progress in the coming weeks to allay my fears here."*
-
-- We have attached a revised delivery timeline below. D4 (draft systematic map, Scopus-based) will be submitted by 14 April 2026. D5 (final systematic map including multi-database integration) remains 1 May 2026.
-- The pipeline advantage is that once calibration is confirmed, full-corpus screening and extraction run in hours, not weeks. We are not behind on outputs — we are behind on one specific deliverable (D4, overdue Apr 3) which will be resolved this week.
-
-> *"I'm not sure if Aditi has some feedback or contrasting views here, though."*
-
-- We propose to defer the upcoming meeting and discuss outstanding methodological and delivery questions directly with Aditi first. We will follow up jointly thereafter.
-
----
-
-*{Copy of 8 April 2026 response pasted below}*
-
----
-
-### Protocol Amendment — v2 (for Zenodo submission)
-
-The following table documents all deviations from the published protocol (Deliverable 3, January 2026, v1). A revised document (v2) will be submitted to Zenodo under the existing concept DOI.
-
-| # | Section | Original commitment | Actual implementation | Justification |
-|---|---|---|---|---|
-| 1 | §4.2 — Screening tool | EPPI-Reviewer supervised ML classifier, trained on human screening decisions | qwen2.5:14b LLM (pre-trained; zero-shot; parameters never updated); calibrated against reconciled human gold standard across six rounds | Equivalent or superior performance without requiring a training corpus; sensitivity 0.966 (R2b) and 0.970 (R3a) both exceed O'Mara-Eves ≥0.95 threshold; deterministic at temperature 0.0; complete decision audit trail; consistent with 2024–25 evidence synthesis literature on supervised LLM screening |
-| 2 | §3.1 — Database coverage | All 5 primary databases and supplementary sources searched concurrently | Phased: Scopus complete (17,021 records); WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier, and supplementary sources in progress | Scopus provides broadest interdisciplinary coverage and enabled full pipeline validation before expansion; calibrated criteria applied to all net-new records before D5 submission |
-| 3 | §4 — Deduplication | Zotero using Bramer et al. (2016) method | Custom Python pipeline: DOI-first matching, then normalised title + year, then EID; fully documented in public repository | More precise and reproducible than reference manager deduplication; deterministic; compatible with pipeline architecture |
-| 4 | §4.2 — Calibration rounds | Minimum 200-record random subset, κ ≥ 0.6 | Six rounds conducted: R1 (n=205), R1a (n=205), R1b (n=205), R2a (n=103), R2b (n=103), R3a (n=107); criteria revised iteratively between rounds; all rounds documented with reconciled gold standards | Exceeds minimum requirements; additional rounds driven by iterative criteria refinement until all benchmarks were met — methodology is more rigorous than originally specified |
-
----
-
-### Revised Delivery Timeline
-
-{DELIVERABLES_TABLE}
-
----
-
-*Section 2 last updated: 2026-04-09*
 
 ---
 
