@@ -70,17 +70,41 @@ CONTENT = """\
 
 ### Response — 9 April 2026
 
-Dear Reviewer,
+Dear Neal,
 
-Thank you for your continued engagement.
+Thank you for your follow-up. Please find our point-by-point response below.
 
-Our point-by-point response to your original comments is documented in Section 1 of this document. We ask that if you have specific peer-reviewed studies demonstrating failure of supervised LLM-assisted screening at the title/abstract or full-text stage — when applied with structured calibration protocols and human oversight — you share those references directly. The studies we have cited (Zhan et al. 2025, Scherbakov et al. 2025, Jensen et al. 2025, Clark et al. 2025) collectively support the supervised approach we have implemented. Without specific counter-citations, we are not in a position to engage further with the methodological objection on this point.
+> *"You will have to increase that training set substantially, though. It's an order of magnitude too small."*
 
-On the calibration set: as documented in Section 1, Point 3, the ~520 records used across six calibration rounds are a **validation set**, not a training corpus. The model's parameters are never updated. This is a genuine technical distinction from supervised ML classifiers such as those in EPPI-Reviewer or Juno, which require 2,000–7,000 labelled examples to learn a decision boundary. We have addressed this directly and at length in Section 1.
+- The ~520 records used across six calibration rounds are a **validation set**, not a training corpus. The model's parameters are never updated by our screening decisions — this is a fundamental distinction from supervised ML classifiers such as those in EPPI-Reviewer or Juno, which require 2,000–7,000 labelled examples to learn a decision boundary.
+- Our LLM (qwen2.5:14b) is a pre-trained model running zero-shot inference. Validation sample sizes of 100–200 records per round are standard in this literature (see our 8 April response, Point 3, for full citations and benchmarks).
+- We addressed this distinction directly in our previous response (8 April 2026). If the concern persists, we would welcome a specific reference to the literature you have in mind so we can engage with it directly.
 
-We propose to defer the upcoming meeting. We will discuss the outstanding methodological and delivery questions directly with Aditi, who we understand may have additional context on project requirements and reviewer expectations, and will follow up jointly thereafter.
+> *"As for full text modelling — I'm really very uncomfortable with you pursuing this method — I've seen strong evidence of failure for data extraction or coding of anything that isn't very basic. I'm afraid I don't think I can be convinced on this based on my awareness of the literature."*
 
-We remain confident in our ability to deliver the full set of outputs. The core elements of the protocol — eligibility criteria, PCCM framework, calibration design, and coding schema — are unchanged from the published D3 protocol. The primary departure is the choice of screening tool, which we have formally documented in the amendment table below and will submit as a versioned update to Zenodo with all co-authors notified.
+- We take this concern seriously and have acknowledged the full-text calibration gap explicitly in our 8 April response (Point 6) and in the protocol amendment below.
+- We ask that if you have specific peer-reviewed studies demonstrating failure of supervised LLM-assisted screening or extraction under structured calibration protocols and human oversight, you share those references directly. The studies we have cited — Zhan et al. 2025 (full-text sensitivity 0.976), Scherbakov et al. 2025, Jensen et al. 2025, Clark et al. 2025 — collectively support the supervised approach we have implemented. Without specific counter-citations we cannot respond to the evidence claim.
+- Our pipeline is supervised and assistive, not autonomous. Every decision is logged with reasoning; uncertain cases default to inclusion; spot-checking is built in. The critical failure mode identified in Clark et al. 2025 (autonomous search missing 68–96% of studies) does not apply to our design.
+- A dedicated full-text calibration round is planned before full-text screening results are finalised — this is documented in the protocol amendment table below and in the revised delivery timeline.
+
+> *"Again, I strongly suggest you use random subsampling."*
+
+- We have considered this and remain committed to our current approach, which has met the O'Mara-Eves ≥0.95 sensitivity threshold (R2b: 0.966, R3a: 0.970) and exceeds all other published benchmarks.
+- Random subsampling for manual full-corpus screening at ~6,000 full texts would introduce its own risks: reduced coverage, potential bias in subsampled strata, and loss of the complete audit trail our pipeline provides.
+- We are open to discussing specific implementation concerns, but "use random subsampling" as a general recommendation does not constitute a methodological objection we can respond to without more detail.
+
+> *"I do want to point out that you are now quite far behind other teams who are proceeding manually, so I would want to see more progress in the coming weeks to allay my fears here."*
+
+- We have attached a revised delivery timeline below. D4 (draft systematic map, Scopus-based) will be submitted by 14 April 2026. D5 (final systematic map including multi-database integration) remains 1 May 2026.
+- The pipeline advantage is that once calibration is confirmed, full-corpus screening and extraction run in hours, not weeks. We are not behind on outputs — we are behind on one specific deliverable (D4, overdue Apr 3) which will be resolved this week.
+
+> *"I'm not sure if Aditi has some feedback or contrasting views here, though."*
+
+- We propose to defer the upcoming meeting and discuss outstanding methodological and delivery questions directly with Aditi first. We will follow up jointly thereafter.
+
+---
+
+*{Copy of 8 April 2026 response pasted below}*
 
 ---
 
