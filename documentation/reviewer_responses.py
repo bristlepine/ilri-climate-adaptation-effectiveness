@@ -1,21 +1,128 @@
+"""
+reviewer_responses.py
+
+Generates reviewer_responses.md in the reviewer_responses output folder and
+produces supporting figures (kappa convergence chart).
+
+The markdown content is defined in the CONTENT constant below.
+This file is the canonical source for the reviewer responses document.
+
+Run from anywhere:
+    conda run -n ilri01 python documentation/reviewer_responses.py
+
+Outputs:
+    documentation/reviewer_responses/
+        reviewer_responses.md
+        figures/
+            kappa_convergence.png
+"""
+
+import io
+import json
+from pathlib import Path
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+HERE    = Path(__file__).resolve().parent.parent   # project root
+OUTPUTS = HERE / "scripts" / "outputs"
+OUT_DIR = Path(__file__).resolve().parent / "reviewer_responses"
+FIG_DIR = OUT_DIR / "figures"
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+FIG_DIR.mkdir(parents=True, exist_ok=True)
+
+# ---------------------------------------------------------------------------
+# Response content
+# ---------------------------------------------------------------------------
+CONTENT = """\
 # Reviewer Responses: AI-Assisted Screening — Climate Adaptation Effectiveness Systematic Map
 
 ## Table of Contents
 
-1. [Initial Methodological Response — 8 April 2026](#section-1)
-   - Status summary, metric definitions and benchmarks
-   - Point-by-point responses to all six reviewer comments
-   - Summary of actions and references
-
-2. [Follow-up Correspondence — 9 April 2026](#section-2)
+1. [Follow-up Correspondence — 9 April 2026](#section-2)
    - Email received from reviewer
    - Response: request for specific counter-evidence; meeting deferral; Aditi consultation
    - Protocol amendment table (v2, for Zenodo submission)
    - Revised delivery timeline
 
+2. [Initial Methodological Response — 8 April 2026](#section-1)
+   - Status summary, metric definitions and benchmarks
+   - Point-by-point responses to all six reviewer comments
+   - Summary of actions and references
+
 ---
 
-## Section 1: Initial Methodological Response — 8 April 2026 {#section-1}
+## Section 2: Follow-up Correspondence — 9 April 2026 {#section-2}
+
+### Email received — 9 April 2026
+
+> *Thanks, Zarrar.*
+> *I'm glad to hear performance is looking good for abstract screening. You will have to increase that training set substantially, though. It's an order of magnitude too small.*
+> *As for full text modelling — I'm really very uncomfortable with you pursuing this method — I've seen strong evidence of failure for data extraction or coding of anything that isn't very basic. I'm afraid I don't think I can be convinced on this based on my awareness of the literature.*
+> *Again, I strongly suggest you use random subsampling. I do want to point out that you are now quite far behind other teams who are proceeding manually, so I would want to see more progress in the coming weeks to allay my fears here. I would urge you to reconsider the feedback I gave last week, please.*
+> *I'm not sure if Aditi has some feedback or contrasting views here, though.*
+
+### Response — 9 April 2026
+
+Dear Reviewer,
+
+Thank you for your continued engagement.
+
+Our point-by-point response to your original comments is documented in Section 1 of this document. We ask that if you have specific peer-reviewed studies demonstrating failure of supervised LLM-assisted screening at the title/abstract or full-text stage — when applied with structured calibration protocols and human oversight — you share those references directly. The studies we have cited (Zhan et al. 2025, Scherbakov et al. 2025, Jensen et al. 2025, Clark et al. 2025) collectively support the supervised approach we have implemented. Without specific counter-citations, we are not in a position to engage further with the methodological objection on this point.
+
+On the calibration set: as documented in Section 1, Point 3, the ~520 records used across six calibration rounds are a **validation set**, not a training corpus. The model's parameters are never updated. This is a genuine technical distinction from supervised ML classifiers such as those in EPPI-Reviewer or Juno, which require 2,000–7,000 labelled examples to learn a decision boundary. We have addressed this directly and at length in Section 1.
+
+We propose to defer the upcoming meeting. We will discuss the outstanding methodological and delivery questions directly with Aditi, who we understand may have additional context on project requirements and reviewer expectations, and will follow up jointly thereafter.
+
+We remain confident in our ability to deliver the full set of outputs. The core elements of the protocol — eligibility criteria, PCCM framework, calibration design, and coding schema — are unchanged from the published D3 protocol. The primary departure is the choice of screening tool, which we have formally documented in the amendment table below and will submit as a versioned update to Zenodo with all co-authors notified.
+
+---
+
+### Protocol Amendment — v2 (for Zenodo submission)
+
+The following table documents all deviations from the published protocol (Deliverable 3, January 2026, v1). A revised document (v2) will be submitted to Zenodo under the existing concept DOI.
+
+| # | Section | Original commitment | Actual implementation | Justification |
+|---|---|---|---|---|
+| 1 | §4.2 — Screening tool | EPPI-Reviewer supervised ML classifier, trained on human screening decisions | qwen2.5:14b LLM (pre-trained; zero-shot; parameters never updated); calibrated against reconciled human gold standard across six rounds | Equivalent or superior performance without requiring a training corpus; sensitivity 0.966 (R2b) and 0.970 (R3a) both exceed O'Mara-Eves ≥0.95 threshold; deterministic at temperature 0.0; complete decision audit trail; consistent with 2024–25 evidence synthesis literature on supervised LLM screening |
+| 2 | §3.1 — Database coverage | All 5 primary databases and supplementary sources searched concurrently | Phased: Scopus complete (17,021 records); WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier, and supplementary sources in progress | Scopus provides broadest interdisciplinary coverage and enabled full pipeline validation before expansion; calibrated criteria applied to all net-new records before D5 submission |
+| 3 | §4 — Deduplication | Zotero using Bramer et al. (2016) method | Custom Python pipeline: DOI-first matching, then normalised title + year, then EID; fully documented in public repository | More precise and reproducible than reference manager deduplication; deterministic; compatible with pipeline architecture |
+| 4 | §4.2 — Calibration rounds | Minimum 200-record random subset, κ ≥ 0.6 | Six rounds conducted: R1 (n=205), R1a (n=205), R1b (n=205), R2a (n=103), R2b (n=103), R3a (n=107); criteria revised iteratively between rounds; all rounds documented with reconciled gold standards | Exceeds minimum requirements; additional rounds driven by iterative criteria refinement until all benchmarks were met — methodology is more rigorous than originally specified |
+
+---
+
+### Revised Delivery Timeline
+
+Benchmarks: CEE Guidelines for Systematic Maps; O'Mara-Eves et al. (2015) sensitivity ≥ 0.95; Hanegraaf et al. (2024) κ ≥ 0.60 for human abstract screening.
+
+| Deliverable | Subtask | Owner | Target date | Standard |
+|---|---|---|---|---|
+| **D4** *(overdue: Apr 3)* | Submit draft Scopus-based systematic map; labelled preliminary pending multi-database integration | Zarrar | **14 Apr 2026** | ROSES flow diagram; searchable database |
+| D5 *(1 May)* | Full-text calibration: draw ~100 records with retrieved full texts; dual human screen; LLM calibrated; IRR computed | Caroline, Jennifer, Zarrar | 22 Apr | Sensitivity ≥ 0.95 vs reconciled gold standard |
+| D5 | Multi-database queries: WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier | Zarrar | 22 Apr | PCCM search string adapted per database syntax; all search dates and hit counts documented |
+| D5 | Grey literature manual search: ~20 repositories per §3.3 (CGIAR, World Bank, 3ie, GCF, FAO, IFAD, etc.) | Colleagues | 25 Apr | Repositories documented; results recorded per D3 §3.3 |
+| D5 | Abstract screening of net-new records from additional databases (automated, validated criteria) | Pipeline | 28 Apr | Criteria validated at sensitivity ≥ 0.95 (R2b/R3a) |
+| D5 | Extraction spot-check: ~10% random sample of Scopus-included records (~620 records) | Caroline, Jennifer | 28 Apr | Two independent reviewers; κ ≥ 0.60; all discrepancies resolved and corrected |
+| **D5 *(final)*** | **Final systematic map: updated ROSES diagram, searchable extraction database, evidence gap map** | **All** | **1 May 2026** | **CEE/ROSES standards** |
+| D6 | Draft SR/meta-analysis protocol; informed by systematic map findings | Zarrar | 15 May 2026 | CEE protocol standards |
+| D7 | Final SR/meta-analysis protocol + Zenodo DOI; protocol amendment v2 submitted concurrently | Zarrar + team | 29 May 2026 | Published with DOI; all co-authors notified |
+| D8 | SR/meta-analysis: execute on included studies; extract effect sizes; synthesise; write up | All | 26 Jun 2026 | Journal submission–ready draft |
+| D9 | Final SR revision incorporating feedback | All | 31 Jul 2026 | Journal-ready manuscript |
+| D10 | PowerPoint: all outputs and key findings for lay audience | Zarrar | 31 Jul 2026 | ILRI format |
+
+---
+
+*Section 2 last updated: 2026-04-09*
+
+---
+
+## Section 1 (archived): Initial Methodological Response — 8 April 2026 {#section-1}
 
 **Re:** Use of AI for systematic review screening
 **Date:** 2026-04-08
@@ -111,7 +218,7 @@ All our metrics computed from confusion matrices against the reconciled human go
 | **Human screeners** (Hanegraaf et al. 2024) | — | — | — | — | — | 0.82 (abstract) / 0.77 (full-text) |
 | **AI tool — GPT-4** (Zhan et al. 2025) | — | 0.992 | 0.836 | — | — | 0.83 |
 | **AI mean, 172 studies** (Scherbakov et al. 2025) | — | 0.804 | — | 0.632 | 0.708§ | — |
-| **AI — data extraction** (Jensen et al. 2025) | — | 0.924\* | — | — | — | 0.93† |
+| **AI — data extraction** (Jensen et al. 2025) | — | 0.924\\* | — | — | — | 0.93† |
 | | | | | | | |
 | Our pipeline — R1 (initial criteria) | 205 | 0.776 | 0.703 | 0.559 | 0.650 | 0.436 *(moderate)* |
 | Our pipeline — R1a (1st revision) | 205 | 0.761 | 0.797 | 0.646 | 0.699 | 0.534 *(moderate)* |
@@ -123,7 +230,7 @@ All our metrics computed from confusion matrices against the reconciled human go
 | **Benchmark reached? (R2b)** | | ✓ **Yes** | ✓ **Yes** | ✓ **Yes** | ~ **No target** | ✓ **Yes** |
 | **Notes** | | 0.966 > O'Mara-Eves ≥0.95; confirmed stable at R3a (0.970) | Exceeds GPT-4 tool (0.836) | Exceeds 172-study mean (0.632) | No T/A screening F1 benchmark reported in literature; our 0.812 exceeds the only computable peer figure (Scherbakov 0.708) | Exceeds min. threshold (≥0.60); solidly substantial; comparable to human abstract screening (0.82) |
 
-\*Jensen et al. 2025: 92.4% overall agreement rate for data extraction, not T/A screening sensitivity.
+\\*Jensen et al. 2025: 92.4% overall agreement rate for data extraction, not T/A screening sensitivity.
 †Jensen et al. 2025: reproducibility κ between two independent GPT-4o sessions on data extraction.
 ‡R2a: first reconciled calibration on the 103-paper sample — the metrics reported at the time of the initial submission (sensitivity 0.897, below the ≥0.95 threshold). Criteria were subsequently revised.
 §R3a: same criteria as R2b; separate 107-paper sample with independent reconciled gold standard; confirms stability. n=33 true positives (1 miss); sensitivity 95% CI (Wilson): 0.847–0.995.
@@ -259,10 +366,10 @@ The manual effort concern is addressed by the pipeline design: the LLM completed
 | Zhan et al. (2025) | Full-text | 0.976 | 0.474 | — | 0.74 |
 | Scherbakov et al. (2025) | Title/abstract (mean, 172 studies) | 0.804 | — | 0.632 | — |
 | Scherbakov et al. (2025) | Data extraction (mean) | 0.860 | — | 0.830 | — |
-| Jensen et al. (2025) | Data extraction | 0.924\* | — | — | 0.93† |
+| Jensen et al. (2025) | Data extraction | 0.924\\* | — | — | 0.93† |
 | **Our pipeline (R2b)** | **Title/abstract** | **0.966** | **0.838** | **0.700** | **0.720** |
 
-\*Jensen et al.: 92.4% overall agreement with human reviewers; false data rate 5.2% vs 17.7% for a single human reviewer.
+\\*Jensen et al.: 92.4% overall agreement with human reviewers; false data rate 5.2% vs 17.7% for a single human reviewer.
 †Jensen et al.: reproducibility kappa between two independent GPT sessions.
 
 **Our R2b sensitivity (0.966) and specificity (0.838) are measured at the title/abstract stage** on our own corpus, against a reconciled human gold standard — the most directly relevant evidence of model performance on this specific application. The Zhan et al. full-text figure (0.976) comes from a purpose-built GPT-4-powered tool, not from qwen2.5:14b. There is no direct calibration of qwen2.5:14b against a full-text gold standard in our corpus; the full-text stage relies on the title/abstract calibration results and the Zhan et al. benchmark as the nearest available evidence. This is a genuine evidence gap that we acknowledge.
@@ -355,67 +462,114 @@ Zhan, J., Suvada, K., Xu, M., Tian, W., Cara, K.C., Wallace, T.C., Ali, M.K. "Ac
 ---
 
 *Section 1 last updated: 2026-04-08*
+"""
 
----
+# ---------------------------------------------------------------------------
+# Load calibration data
+# ---------------------------------------------------------------------------
+def load_json(path):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except Exception:
+        return {}
 
-## Section 2: Follow-up Correspondence — 9 April 2026 {#section-2}
+c_r1  = load_json(OUTPUTS / "step11" / "EPPI_Review_-_R1_summary.json")
+c_r1a = load_json(OUTPUTS / "step11" / "EPPI_Review_-_R1a_summary.json")
+c_r1b = load_json(OUTPUTS / "step11" / "EPPI_Review_-_R1b_summary.json")
+c_r2a = load_json(OUTPUTS / "step11" / "EPPI_Review_-_R2a_summary.json")
+c_r2b = load_json(OUTPUTS / "step11" / "EPPI_Review_-_R2b_summary.json")
+c_r3a = load_json(OUTPUTS / "step11" / "EPPI_Review_-_R3a_summary.json")
 
-### Email received — 9 April 2026
+pk1  = c_r1.get("pairwise_kappa",  {})
+pk1a = c_r1a.get("pairwise_kappa", {})
+pk1b = c_r1b.get("pairwise_kappa", {})
+pk2a = c_r2a.get("pairwise_kappa", {})
+pk2b = c_r2b.get("pairwise_kappa", {})
+pk3  = c_r3a.get("pairwise_kappa", {})
 
-> *Thanks, Zarrar.*
-> *I'm glad to hear performance is looking good for abstract screening. You will have to increase that training set substantially, though. It's an order of magnitude too small.*
-> *As for full text modelling — I'm really very uncomfortable with you pursuing this method — I've seen strong evidence of failure for data extraction or coding of anything that isn't very basic. I'm afraid I don't think I can be convinced on this based on my awareness of the literature.*
-> *Again, I strongly suggest you use random subsampling. I do want to point out that you are now quite far behind other teams who are proceeding manually, so I would want to see more progress in the coming weeks to allay my fears here. I would urge you to reconsider the feedback I gave last week, please.*
-> *I'm not sure if Aditi has some feedback or contrasting views here, though.*
+# ---------------------------------------------------------------------------
+# Kappa convergence figure
+# ---------------------------------------------------------------------------
+def make_kappa_figure() -> Path:
+    rounds = ["R1\n(n=205)", "R1a\n(n=205)", "R1b\n(n=205)", "R2a\n(n=103)", "R2b\n(n=103)", "R3a\n(n=107)"]
+    llm_kappa = [
+        pk1.get("LLM vs CJ Reconciled",      0.436),
+        pk1a.get("LLMr1a vs CJ Reconciled",  0.534),
+        pk1b.get("LLMr1b vs CJ Reconciled",  0.645),
+        pk2a.get("LLM_r2a vs CJ Reconciled", 0.770),
+        pk2b.get("LLM_r2b vs CJ Reconciled", 0.720),
+        float(np.mean([
+            pk3.get("Jennifer Cisse vs LLM",  0.721),
+            pk3.get("Caroline Staub vs LLM",  0.721),
+        ])),
+    ]
+    human_kappa = [
+        pk1.get("Caroline Staub vs Jennifer Cisse",  0.500),
+        pk1a.get("Caroline Staub vs Jennifer Cisse", 0.500),
+        pk1b.get("Caroline Staub vs Jennifer Cisse", 0.500),
+        pk2a.get("Caroline Staub vs Jennifer Cisse", 0.765),
+        pk2b.get("Caroline Staub vs Jennifer Cisse", 0.765),
+        pk3.get("Jennifer Cisse vs Caroline Staub",  0.703),
+    ]
 
-### Response — 9 April 2026
+    x = np.arange(len(rounds))
+    fig, ax = plt.subplots(figsize=(8, 3.8))
+    ax.plot(x, llm_kappa,   "o-",  color="#2166ac", linewidth=2, markersize=7,
+            label="LLM vs reconciled gold standard")
+    ax.plot(x, human_kappa, "s--", color="#d73027", linewidth=2, markersize=7,
+            label="Human inter-rater (Caroline vs Jennifer)")
+    ax.axhspan(0.61, 0.80, color="#fee08b", alpha=0.25, label="Substantial (0.61–0.80)")
+    ax.axhspan(0.80, 1.00, color="#a6d96a", alpha=0.25, label="Almost perfect (> 0.80)")
+    ax.axhline(0.61, color="gray", linewidth=0.8, linestyle=":")
+    ax.axhline(0.80, color="gray", linewidth=0.8, linestyle=":")
+    for i, label in [(0, "Criteria\nv1"), (1, "Criteria\nv1a"), (2, "Criteria\nv1b"), (3, "Criteria\nv2a"), (4, "Criteria\nv2b")]:
+        ax.annotate(label, xy=(i, llm_kappa[i]),
+                    xytext=(i + 0.08, llm_kappa[i] - 0.07),
+                    fontsize=7, color="#2166ac",
+                    arrowprops=dict(arrowstyle="-", color="#2166ac", lw=0.8))
+    ax.set_xticks(x)
+    ax.set_xticklabels(rounds, fontsize=9)
+    ax.set_ylim(0.3, 1.0)
+    ax.set_ylabel("Cohen's kappa", fontsize=10)
+    ax.set_title("LLM calibration convergence across rounds", fontsize=11, pad=8)
+    ax.legend(loc="lower right", fontsize=8, framealpha=0.9)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    fig.tight_layout()
 
-Dear Reviewer,
+    dest = FIG_DIR / "kappa_convergence.png"
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    buf.seek(0)
+    Image.open(buf).convert("RGB").save(dest, format="PNG", dpi=(150, 150))
+    return dest
 
-Thank you for your continued engagement.
 
-Our point-by-point response to your original comments is documented in Section 1 of this document. We ask that if you have specific peer-reviewed studies demonstrating failure of supervised LLM-assisted screening at the title/abstract or full-text stage — when applied with structured calibration protocols and human oversight — you share those references directly. The studies we have cited (Zhan et al. 2025, Scherbakov et al. 2025, Jensen et al. 2025, Clark et al. 2025) collectively support the supervised approach we have implemented. Without specific counter-citations, we are not in a position to engage further with the methodological objection on this point.
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+def main():
+    import shutil
 
-On the calibration set: as documented in Section 1, Point 3, the ~520 records used across six calibration rounds are a **validation set**, not a training corpus. The model's parameters are never updated. This is a genuine technical distinction from supervised ML classifiers such as those in EPPI-Reviewer or Juno, which require 2,000–7,000 labelled examples to learn a decision boundary. We have addressed this directly and at length in Section 1.
+    # Write markdown
+    md_dest = OUT_DIR / "reviewer_responses.md"
+    md_dest.write_text(CONTENT, encoding="utf-8")
+    print(f"Written: {md_dest}")
 
-We propose to defer the upcoming meeting. We will discuss the outstanding methodological and delivery questions directly with Aditi, who we understand may have additional context on project requirements and reviewer expectations, and will follow up jointly thereafter.
+    # Copy step11 evolution figure (generated by step11_irr_analysis.py)
+    evo_src = OUTPUTS / "step11" / "step11_evolution.png"
+    if evo_src.exists():
+        shutil.copy2(evo_src, FIG_DIR / "step11_evolution.png")
+        print(f"Copied:  {FIG_DIR / 'step11_evolution.png'}")
+    else:
+        print(f"Warning: {evo_src} not found — run step11_irr_analysis.py first")
 
-We remain confident in our ability to deliver the full set of outputs. The core elements of the protocol — eligibility criteria, PCCM framework, calibration design, and coding schema — are unchanged from the published D3 protocol. The primary departure is the choice of screening tool, which we have formally documented in the amendment table below and will submit as a versioned update to Zenodo with all co-authors notified.
+    # Generate kappa convergence figure
+    fig_path = make_kappa_figure()
+    print(f"Saved:   {fig_path}")
 
----
 
-### Protocol Amendment — v2 (for Zenodo submission)
-
-The following table documents all deviations from the published protocol (Deliverable 3, January 2026, v1). A revised document (v2) will be submitted to Zenodo under the existing concept DOI.
-
-| # | Section | Original commitment | Actual implementation | Justification |
-|---|---|---|---|---|
-| 1 | §4.2 — Screening tool | EPPI-Reviewer supervised ML classifier, trained on human screening decisions | qwen2.5:14b LLM (pre-trained; zero-shot; parameters never updated); calibrated against reconciled human gold standard across six rounds | Equivalent or superior performance without requiring a training corpus; sensitivity 0.966 (R2b) and 0.970 (R3a) both exceed O'Mara-Eves ≥0.95 threshold; deterministic at temperature 0.0; complete decision audit trail; consistent with 2024–25 evidence synthesis literature on supervised LLM screening |
-| 2 | §3.1 — Database coverage | All 5 primary databases and supplementary sources searched concurrently | Phased: Scopus complete (17,021 records); WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier, and supplementary sources in progress | Scopus provides broadest interdisciplinary coverage and enabled full pipeline validation before expansion; calibrated criteria applied to all net-new records before D5 submission |
-| 3 | §4 — Deduplication | Zotero using Bramer et al. (2016) method | Custom Python pipeline: DOI-first matching, then normalised title + year, then EID; fully documented in public repository | More precise and reproducible than reference manager deduplication; deterministic; compatible with pipeline architecture |
-| 4 | §4.2 — Calibration rounds | Minimum 200-record random subset, κ ≥ 0.6 | Six rounds conducted: R1 (n=205), R1a (n=205), R1b (n=205), R2a (n=103), R2b (n=103), R3a (n=107); criteria revised iteratively between rounds; all rounds documented with reconciled gold standards | Exceeds minimum requirements; additional rounds driven by iterative criteria refinement until all benchmarks were met — methodology is more rigorous than originally specified |
-
----
-
-### Revised Delivery Timeline
-
-Benchmarks: CEE Guidelines for Systematic Maps; O'Mara-Eves et al. (2015) sensitivity ≥ 0.95; Hanegraaf et al. (2024) κ ≥ 0.60 for human abstract screening.
-
-| Deliverable | Subtask | Owner | Target date | Standard |
-|---|---|---|---|---|
-| **D4** *(overdue: Apr 3)* | Submit draft Scopus-based systematic map; labelled preliminary pending multi-database integration | Zarrar | **14 Apr 2026** | ROSES flow diagram; searchable database |
-| D5 *(1 May)* | Full-text calibration: draw ~100 records with retrieved full texts; dual human screen; LLM calibrated; IRR computed | Caroline, Jennifer, Zarrar | 22 Apr | Sensitivity ≥ 0.95 vs reconciled gold standard |
-| D5 | Multi-database queries: WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier | Zarrar | 22 Apr | PCCM search string adapted per database syntax; all search dates and hit counts documented |
-| D5 | Grey literature manual search: ~20 repositories per §3.3 (CGIAR, World Bank, 3ie, GCF, FAO, IFAD, etc.) | Colleagues | 25 Apr | Repositories documented; results recorded per D3 §3.3 |
-| D5 | Abstract screening of net-new records from additional databases (automated, validated criteria) | Pipeline | 28 Apr | Criteria validated at sensitivity ≥ 0.95 (R2b/R3a) |
-| D5 | Extraction spot-check: ~10% random sample of Scopus-included records (~620 records) | Caroline, Jennifer | 28 Apr | Two independent reviewers; κ ≥ 0.60; all discrepancies resolved and corrected |
-| **D5 *(final)*** | **Final systematic map: updated ROSES diagram, searchable extraction database, evidence gap map** | **All** | **1 May 2026** | **CEE/ROSES standards** |
-| D6 | Draft SR/meta-analysis protocol; informed by systematic map findings | Zarrar | 15 May 2026 | CEE protocol standards |
-| D7 | Final SR/meta-analysis protocol + Zenodo DOI; protocol amendment v2 submitted concurrently | Zarrar + team | 29 May 2026 | Published with DOI; all co-authors notified |
-| D8 | SR/meta-analysis: execute on included studies; extract effect sizes; synthesise; write up | All | 26 Jun 2026 | Journal submission–ready draft |
-| D9 | Final SR revision incorporating feedback | All | 31 Jul 2026 | Journal-ready manuscript |
-| D10 | PowerPoint: all outputs and key findings for lay audience | Zarrar | 31 Jul 2026 | ILRI format |
-
----
-
-*Document last updated: 2026-04-09*
+if __name__ == "__main__":
+    main()
