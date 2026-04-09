@@ -2,20 +2,109 @@
 
 ## Table of Contents
 
-1. [Follow-up Correspondence — 9 April 2026](#section-2)
+1. [Joint Response to Neal and Aditi — 9 April 2026](#section-3)
+   - Cancel one-on-one; propose group call
+   - Protocol amendment disclosure (first formal notification)
+   - Point-by-point responses to outstanding comments
+   - Position statement and exit strategy
+
+2. [Initial Follow-up to Neal — 9 April 2026](#section-2)
    - Email received from reviewer
    - Response: request for specific counter-evidence; meeting deferral; Aditi consultation
    - Protocol amendment table (v2, for Zenodo submission)
    - Revised delivery timeline
 
-2. [Initial Methodological Response — 8 April 2026](#section-1)
+3. [Initial Methodological Response — 8 April 2026](#section-1)
    - Status summary, metric definitions and benchmarks
    - Point-by-point responses to all six reviewer comments
    - Summary of actions and references
 
 ---
 
-## Section 2: Follow-up Correspondence — 9 April 2026 {#section-2}
+## Section 3: Joint Response to Neal and Aditi — 9 April 2026 {#section-3}
+
+**Re:** Use of AI for screening — Adaptation measurement
+
+---
+
+Dear Aditi and Neal,
+
+A few things upfront:
+
+**We are cancelling tomorrow's one-on-one with Neal** and propose a group call with Aditi the week of 13 April instead.
+
+We want to be direct about where things stand. Our screening pipeline departs from the tool specified in the published D3 protocol — we are formally disclosing this deviation here for the first time. The protocol amendment table below documents every departure from the published protocol with full justification. A versioned update (v2) will be submitted to Zenodo under the existing concept DOI with all co-authors notified.
+
+This is not a shortcut. Our validated results meet every published benchmark for this task, the peer-reviewed literature from 2024–2025 supports the approach, and we are confident we can deliver D4–D7 by 1 May — on the original contract timeline. As confirmed with Aditi, D4–D7 are due together by May; the intermediate dates were indicative and we remain on track.
+
+The counter-arguments raised so far do not hold on the evidence — we address each one below. But we also want to be honest: if this comes down to trust rather than evidence, and the method simply will not be accepted regardless of the validation results, we need to discuss an exit strategy. We would hand over everything cleanly — full Scopus results, calibration datasets, reconciled gold standards, eligibility criteria, and the complete codebase — so another team can continue from a well-documented starting point. We would rather have that conversation directly than let it drag.
+
+We would welcome a call with Aditi next week to decide which path we are on.
+
+---
+
+### Protocol Amendment — v2 (first formal notification)
+
+The following table documents all deviations from the published protocol (Deliverable 3, January 2026, v1). This is the first time we are formally notifying the team of these deviations. A revised document (v2) will be submitted to Zenodo under the existing concept DOI with all co-authors notified before D5 submission.
+
+| # | Section | Original commitment | Actual implementation | Justification |
+|---|---|---|---|---|
+| 1 | §4.2 — Screening tool | EPPI-Reviewer supervised ML classifier, trained on human screening decisions | qwen2.5:14b LLM (pre-trained; zero-shot; parameters never updated); calibrated against reconciled human gold standard across six rounds | Equivalent or superior performance without requiring a training corpus; sensitivity 0.966 (R2b) and 0.970 (R3a) both exceed O'Mara-Eves ≥0.95 threshold; deterministic at temperature 0.0; complete decision audit trail; consistent with 2024–25 evidence synthesis literature on supervised LLM screening |
+| 2 | §3.1 — Database coverage | All 5 primary databases and supplementary sources searched concurrently | Phased: Scopus complete (17,021 records); WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier, and supplementary sources in progress | Scopus provides broadest interdisciplinary coverage and enabled full pipeline validation before expansion; calibrated criteria applied to all net-new records before D5 submission |
+| 3 | §4 — Deduplication | Zotero using Bramer et al. (2016) method | Custom Python pipeline: DOI-first matching, then normalised title + year, then EID; fully documented in public repository | More precise and reproducible than reference manager deduplication; deterministic; compatible with pipeline architecture |
+| 4 | §4.2 — Calibration rounds | Minimum 200-record random subset, κ ≥ 0.6 | Six rounds conducted: R1 (n=205), R1a (n=205), R1b (n=205), R2a (n=103), R2b (n=103), R3a (n=107); criteria revised iteratively between rounds; all rounds documented with reconciled gold standards | Exceeds minimum requirements; additional rounds driven by iterative criteria refinement until all benchmarks were met — methodology is more rigorous than originally specified |
+
+---
+
+### Response to Neal's outstanding comments
+
+> *"You will have to increase that training set substantially — it's an order of magnitude too small."*
+
+- Our previous response (8 April 2026) addressed this in full. To summarise: this conflates two different systems. Juno and EPPI-Reviewer are supervised ML classifiers trained from scratch — they require 2,000–7,000 labelled records to fit a model. qwen2.5:14b is a pre-trained LLM whose parameters are never updated by our data. The ~520 calibration records are a **validation set**, not a training corpus.
+- The analogy is calibrating a human reviewer before independent screening — not training a classifier. Six structured calibration rounds with dual human review and reconciled gold standards exceeds standard practice for this type of system.
+
+> *"I've seen strong evidence of failure for data extraction or coding of anything that isn't very basic."*
+
+- Our previous response cited four peer-reviewed studies from 2024–2025 that directly address this. Neither reply has engaged with them:
+  - Zhan et al. (2025): supervised LLM full-text screening sensitivity **0.976**, κ = 0.74
+  - Jensen et al. (2025): LLM data extraction agreement **92.4%**, κ = **0.93** — lower false data rate than a single human reviewer (5.2% vs 17.7%)
+  - Scherbakov et al. (2025): across 172 studies, LLM data extraction precision **83.0%**, recall **86.0%**
+  - Clark et al. (2025): the failures documented occur in **autonomous** search — our pipeline is supervised and pre-retrieval; this failure mode does not apply
+- We acknowledge there is no calibration of qwen2.5:14b on our own full texts yet — planned and dated in the delivery timeline (D5.1, 22 April).
+- If you have specific studies demonstrating failure under supervised, calibrated conditions we would genuinely welcome them. We have asked twice and have not received any.
+
+> *"I strongly suggest you use random subsampling."*
+
+- Our pipeline screens **100% of records** with validated sensitivity of 0.966–0.970 and a complete decision audit trail. Subsampling screens a fraction and extrapolates — it is a different tradeoff, not a more rigorous one.
+
+> *"You are now quite far behind other teams proceeding manually."*
+
+- As noted above, D4–D7 are due together by May under the original contract. We are on the original timeline.
+- On our capacity: we are a small specialist team. Manual full-text screening of ~6,000 records with dual independent review is approximately 300 person-hours. We do not have that capacity within the current agreement. Our pipeline completed the same task in under 4 hours of unattended compute. That is the reason we built it.
+
+---
+
+### Our position
+
+We have responded in full to every concern raised, with citations and calibration data. We remain fully committed to this project and confident we can deliver on time using the validated pipeline. But we need a clear answer on whether we can proceed with the method we have built and validated. If the method cannot be accepted on its merits, we do not have an alternative path to delivery within this timeline — and we should agree on an exit plan together.
+
+We look forward to the call.
+
+Best regards,
+Zarrar
+(on behalf of the Bristlepine team — Zarrar, Caroline, Jennifer)
+
+---
+
+*{Full response from 8 April 2026 pasted below}*
+
+---
+
+*Section 3 last updated: 2026-04-09*
+
+---
+
+## Section 2: Initial Follow-up to Neal — 9 April 2026 {#section-2}
 
 ### Email received — 9 April 2026
 
