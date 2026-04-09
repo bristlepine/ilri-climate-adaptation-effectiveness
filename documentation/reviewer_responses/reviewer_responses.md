@@ -2,20 +2,12 @@
 
 ## Table of Contents
 
-1. [Joint Response to Neal and Aditi — 9 April 2026](#section-3)
-   - Cancel one-on-one; propose group call
-   - Protocol amendment disclosure (first formal notification)
-   - Point-by-point responses to outstanding comments
-   - Position statement and exit strategy
-
-2. [Initial Methodological Response — 8 April 2026](#section-1)
-   - Status summary, metric definitions and benchmarks
-   - Point-by-point responses to all six reviewer comments
-   - Summary of actions and references
+- [Response to Neal and Aditi — 9 April 2026](#response-to-neal-and-aditi--9-april-2026)
+- [Initial Methodological Response — 8 April 2026](#initial-methodological-response--8-april-2026)
 
 ---
 
-## Section 3: Joint Response to Neal and Aditi — 9 April 2026 {#section-3}
+## Response to Neal and Aditi — 9 April 2026
 
 **Re:** Use of AI for screening — Adaptation measurement
 
@@ -86,7 +78,7 @@ Zarrar
 
 ---
 
-## Section 1 (archived): Initial Methodological Response — 8 April 2026 {#section-1}
+## Initial Methodological Response — 8 April 2026
 
 **Re:** Use of AI for systematic review screening
 **Date:** 2026-04-08
