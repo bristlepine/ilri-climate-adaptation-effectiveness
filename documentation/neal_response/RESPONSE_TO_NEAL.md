@@ -2,4 +2,4 @@
 
 This document has been moved to:
 
-**[documentation/reviewer_responses/reviewer_responses.md](../reviewer_responses/reviewer_responses.md)**
+**[Initial Methodological Response — 8 April 2026](../reviewer_responses/reviewer_responses.md#section-1)**
