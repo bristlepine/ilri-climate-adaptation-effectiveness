@@ -323,9 +323,14 @@ def main() -> None:
     with open(IN_CSV, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
 
+    manual_done = [r for r in rows if (r.get("manually_retrieved") or "").strip()]
+    rows        = [r for r in rows if not (r.get("manually_retrieved") or "").strip()]
+
     has_doi = [r for r in rows if r.get("doi", "").strip()]
     no_doi  = [r for r in rows if not r.get("doi", "").strip()]
-    print(f"\nLoaded {len(rows)} records: {len(has_doi)} with DOI, {len(no_doi)} without DOI")
+    print(f"\nLoaded {len(rows) + len(manual_done)} records total")
+    print(f"  {len(manual_done)} already marked manually_retrieved in CSV — skipping")
+    print(f"  {len(has_doi)} with DOI, {len(no_doi)} without DOI — attempting these")
     print(f"Output: {OUT_DIR}\n")
 
     session = requests.Session()
@@ -445,15 +450,16 @@ def main() -> None:
     n_auto   = len([f for f in OUT_DIR.glob("*") if f.is_file()])
     n_manual = len([f for f in MANUAL_DIR.glob("*") if f.is_file() and f.name != ".gitkeep"])
     meta = {
-        "total_input":          total,
-        "with_doi":             len(has_doi),
-        "without_doi":          len(no_doi),
-        "retrieved_this_run":   n_retrieved,
-        "already_had":          n_skipped,
-        "failed":               n_failed,
-        "files_in_retrieved":   n_auto,
-        "files_manually_retrieved": n_manual,
-        "results":              results,
+        "total_input":              total + len(manual_done),
+        "manually_marked_in_csv":   len(manual_done),
+        "with_doi":                 len(has_doi),
+        "without_doi":              len(no_doi),
+        "retrieved_this_run":       n_retrieved,
+        "already_had":              n_skipped,
+        "failed":                   n_failed,
+        "files_in_retrieved":       n_auto,
+        "files_in_manually_retrieved": n_manual,
+        "results":                  results,
     }
     with open(META_FILE, "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2, ensure_ascii=False)
@@ -462,6 +468,7 @@ def main() -> None:
     print(f"\n{'─'*60}")
     print(f"Retrieved  : {n_retrieved} ({pct}%)")
     print(f"Already had: {n_skipped}")
+    print(f"Manual (CSV): {len(manual_done)}")
     print(f"Failed     : {n_failed}")
     print(f"Auto files : {n_auto}  (in retrieved/)")
     print(f"Manual files: {n_manual}  (in manually_retrieved/)")

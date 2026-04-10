@@ -2,7 +2,7 @@
 
 **Folder (Google Drive):** [missing_papers on Google Drive](https://drive.google.com/drive/folders/1TWDYcYFNwWocSEDNZC4PKGGD-UY9q3M5)
 
-Run this from Cornell campus or Cornell VPN. Downloads missing full texts into `retrieved/`. If the script can't get a paper, drop the PDF manually into `manually_retrieved/` — the script will recognise it and skip it on re-run.
+Run this from Cornell campus or Cornell VPN. Downloads missing full texts into `retrieved/`. If the script can't get a paper, you can retrieve it manually — see the **Manual retrieval** section below.
 
 ---
 
@@ -46,10 +46,13 @@ If the `.env` is missing the script still runs and handles all DOI-based records
 
 If the script fails on a paper and you can get it yourself (e.g. through the Cornell library portal):
 
-- Name the file however you like — just keep it as a `.pdf`
-- Drop it into `manually_retrieved/` inside this folder
-- The script will count it and skip re-downloading it on the next run
-- `retrieval_meta.json` reports both auto and manual counts separately
+1. Download the PDF however you like — name it anything
+2. Drop it into the `manually_retrieved/` folder
+3. Open `missing_papers.csv` and find the row for that paper (search by title or Scopus ID)
+4. In the `manually_retrieved` column for that row, type the filename you used (e.g. `smith_2020.pdf`)
+5. Save the CSV
+
+On the next run the script will skip that record automatically and count it in the summary. The filename you enter is just for your own reference — any non-empty value works.
 
 ---
 
