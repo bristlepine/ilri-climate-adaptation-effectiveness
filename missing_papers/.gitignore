@@ -1,0 +1,4 @@
+.env
+retrieved/
+retrieval_meta.json
+*.zip
