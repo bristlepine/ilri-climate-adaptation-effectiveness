@@ -1,5 +1,7 @@
 # Full-Text Retrieval — Cornell Campus Run
 
+**Folder (Google Drive):** [missing_papers on Google Drive](https://drive.google.com/drive/folders/1TWDYcYFNwWocSEDNZC4PKGGD-UY9q3M5)
+
 Run this from Cornell campus or Cornell VPN. Downloads missing full texts into `retrieved/`.
 
 ---
