@@ -1,7 +1,7 @@
 # Deliverables Tracker — Climate Adaptation Effectiveness Systematic Map
 
 **Contract:** ILRI / Bristlepine consulting
-**Last updated:** 2026-04-09
+**Last updated:** 2026-04-10
 
 ---
 
@@ -24,7 +24,7 @@ Everything below must complete for D5 to ship on time. 21 days remaining.
 
 | Owner | Task | Unlocks | Due |
 |---|---|---|---|
-| **Zarrar** | Generate FT calibration record set (step14a) and send to Caroline + Jennifer | Caroline + Jennifer FT screening → D5.5 | ASAP |
+| **Zarrar** | ✓ Done — Generate FT calibration record set (step14a) and send to Caroline + Jennifer | Caroline + Jennifer FT screening → D5.5 | 10 Apr |
 | **Jennifer** | Retrieve missing full texts via Cornell campus access — run step13 from campus network (or VPN); share zip of outputs with Zarrar | D5.5 full-text screening | ASAP |
 | **Zarrar** | Submit D4 draft — GitHub release + Zenodo DOI, labelled preliminary | — | 14 Apr |
 | **Zarrar** | Run WoS, CAB Abstracts, AGRIS, Academic Search Premier queries (D5.2) | D5.4 abstract screening of net-new records | 22 Apr |
@@ -47,7 +47,7 @@ Everything below must complete for D5 to ship on time. 21 days remaining.
 | D4.3 | Preliminary searchable database — all Scopus-included records with title, abstract, DOI, year, country, screening decision | Internal | `scripts/outputs/step16/` | 12 Apr 2026 | Zarrar | 🔄 In progress |
 | D4.4 | Submit D4 draft to ILRI — GitHub release + Zenodo DOI, clearly labelled preliminary | Internal | ILRI folder + Zenodo | **14 Apr 2026** | Zarrar | — Not started |
 | **D5** | **Final systematic map — searchable database + evidence gap map, multi-database, published** | Report + Database | ILRI folder + GitHub + Zenodo DOI → CGSpace | **1 May 2026** | All | — Not started |
-| D5.1 | Full-text calibration — draw ~100 records from step12 INCLUDEs with retrieved full texts; dual human screen (Caroline, Jennifer); LLM calibrated against reconciled gold standard; IRR ≥ 0.95 sensitivity | Internal | `scripts/outputs/step14b/` | 22 Apr 2026 | Caroline, Jennifer, Zarrar | — Not started |
+| D5.1 | Full-text calibration — draw ~100 records from step12 INCLUDEs with retrieved full texts; dual human screen (Caroline, Jennifer); LLM calibrated against reconciled gold standard; IRR ≥ 0.95 sensitivity | Internal | `scripts/outputs/step14b/` | 22 Apr 2026 | Caroline, Jennifer, Zarrar | 🔄 In progress — calibration set sent 10 Apr |
 | D5.2 | Multi-database search — WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier; search strings adapted per syntax; all hit counts and dates documented | Internal | `scripts/outputs/step2b/` | 22 Apr 2026 | Zarrar | 🔄 In progress |
 | D5.3 | Grey literature manual search — ~20 repositories per D3 §3.3 (CGIAR, World Bank, 3ie, GCF, FAO, IFAD, regional development banks) | Internal | `scripts/data/grey_literature/` | 25 Apr 2026 | Colleagues | — Not started |
 | D5.4 | Abstract screening — net-new records from additional databases; validated R2b/R3a criteria applied; deduplication against Scopus corpus | Internal | `scripts/outputs/step12/` | 28 Apr 2026 | Pipeline | ⏳ Pending D5.2–D5.3 |
