@@ -58,6 +58,16 @@ API_TIMEOUT = 15         # seconds for metadata API calls
 
 PRINT_EVERY = 50
 
+# HTML patterns that indicate a bot-challenge, CAPTCHA, or paywall redirect page
+# rather than real full-text content.
+_HTML_BAD_PATTERNS = [
+    r'captcha', r'bot.manager', r'cloudflare', r'just a moment',
+    r'access denied', r'403 forbidden', r'enable javascript',
+    r'checking your browser', r'ddos-guard', r'please wait',
+    r'radware', r'incapsula', r'sucuri', r'perimeterx',
+    r'are you human', r'verify you are human',
+]
+
 
 # =============================================================================
 # Helpers
@@ -230,11 +240,15 @@ def _download_file(
             dest.unlink(missing_ok=True)
             return False, f"File too small ({total} bytes), likely error page"
 
-        # Reject small HTML files — these are almost always paywall redirect pages
-        # (Elsevier returns a ~2KB HTML stub instead of a 403)
-        if dest.suffix.lower() in (".html", ".htm") and total < 10_000:
-            dest.unlink(missing_ok=True)
-            return False, f"HTML too small ({total} bytes), likely paywall redirect"
+        # Reject HTML files that are paywalls/CAPTCHAs/bot-challenge pages
+        if dest.suffix.lower() in (".html", ".htm"):
+            if total < 10_000:
+                dest.unlink(missing_ok=True)
+                return False, f"HTML too small ({total} bytes), likely paywall redirect"
+            _bad = [p for p in _HTML_BAD_PATTERNS if re.search(p, dest.read_text(errors="ignore").lower())]
+            if _bad:
+                dest.unlink(missing_ok=True)
+                return False, f"HTML blocked page ({_bad[0]})"
 
         return True, str(dest)
 

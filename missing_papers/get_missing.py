@@ -41,6 +41,15 @@ ENV_FILE     = HERE / ".env"
 
 # ── Settings ──────────────────────────────────────────────────────────────────
 SLEEP_S         = 1.2    # polite delay between requests — do not reduce
+
+# HTML patterns that indicate a bot-challenge, CAPTCHA, or paywall redirect page
+_HTML_BAD_PATTERNS = [
+    r'captcha', r'bot.manager', r'cloudflare', r'just a moment',
+    r'access denied', r'403 forbidden', r'enable javascript',
+    r'checking your browser', r'ddos-guard', r'please wait',
+    r'radware', r'incapsula', r'sucuri', r'perimeterx',
+    r'are you human', r'verify you are human',
+]
 TIMEOUT         = 45
 MAX_MB          = 30
 UNPAYWALL_EMAIL = "zarrar@bristlep.com"
@@ -148,10 +157,15 @@ def download(
             dest.unlink(missing_ok=True)
             return None
 
-        # Reject small HTML files — paywall redirect pages (e.g. Elsevier ~2KB stub)
-        if dest.suffix.lower() in (".html", ".htm") and total < 10_000:
-            dest.unlink(missing_ok=True)
-            return None
+        # Reject HTML files that are paywalls/CAPTCHAs/bot-challenge pages
+        if dest.suffix.lower() in (".html", ".htm"):
+            if total < 10_000:
+                dest.unlink(missing_ok=True)
+                return None
+            content = dest.read_text(errors="ignore").lower()
+            if any(re.search(p, content) for p in _HTML_BAD_PATTERNS):
+                dest.unlink(missing_ok=True)
+                return None
 
         return dest
 

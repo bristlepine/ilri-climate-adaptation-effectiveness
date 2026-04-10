@@ -37,7 +37,7 @@ If the `.env` is missing the script still runs and handles all DOI-based records
 
 ## What it does
 
-- **3,143 papers have a DOI** — tried via Unpaywall, Semantic Scholar, then publisher-direct URLs (Springer, Taylor & Francis, Wiley, Emerald, SAGE, MDPI, and others). Campus IP unlocks the paywalled ones.
+- **3,344 papers have a DOI** — tried via Unpaywall, Semantic Scholar, then publisher-direct URLs (Springer, Taylor & Francis, Wiley, Emerald, SAGE, MDPI, and others). Campus IP unlocks the paywalled ones.
 - **958 papers have no DOI** — tried via Elsevier API (Scopus ID), then Semantic Scholar title search, then CORE. Most are older regional journals; some will not be retrievable.
 
 ---
@@ -77,9 +77,9 @@ On the next run the script will skip that record automatically and count it in t
 
 ## Current numbers and expected outcome
 
-- 6,218 papers included total; 2,117 (34%) confirmed retrieved with usable full texts
-- This script targets the remaining 4,101 — 3,143 have DOIs, 958 do not
-- Note: an earlier automated run recovered 2,644 files but 527 were Elsevier paywall redirect pages (not real full texts); those have been added back to this list
+- 6,218 papers included total; 1,916 (31%) confirmed retrieved with usable full texts
+- This script targets the remaining 4,302 — 3,344 have DOIs, 958 do not
+- Note: an earlier automated run recovered 2,644 files but 728 were paywall/CAPTCHA/bot-challenge pages (not real full texts); those have been added back to this list
 - Expected recovery: ~1,500–1,800 DOI papers via campus access + up to ~200 no-DOI papers via Elsevier/title search
-- Projected total after this run: ~3,800–4,100 retrieved (61–66%)
+- Projected total after this run: ~3,700–3,900 retrieved (60–63%), rising to ≥80% with supplementary manual retrieval
 - Some no-DOI papers are older regional journals with no online version — these are expected failures and are not discarded
