@@ -1,6 +1,6 @@
 # Full-Text Retrieval — Cornell Campus Run
 
-**Folder (Google Drive):** [missing_papers on Google Drive](https://drive.google.com/drive/folders/1TWDYcYFNwWocSEDNZC4PKGGD-UY9q3M5)
+**Folder (Google Drive):** [missing_papers on Google Drive](https://drive.google.com/drive/folders/10c55wKoWIVXXUMxE5fDzKUrlhp4qjXZl)
 
 Run this from Cornell campus or Cornell VPN. Downloads missing full texts into `retrieved/`. If the script can't get a paper, you can retrieve it manually — see the **Manual retrieval** section below.
 
