@@ -148,6 +148,11 @@ def download(
             dest.unlink(missing_ok=True)
             return None
 
+        # Reject small HTML files — paywall redirect pages (e.g. Elsevier ~2KB stub)
+        if dest.suffix.lower() in (".html", ".htm") and total < 10_000:
+            dest.unlink(missing_ok=True)
+            return None
+
         return dest
 
     except Exception:

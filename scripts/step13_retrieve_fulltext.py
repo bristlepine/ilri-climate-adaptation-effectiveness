@@ -230,6 +230,12 @@ def _download_file(
             dest.unlink(missing_ok=True)
             return False, f"File too small ({total} bytes), likely error page"
 
+        # Reject small HTML files — these are almost always paywall redirect pages
+        # (Elsevier returns a ~2KB HTML stub instead of a 403)
+        if dest.suffix.lower() in (".html", ".htm") and total < 10_000:
+            dest.unlink(missing_ok=True)
+            return False, f"HTML too small ({total} bytes), likely paywall redirect"
+
         return True, str(dest)
 
     except Exception as e:

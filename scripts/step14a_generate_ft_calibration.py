@@ -9,6 +9,9 @@ calibration (D5.1).
 Reads:
   outputs/step12/step12_results.csv      abstract screening decisions
   outputs/step13/step13_manifest.csv     full-text retrieval status + file paths
+                                         (only records with status='retrieved' and
+                                          usable files are eligible — small HTML
+                                          paywall pages are excluded)
 
 Writes:
   outputs/step14a/ft_calibration_pool.csv    full candidate pool (all INCLUDEs with FT)

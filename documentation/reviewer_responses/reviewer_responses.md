@@ -15,11 +15,22 @@
 
 Dear Aditi and Neal,
 
-**We are cancelling tomorrow's one-on-one with Neal** and propose a group call with Aditi the week of 13 April instead.
+We would like to request to cancel today's (9 Apr 2026) one-on-one with Neal and meet together with the full ILRI team in our next scheduled call or whenever the team is available.
 
-We have responded in full to every concern raised, with citations and calibration data. We remain fully committed to this project and confident we can deliver on time using the validated pipeline. But we need a clear answer on whether we can proceed with the method we have built and validated. If the method cannot be accepted on its merits, we do not have an alternative path to delivery within this timeline — and we should agree on an exit plan together.
+We have responded in full to every concern raised, with citations and calibration data. We acknowledge we are behind and understand this is a concern. Given our team's constraints, we are not confident we can continue if the method cannot be accepted, but we would like to understand Neal's position more precisely before we make that decision. Specifically:
 
-Our responses to Neal's comments are below. We would ask that any further concerns be accompanied by specific counter-citations so we can engage with them directly, rather than responding to new assertions without supporting evidence.
+1. Neal's training dataset concern predates recent advances in LLM-based screening — we would appreciate clarity on whether it still applies given the 2024–25 literature we have cited.
+2. Are Neal's concerns about the method limited to data extraction, or do they extend to full-text screening as well?
+
+If the concern is primarily about extraction, we would propose proceeding with abstract and full-text screening now to get the project back on track, and revisiting the extraction approach separately.
+
+Our responses to Neal's comments are below. We would appreciate further concerns be addressed directly to specific responses and accompanied by specific citations so we can better understand and engage with them more directly.
+
+We are also preparing a formal protocol amendment (v2) documenting all deviations from the published D3 protocol — which, as a deliverable in its own right, is versioned and amendable — and will submit it to Zenodo with all co-authors notified before D5. A summary is included at the end of this email.
+
+Thank you,
+Best,
+Zarrar
 
 ---
 
@@ -47,7 +58,7 @@ Our responses to Neal's comments are below. We would ask that any further concer
 > *"You are now quite far behind other teams proceeding manually."*
 
 - As noted above, D4–D7 are due together by May under the original contract. We are on the original timeline.
-- On our capacity: we are a small specialist team. Manual full-text screening of ~6,000 records with dual independent review is approximately 300 person-hours. We do not have that capacity within the current agreement. Our pipeline completed the same task in under 4 hours of unattended compute. That is the reason we built it.
+- We acknowledge we may have underestimated the manual effort required at this scale. Full-text screening alone of ~6,000 records with dual independent review is approximately 2,000 person-hours; across all stages the total manual estimate is ~7,300 hours. Random subsampling would reduce that burden but at the cost of coverage, which is what led us to turn to the state of the art to address this.
 
 ---
 
@@ -68,13 +79,7 @@ We are formally notifying the team of the following deviations from the publishe
 
 ---
 
-Best regards,
-Zarrar
-(on behalf of the Bristlepine team — Zarrar, Caroline, Jennifer)
-
----
-
-*Section 3 last updated: 2026-04-09*
+*Last updated: 2026-04-09*
 
 ---
 
@@ -292,7 +297,7 @@ An application for an Elsevier institutional token through Cornell University is
 
 > *"86% of your full texts weren't retrievable, which I know you say you'll extract manually, but that then seems to be a huge time cost relative to the model performance."*
 
-**This figure has improved substantially and retrieval is now complete.** The Elsevier institutional token (Cornell University, April 2026) is active and Step 13 has finished. Final figures: **2,644 full texts retrieved of 6,218 records (42.5%)**, up from 929 (15%) in the preliminary run. Sources: Unpaywall (1,756), Elsevier DOI API (706), Semantic Scholar (123), OpenAlex (32), CORE (25), OpenAlex location (2). The 3,574 records without a retrieved full text are classified as "awaiting classification" per Cochrane guidance — retained as included by default.
+**This figure has improved substantially and retrieval is ongoing.** The Elsevier institutional token (Cornell University, April 2026) is active and Step 13 has finished an initial automated pass. Confirmed figures (usable full texts only, paywall redirect pages excluded): **2,117 full texts retrieved of 6,218 records (34%)**, up from 929 (15%) in the preliminary run. A further campus-access retrieval run (Cornell network) is under way targeting the remaining 4,101 records and expected to recover ~1,500–1,800 additional records. The 4,101 records without a confirmed full text are classified as "awaiting classification" per Cochrane guidance — retained as included by default.
 
 **Residual non-retrieval is a documented, systemic challenge in systematic reviews — not a pipeline failure.** Three points from the literature:
 
