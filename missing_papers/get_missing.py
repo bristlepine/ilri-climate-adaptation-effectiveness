@@ -32,11 +32,12 @@ from urllib.parse import quote, urlparse
 import requests
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-HERE      = Path(__file__).parent
-IN_CSV    = HERE / "missing_papers.csv"
-OUT_DIR   = HERE / "retrieved"
-META_FILE = HERE / "retrieval_meta.json"
-ENV_FILE  = HERE / ".env"
+HERE         = Path(__file__).parent
+IN_CSV       = HERE / "missing_papers.csv"
+OUT_DIR      = HERE / "retrieved"
+MANUAL_DIR   = HERE / "manually_retrieved"
+META_FILE    = HERE / "retrieval_meta.json"
+ENV_FILE     = HERE / ".env"
 
 # ── Settings ──────────────────────────────────────────────────────────────────
 SLEEP_S         = 1.2    # polite delay between requests — do not reduce
@@ -87,11 +88,13 @@ def safe_stem(identifier: str) -> str:
 
 
 def already_have(identifier: str) -> Optional[Path]:
+    """Check retrieved/ and manually_retrieved/ for an existing file."""
     stem = safe_stem(identifier)
-    for ext in (".pdf", ".html", ".htm", ".xml"):
-        p = OUT_DIR / (stem + ext)
-        if p.exists() and p.stat().st_size > 2_000:
-            return p
+    for folder in (OUT_DIR, MANUAL_DIR):
+        for ext in (".pdf", ".html", ".htm", ".xml"):
+            p = folder / (stem + ext)
+            if p.exists() and p.stat().st_size > 2_000:
+                return p
     return None
 
 
@@ -306,6 +309,7 @@ def core_by_title(title: str, session: requests.Session) -> Optional[str]:
 
 def main() -> None:
     OUT_DIR.mkdir(exist_ok=True)
+    MANUAL_DIR.mkdir(exist_ok=True)
 
     env        = load_env(ENV_FILE)
     api_key    = env.get("SCOPUS_API_KEY", "")
@@ -438,16 +442,18 @@ def main() -> None:
         time.sleep(SLEEP_S)
 
     # ── Write meta ────────────────────────────────────────────────────────────
-    n_files = len(list(OUT_DIR.glob("*")))
+    n_auto   = len([f for f in OUT_DIR.glob("*") if f.is_file()])
+    n_manual = len([f for f in MANUAL_DIR.glob("*") if f.is_file() and f.name != ".gitkeep"])
     meta = {
-        "total_input":        total,
-        "with_doi":           len(has_doi),
-        "without_doi":        len(no_doi),
-        "retrieved_this_run": n_retrieved,
-        "already_had":        n_skipped,
-        "failed":             n_failed,
-        "files_in_retrieved": n_files,
-        "results":            results,
+        "total_input":          total,
+        "with_doi":             len(has_doi),
+        "without_doi":          len(no_doi),
+        "retrieved_this_run":   n_retrieved,
+        "already_had":          n_skipped,
+        "failed":               n_failed,
+        "files_in_retrieved":   n_auto,
+        "files_manually_retrieved": n_manual,
+        "results":              results,
     }
     with open(META_FILE, "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2, ensure_ascii=False)
@@ -457,9 +463,10 @@ def main() -> None:
     print(f"Retrieved  : {n_retrieved} ({pct}%)")
     print(f"Already had: {n_skipped}")
     print(f"Failed     : {n_failed}")
-    print(f"Files total: {n_files}")
+    print(f"Auto files : {n_auto}  (in retrieved/)")
+    print(f"Manual files: {n_manual}  (in manually_retrieved/)")
     print(f"\nZip and send to Zarrar:")
-    print(f"  zip -r retrieved.zip retrieved/")
+    print(f"  zip -r retrieved.zip retrieved/ manually_retrieved/")
 
 
 if __name__ == "__main__":

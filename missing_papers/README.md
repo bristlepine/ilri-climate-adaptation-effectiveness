@@ -2,7 +2,7 @@
 
 **Folder (Google Drive):** [missing_papers on Google Drive](https://drive.google.com/drive/folders/1TWDYcYFNwWocSEDNZC4PKGGD-UY9q3M5)
 
-Run this from Cornell campus or Cornell VPN. Downloads missing full texts into `retrieved/`.
+Run this from Cornell campus or Cornell VPN. Downloads missing full texts into `retrieved/`. If the script can't get a paper, drop the PDF manually into `manually_retrieved/` — the script will recognise it and skip it on re-run.
 
 ---
 
@@ -42,13 +42,24 @@ If the `.env` is missing the script still runs and handles all DOI-based records
 
 ---
 
+## Manual retrieval
+
+If the script fails on a paper and you can get it yourself (e.g. through the Cornell library portal):
+
+- Name the file however you like — just keep it as a `.pdf`
+- Drop it into `manually_retrieved/` inside this folder
+- The script will count it and skip re-downloading it on the next run
+- `retrieval_meta.json` reports both auto and manual counts separately
+
+---
+
 ## When done
 
-- All files are in `retrieved/` inside this folder
+- Auto-downloaded files are in `retrieved/`, manually retrieved files are in `manually_retrieved/`
 - `retrieval_meta.json` has a summary of what worked and what didn't
-- Zip `retrieved/` and send to Zarrar:
+- Zip both folders and send to Zarrar:
   ```
-  zip -r retrieved.zip retrieved/
+  zip -r retrieved.zip retrieved/ manually_retrieved/
   ```
 
 ---

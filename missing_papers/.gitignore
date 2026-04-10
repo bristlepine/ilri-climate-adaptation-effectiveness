@@ -1,4 +1,6 @@
 .env
 retrieved/
+manually_retrieved/*
+!manually_retrieved/.gitkeep
 retrieval_meta.json
 *.zip
