@@ -2,141 +2,142 @@
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { motion } from "framer-motion";
+import { teamMembers } from "@/lib/data";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+
+const pccm = [
+  { letter: 'P', label: 'Population', description: 'Smallholder producers and related agricultural production systems in LMICs — crop, livestock, fisheries/aquaculture, and agroforestry.' },
+  { letter: 'C', label: 'Concept', description: 'Adaptation processes and outcomes — changes in capacities, practices, resilience, productivity, livelihoods, and risk reduction.' },
+  { letter: 'C', label: 'Context', description: 'Climate hazards, climate-stress conditions, and agricultural settings in low- and middle-income countries (LMICs).' },
+  { letter: 'M', label: 'Methodological Focus', description: 'Methods, tools, frameworks, indicators, and approaches used to track, evaluate, or quantify adaptation processes and outcomes.' },
+];
+
+const stages = [
+  {
+    number: '01',
+    title: 'Systematic Map',
+    description: 'Catalogues the full range of adaptation processes, outcomes, and measurement approaches used in the agriculture sector. Produces a searchable database and evidence gap map.',
+    deliverables: 'D1 – D5',
+    image: '/images/adaptation.jpg',
+  },
+  {
+    number: '02',
+    title: 'Systematic Review & Meta-Analysis',
+    description: 'Focuses on methodological strengths, limitations, and suitability of measurement approaches for different users and contexts.',
+    deliverables: 'D6 – D9',
+    image: '/images/resilience.jpg',
+  },
+];
 
 export default function AboutPage() {
-  const README_HTML = `<a href="https://doi.org/10.5281/zenodo.17809739" class="text-green underline">&lt;img alt=&quot;DOI&quot; src=&quot;https://zenodo.org/badge/DOI/10.5281/zenodo.17809739.svg&quot; class=&quot;my-4 rounded&quot; /&gt;</a>
-
-<h1 class="text-3xl font-bold mt-12 mb-6">ILRI – Measuring what matters: tracking climate adaptation processes and outcomes for smallholder producers in the agriculture sector.</h1>
-<h3 class="text-xl font-semibold mt-6 mb-2">Evidence synthesis and systematic reviews on climate change and agri-food systems</h3>
-
-<p class="my-3 leading-relaxed">This repository hosts the methods, workflows, protocols, documentation, and outputs for the ILRI evidence-synthesis project assessing the effectiveness of climate adaptation interventions for smallholder producers. The project includes a scoping review, systematic evidence map, and systematic review/meta-analysis, following CEE, Campbell Collaboration, and Cochrane standards.</p>
-
-<p class="my-3 leading-relaxed">---</p>
-
-<h2 class="text-2xl font-bold mt-10 mb-4">Contributors</h2>
-
-<h3 class="text-xl font-semibold mt-6 mb-2">Principal Investigators &amp; Authors  </h3>
-<ul class="my-4 list-disc ml-6">
-<li>Jennifer Denno Cissé — Bristlepine Resilience Consultants — ORCID: 0000-0001-5637-1941 — jenn@bristlep.com  </li>
-<li>Caroline G. Staub — Bristlepine Resilience Consultants — caroline@bristlep.com  </li>
-<li>Zarrar Khan — Bristlepine Resilience Consultants — ORCID: 0000-0002-8147-8553 — zarrar@bristlep.com  </li>
-
-</ul>
-
-<h3 class="text-xl font-semibold mt-6 mb-2">Systematic Review Methodology Support  </h3>
-<ul class="my-4 list-disc ml-6">
-<li>Neal Haddaway — Evidence Synthesis Specialist</li>
-
-</ul>
-
-<h3 class="text-xl font-semibold mt-6 mb-2">Project Coordination  </h3>
-<ul class="my-4 list-disc ml-6">
-<li>Aditi Mukherji — Principal Scientist, Climate Action — ILRI  </li>
-
-</ul>
-
-<p class="my-3 leading-relaxed">---</p>
-
-<h2 class="text-2xl font-bold mt-10 mb-4">How to Cite This Repository</h2>
-
-<p class="my-3 leading-relaxed">Cissé, J. D., Staub, C. G., &amp; Khan, Z. (2025). ILRI – Measuring what matters: tracking climate adaptation processes and outcomes for smallholder producers in the agriculture sector. Version 1.0. Zenodo. https://doi.org/10.5281/zenodo.17809739</p>
-
-<p class="my-3 leading-relaxed">Each deliverable will receive its own versioned DOI, listed below.</p>
-
-<p class="my-3 leading-relaxed">---</p>
-
-<h2 class="text-2xl font-bold mt-10 mb-4">Repository &amp; Output Locations</h2>
-
-<p class="my-3 leading-relaxed">| Platform | Purpose | URL / Identifier |</p>
-<p class="my-3 leading-relaxed">|----------|---------|------------------|</p>
-<p class="my-3 leading-relaxed">| &lt;strong&gt;GitHub&lt;/strong&gt; | Code, methods, workflows, documentation | https://github.com/bristlepine/ilri-climate-adaptation-effectiveness |</p>
-<p class="my-3 leading-relaxed">| &lt;strong&gt;Zenodo&lt;/strong&gt; | DOI-minted snapshots of releases | https://doi.org/10.5281/zenodo.17809739 |</p>
-<p class="my-3 leading-relaxed">| &lt;strong&gt;CGSpace&lt;/strong&gt; | Permanent ILRI archive for final outputs | Handle: To be added |</p>
-<p class="my-3 leading-relaxed">| &lt;strong&gt;Journal Publications&lt;/strong&gt; | Scoping review, systematic map, systematic review | To be added |</p>
-
-<p class="my-3 leading-relaxed">---</p>
-
-<h2 class="text-2xl font-bold mt-10 mb-4">Deliverables Summary (Aligned to Contract)</h2>
-
-<p class="my-3 leading-relaxed">| No. | Deliverable | Type | Due Date | Status | DOI |</p>
-<p class="my-3 leading-relaxed">|-----|-------------|------|----------|--------|------|</p>
-<p class="my-3 leading-relaxed">| 1 | &lt;a href=&quot;https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/01_inception_report/Deliverable%201_Inception%20Report_IL01_v1.pdf&quot; class=&quot;text-green underline&quot;&gt;Inception Report&lt;/a&gt; | Final RQs, search plan, Gantt chart | Interim | Complete | https://doi.org/10.5281/zenodo.17861055 |</p>
-<p class="my-3 leading-relaxed">| 2 | &lt;a href=&quot;https://github.com/bristlepine/ilri-climate-adaptation-effectiveness/blob/main/deliverables/02_draft_systematic_map_protocol/Deliverable%202_Draft%20Systematic%20Map%20Protocol_v3.pdf&quot; class=&quot;text-green underline&quot;&gt;Draft Systematic Map Protocol&lt;/a&gt; | Interim Report | Jan 2, 2026 | Complete | https://zenodo.org/records/18369383 |</p>
-<p class="my-3 leading-relaxed">| 3 | Final Scoping Review / Systematic Map Protocol (CGSpace) | Final Report | Jan 30, 2026 | Not Started | TBD |</p>
-<p class="my-3 leading-relaxed">| 4 | Draft Scoping Review + Evidence Database | Interim | Feb 27, 2026 | Not Started | TBD |</p>
-<p class="my-3 leading-relaxed">| 5 | Final Scoping Review + Systematic Map + Database | Final | Mar 27, 2026 | Not Started | TBD |</p>
-<p class="my-3 leading-relaxed">| 6 | Draft Systematic Review / Meta-analysis Protocol | Interim | May 1, 2026 | Not Started | TBD |</p>
-<p class="my-3 leading-relaxed">| 7 | Final SR/MA Protocol (CGSpace) | Final | May 29, 2026 | Not Started | TBD |</p>
-<p class="my-3 leading-relaxed">| 8 | Draft Systematic Review / Meta-analysis Manuscript | Interim | Jun 26, 2026 | Not Started | TBD |</p>
-<p class="my-3 leading-relaxed">| 9 | Final Systematic Review / Meta-analysis Manuscript | Final | Jul 31, 2026 | Not Started | TBD |</p>
-<p class="my-3 leading-relaxed">| 10 | Final Stakeholder Presentation | Final | Jul 31, 2026 | Not Started | TBD |</p>
-
-<p class="my-3 leading-relaxed">---</p>
-
-<h2 class="text-2xl font-bold mt-10 mb-4">Repository Structure</h2>
-
-
-<p class="my-3 leading-relaxed"><pre class="p-4 bg-gray-900 text-gray-100 rounded-md my-4 overflow-auto font-mono text-sm"><code>bash
-repo-root/
-├── CITATION.cff
-├── LICENSE
-├── autodocs.py
-├── deliverables/
-│   ├── 01_inception_report/
-│   │   ├── Deliverable 1_Inception Report_IL01_v1.pdf
-│   │   ├── metadata.json
-│   ├── 02_draft_systematic_map_protocol/
-│   │   ├── Deliverable 2_Draft Systematic Map Protocol_v3.pdf
-│   ├── 03_final_systematic_map_protocol/
-├── environment.yml
-├── frontend/
-│   ├── next-env.d.ts
-│   ├── next.config.ts
-│   ├── package-lock.json
-│   ├── package.json
-│   ├── postcss.config.mjs
-│   ├── tsconfig.json
-├── scripts/
-│   ├── Benchmark List - List.csv
-│   ├── config.py
-│   ├── criteria.yml
-│   ├── run.py
-│   ├── scopus.py
-│   ├── search_strings.yml
-│   ├── step1_counts.py
-│   ├── step2_retrieve.py
-│   ├── step3_benchmark.py
-│   ├── step4_abstracts.py
-│   ├── step5_eligibility.py
-│   ├── step6_visualize.py
-│   ├── step7_scopus_check.py
-│   ├── utils.py
-</code></pre></p>
-
-
-<p class="my-3 leading-relaxed">---</p>
-`;
   return (
-    <main className="page-wrapper">
+    <main className="page-wrapper min-h-screen flex flex-col">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative h-[60vh] w-full text-white overflow-hidden">
+      {/* Hero */}
+      <section className="relative min-h-[50vh] flex items-end px-6 pt-32 pb-16 text-sand overflow-hidden">
         <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-[-1]">
-          <source src="https://bristlepine.s3.us-east-2.amazonaws.com/2994205-uhd_3840_2160_30fps_clip.mp4" type="video/webm" />
+          <source src="https://bristlepine.s3.us-east-2.amazonaws.com/2994205-uhd_3840_2160_30fps_clip.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-black/60 z-0" />
-        <div className="relative z-10 flex flex-col justify-center items-center text-center px-6 pt-20 h-full">
-          <h1 className="text-5xl font-logo text-sand mb-4">About</h1>
-          <p className="text-lg font-tagline text-white/90 max-w-2xl mx-auto">Measuring what matters: tracking climate adaptation processes and outcomes for smallholder producers in the agriculture sector.</p>
+        <div className="absolute inset-0 bg-black/65 z-0" />
+        <div className="relative z-10 max-w-4xl mx-auto">
+          <p className="text-sm font-tagline uppercase tracking-widest text-clay mb-3">ILRI / CGIAR · 2025–2026</p>
+          <h1 className="text-4xl md:text-5xl font-logo font-bold mb-4 leading-tight">Measuring What Matters</h1>
+          <p className="text-lg font-tagline text-clay max-w-2xl">
+            Tracking climate adaptation processes and outcomes for smallholder producers in the agriculture sector.
+          </p>
         </div>
       </section>
 
-      {/* README Content */}
-      <section className="px-6 py-16 bg-white text-charcoal">
-        <div className="max-w-4xl mx-auto prose prose-lg">
-          <div dangerouslySetInnerHTML={{ __html: README_HTML }} />
+      {/* Research Question */}
+      <section className="bg-white px-6 py-16">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-logo font-bold text-green mb-6">Primary Research Question</h2>
+          <blockquote className="border-l-4 border-green pl-6 py-2 mb-6">
+            <p className="text-xl font-logo text-charcoal italic leading-relaxed">
+              "What adaptation processes and outcomes have been measured for smallholder producers in the agriculture sector in LMICs, and what methods have been used to track, evaluate, or quantify these processes and outcomes?"
+            </p>
+          </blockquote>
+          <p className="font-tagline text-charcoal leading-relaxed">
+            The project systematically identifies, characterises, and compares methods used to track and measure adaptation processes and outcomes targeting smallholder agricultural producers in LMICs — covering frameworks, indicators, M&amp;E systems, analytical approaches, participatory tools, and digital/data-driven methods.
+          </p>
+        </div>
+      </section>
+
+      {/* PCCM */}
+      <section className="bg-sand px-6 py-16">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-logo font-bold text-green mb-2">PCCM Framework</h2>
+          <p className="font-tagline text-charcoal mb-8">The review is structured around a Population–Concept–Context–Methodological Focus framework.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {pccm.map((item) => (
+              <div key={item.label} className="rounded-xl border border-gray-200 bg-white p-6 flex gap-4">
+                <div className="w-10 h-10 rounded-full bg-green text-white flex items-center justify-center font-logo font-bold text-lg shrink-0">{item.letter}</div>
+                <div>
+                  <h3 className="font-logo font-bold text-charcoal text-lg mb-1">{item.label}</h3>
+                  <p className="font-tagline text-sm text-gray-600">{item.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Two Stages — cards with images on dark background */}
+      <section className="relative px-6 py-16 overflow-hidden">
+        <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-[-1]">
+          <source src="https://bristlepine.s3.us-east-2.amazonaws.com/2994205-uhd_3840_2160_30fps_clip.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-black/70 z-0" />
+        <div className="relative z-10 max-w-4xl mx-auto">
+          <h2 className="text-2xl font-logo font-bold text-sand mb-2">Two-Stage Approach</h2>
+          <p className="font-tagline text-clay mb-8">The project proceeds in two sequential stages.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {stages.map((stage) => (
+              <div key={stage.number} className="group rounded-xl overflow-hidden bg-sand text-charcoal shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.015] flex flex-col">
+                <div className="relative h-48 overflow-hidden">
+                  <img src={stage.image} alt={stage.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
+                    <span className="text-8xl font-logo font-bold text-white/60 drop-shadow-lg">{stage.number}</span>
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="font-logo font-bold text-charcoal text-xl mb-2">{stage.title}</h3>
+                  <p className="font-tagline text-sm text-gray-600 leading-relaxed flex-1 mb-4">{stage.description}</p>
+                  <span className="text-xs font-tagline font-semibold text-green bg-green/10 px-3 py-1 rounded-full self-start">{stage.deliverables}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Team */}
+      <section className="bg-white px-6 py-16">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-logo font-bold text-green mb-2">The Team</h2>
+          <p className="font-tagline text-charcoal mb-8">
+            Conducted by <strong>Bristlepine Resilience Consultants</strong> on behalf of ILRI / CGIAR.
+            Systematic review methodology support by <strong>Neal Haddaway</strong>.
+            Project coordination by <strong>Aditi Mukherji</strong>, Principal Scientist, Climate Action, ILRI.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {teamMembers.map((member) => (
+              <Link key={member.slug} href={`/team/${member.slug}`}
+                className="group rounded-xl bg-sand shadow hover:shadow-md transition-all duration-300 transform hover:scale-[1.015] flex flex-col items-center text-center p-6">
+                <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-md mb-4 shrink-0">
+                  <img src={member.image} alt={member.name} className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105" />
+                </div>
+                <h3 className="font-logo font-bold text-charcoal">{member.name}</h3>
+                <p className="text-sm font-tagline text-gray-500 mb-3 flex-1">{member.shortBio}</p>
+                <div className="flex items-center gap-2 text-green group-hover:text-sage transition-colors">
+                  <ArrowRight className="w-4 h-4" />
+                  <span className="text-sm font-semibold font-tagline">View Profile</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

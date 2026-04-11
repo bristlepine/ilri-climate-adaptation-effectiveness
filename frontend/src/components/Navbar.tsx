@@ -10,10 +10,9 @@ import { usePathname } from "next/navigation";
 const links: { name: string; href: string }[] = [
   { name: 'Home', href: '/' },
   { name: 'About', href: '/about' },
-  { name: 'Protocols', href: '/protocols' },
-  { name: 'Evidence', href: '/evidence' },
-  { name: 'Review', href: '/review' },
-  { name: 'Data', href: '/data' }
+  { name: 'Deliverables', href: '/deliverables' },
+  { name: 'Systematic Map', href: '/systematic-map' },
+  { name: 'Systematic Review', href: '/systematic-review' },
 ];
 
 export default function Navbar() {

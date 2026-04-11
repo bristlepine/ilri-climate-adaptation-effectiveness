@@ -24,12 +24,9 @@ Everything below must complete for D5 to ship on time. 21 days remaining.
 
 | Owner | Task | Unlocks | Due |
 |---|---|---|---|
-| **Zarrar** | ✓ Done — Generate FT calibration record set (step14a) and send to Caroline + Jennifer | Caroline + Jennifer FT screening → D5.5 | 10 Apr |
 | **Jennifer** | Retrieve missing full texts via Cornell campus access — run step13 from campus network (or VPN); share zip of outputs with Zarrar | D5.5 full-text screening | ASAP |
 | **Zarrar** | Submit D4 draft — GitHub release + Zenodo DOI, labelled preliminary | — | 14 Apr |
 | **Zarrar** | Run WoS, CAB Abstracts, AGRIS, Academic Search Premier queries (D5.2) | D5.4 abstract screening of net-new records | 22 Apr |
-| **Caroline** | Screen ~100 FT calibration records independently on receipt; return filled CSV with decisions and notes | D5.1 IRR analysis → D5.5 | 22 Apr |
-| **Jennifer** | Screen ~100 FT calibration records independently on receipt; return filled CSV with decisions and notes | D5.1 IRR analysis → D5.5 | 22 Apr |
 | **Colleagues** | Complete grey literature manual search — ~20 repositories (CGIAR, World Bank, 3ie, GCF, FAO, IFAD, regional development banks) per D3 §3.3 | D5.4 | 25 Apr |
 | **Caroline** | Spot-check ~10% of data extraction outputs; resolve discrepancies with Jennifer | D5.6 → D5.8 | 28 Apr |
 | **Jennifer** | Spot-check ~10% of data extraction outputs; resolve discrepancies with Caroline | D5.6 → D5.8 | 28 Apr |
@@ -43,18 +40,18 @@ Everything below must complete for D5 to ship on time. 21 days remaining.
 | ID | Description | Type | Output | Revised due | Owner | Status |
 |---|---|---|---|---|---|---|
 | **D4** | **First draft systematic map — searchable database + evidence gap map (Scopus-based, preliminary)** | Report + Database | ILRI folder + GitHub + Zenodo DOI | ~~3 Apr~~ **14 Apr 2026** | Zarrar | ⚠ Overdue |
-| D4.2 | ROSES flow diagram — Scopus-based, labelled preliminary pending multi-database integration | Internal | `scripts/outputs/step16/` | 12 Apr 2026 | Zarrar | 🔄 In progress |
-| D4.3 | Preliminary searchable database — all Scopus-included records with title, abstract, DOI, year, country, screening decision | Internal | `scripts/outputs/step16/` | 12 Apr 2026 | Zarrar | 🔄 In progress |
+| D4.2 | ROSES flow diagram — Scopus-based, labelled preliminary pending multi-database integration | Internal | `scripts/outputs/step16/roses_flow.png` | 12 Apr 2026 | Zarrar | ✓ Done — auto-regenerates on each step16 re-run as pipeline progresses |
+| D4.3 | Preliminary searchable database — step15_coded.csv served via frontend at /systematic-map; CSV download live; interactive table pending D5.6 | Internal | `frontend/public/map/step15_coded.csv` | 12 Apr 2026 | Zarrar | ✓ Done — preliminary CSV live on site |
 | D4.4 | Submit D4 draft to ILRI — GitHub release + Zenodo DOI, clearly labelled preliminary | Internal | ILRI folder + Zenodo | **14 Apr 2026** | Zarrar | — Not started |
 | **D5** | **Final systematic map — searchable database + evidence gap map, multi-database, published** | Report + Database | ILRI folder + GitHub + Zenodo DOI → CGSpace | **1 May 2026** | All | — Not started |
-| D5.1 | Full-text calibration — draw ~100 records from step12 INCLUDEs with retrieved full texts; dual human screen (Caroline, Jennifer); LLM calibrated against reconciled gold standard; IRR ≥ 0.95 sensitivity | Internal | `scripts/outputs/step14b/` | 22 Apr 2026 | Caroline, Jennifer, Zarrar | 🔄 In progress — calibration set sent 10 Apr |
+| D5.1 | ~~Full-text calibration~~ — **Dropped 11 Apr 2026** due to timeline constraints; Caroline and Jennifer notified; D3 protocol does not explicitly require FT-stage calibration (only abstract stage); to be noted in protocol amendment D5.7 | Internal | — | — | — | ✗ Abandoned |
 | D5.2 | Multi-database search — WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier; search strings adapted per syntax; all hit counts and dates documented | Internal | `scripts/outputs/step2b/` | 22 Apr 2026 | Zarrar | 🔄 In progress |
 | D5.3 | Grey literature manual search — ~20 repositories per D3 §3.3 (CGIAR, World Bank, 3ie, GCF, FAO, IFAD, regional development banks) | Internal | `scripts/data/grey_literature/` | 25 Apr 2026 | Colleagues | — Not started |
 | D5.4 | Abstract screening — net-new records from additional databases; validated R2b/R3a criteria applied; deduplication against Scopus corpus | Internal | `scripts/outputs/step12/` | 28 Apr 2026 | Pipeline | ⏳ Pending D5.2–D5.3 |
-| D5.5 | Full-text screening — pipeline run post full-text calibration confirmation (D5.1); supplemented with manual campus library collection | Internal | `scripts/outputs/step14/` | 28 Apr 2026 | Pipeline | ⏳ Pending D5.1 |
-| D5.6 | Data extraction — automated coding of all included records; ~10% random spot-check by Caroline and Jennifer; κ ≥ 0.60; all discrepancies resolved | Internal | `scripts/outputs/step15/` | 28 Apr 2026 | Caroline, Jennifer, Zarrar | ⏳ Pending D5.5 |
+| D5.5 | Full-text screening — pipeline run on all retrieved full texts; supplemented with manual campus library collection | Internal | `scripts/outputs/step14/` | 28 Apr 2026 | Pipeline | ⏳ Pending Jennifer FT retrieval |
+| D5.6 | Data extraction — iterative human-LLM co-coding in 100-paper buckets; H1 + H2 + LLM code simultaneously; reconcile → update codebook + LLM guidance; kappa + sensitivity per closed field; category saturation for emergent fields (Adaptation focus, Indicators); converge in ~3–4 rounds; LLM runs full corpus with uncertainty flagging; flagged records reviewed by humans | Internal | `scripts/outputs/step15/` | 28 Apr 2026 | Coders + Zarrar | ⏳ Pending D5.5 |
 | D5.7 | Protocol amendment v2 — Zenodo versioned update documenting all D3 deviations; all co-authors notified | Internal | Zenodo (existing DOI, v2) | 28 Apr 2026 | Zarrar | — Not started |
-| D5.8 | Final systematic map — updated ROSES flow diagram, full searchable extraction database, evidence gap map | Internal | `scripts/outputs/step16/` | **1 May 2026** | All | ⏳ Pending D5.1–D5.6 |
+| D5.8 | Final systematic map — updated ROSES flow diagram, full searchable extraction database, evidence gap map | Internal | `scripts/outputs/step16/` + frontend | **1 May 2026** | All | ⏳ Pending D5.2–D5.6 |
 | **D6** | **First draft SR/meta-analysis protocol** | Report | ILRI folder + GitHub + Zenodo DOI | **15 May 2026** | Zarrar | — Not started |
 | D6.1 | Draft protocol informed by systematic map findings — scope, RQs, inclusion criteria, analysis plan | Internal | `documentation/` | 15 May 2026 | Zarrar | ⏳ Pending D5 |
 | **D7** | **Final SR/meta-analysis protocol — published on Zenodo** | Report | ILRI folder + GitHub + Zenodo DOI → CGSpace | **29 May 2026** | Zarrar + team | — Not started |
@@ -100,18 +97,50 @@ Everything below must complete for D5 to ship on time. 21 days remaining.
 
 ## Implementation notes
 
-### D5.1 — Full-text calibration pipeline
+### D5.1 — Full-text calibration pipeline (ABANDONED 11 Apr 2026)
 
-Scripts to build (insert between step13 and current step14):
+Dropped due to timeline constraints. D3 protocol does not mandate FT-stage calibration (§4.2 covers abstract stage only). Caroline and Jennifer notified. To be documented in protocol amendment D5.7 as a deviation with justification.
 
-- `step14a_generate_ft_calibration.py` — draw ~100 records from step12 INCLUDEs with full texts retrieved; output blank `scripts/results/EPPI Review - FT-R1a.csv` (cols: Id, Item, DOI, Abstract, Caroline Staub, Jennifer Cisse, Reconciled, Reconciliation Notes) + rendered criteria guidance .md to send to reviewers
-- `step14b_ft_irr_analysis.py` — after reviewers return filled CSV: run LLM on full texts → fill LLM column → compute IRR (reuse step11 functions: `cohen_kappa`, `confusion_vs_reconciled`, `detect_columns`); output figures + JSON to `outputs/step14b/`
-- `step14c_test_ft_criteria.py` — after revising criteria: re-run LLM on calibration set → compare to Reconciled → print false negatives with quotes to guide next revision
-- `scripts/criteria_ft_r1.yml` — same 5 criteria as `criteria.yml`, same existing abstract guidance fields, plus two new fields per criterion: `ft_include_further_guidelines` / `ft_exclude_further_guidelines` (start minimal; FT stage can be stricter than abstract)
+### D5.6 — Data extraction calibration design
 
-Renaming required once step14a/b/c inserted: existing step14→15, step15→16, step16→17 across script files, `config.py`, `run.py`, `METHODOLOGY.md`, `methodology.py`, `README.md`, output dirs.
+Iterative human-LLM co-development of codebook across 100-paper buckets. Covers both closed fields (pre-specified from PCCM/Table 3) and emergent fields (Adaptation focus, Indicators measured — per D3 §6). Two convergences tracked simultaneously: LLM accuracy (kappa) and category saturation (no new codes appearing).
 
-Extend `step11_criteria_evolution.py` with a `ROUNDS_FT` list to track FT criteria changes separately.
+**Per bucket (RNa → RNb):**
+1. H1, H2, and LLM all code the same 100 papers **independently and simultaneously**
+2. H1 + H2 reconcile disagreements → gold standard RNa
+3. Compare LLM against gold standard → kappa + sensitivity **per field**
+4. Review LLM-invented or missed categories — these are diagnostic of underspecified guidance, not just LLM errors
+5. Update codebook AND LLM prompt/guidance to reflect reconciled categories + new emergent codes
+6. LLM recodes same bucket (RNb) → verify improvement on updated guidance
+
+**Stopping rules:**
+- **Closed fields** (country, producer type, method, etc.): lock field once κ ≥ 0.60 and sensitivity ≥ 0.80 in same bucket; do not retest locked fields in subsequent buckets
+- **Emergent fields** (adaptation focus, indicators measured): continue until no new categories appear across two consecutive buckets (Neal's saturation criterion)
+- Expected convergence after 3–4 buckets (300–400 papers); stop earlier if both criteria met
+
+**Full corpus run:**
+- LLM codes all included records using locked codebook + final guidance
+- LLM outputs a confidence score and "other/unclear" flag per emergent field
+- All "other/unclear" outputs routed to human review — safety net for novel patterns in corpus tail
+- Outputs are the canonical extraction database for D5.8
+
+**Infrastructure:** reuse step11 `cohen_kappa`, `confusion_vs_reconciled`; extend to one metric per field; track emergent category lists per bucket separately
+
+### Frontend — AWS/Next.js site (deployed, live)
+
+Structure (updated 11 Apr 2026):
+- `/` — Home (video hero, unchanged)
+- `/about` — Project background, RQ, PCCM framework, two-stage approach, team
+- `/deliverables` — All D1–D10 as cards with status badges and Zenodo/GitHub/CGSpace links
+- `/systematic-map` — ROSES diagram, preliminary CSV download, evidence map figures (lightbox), interactive table placeholder
+- `/systematic-review` — Skeleton, D6–D9 cards, coming May–Jul 2026
+
+**To update the site after any pipeline run:** `python scripts/stepX_sync_frontend.py` copies step16 PNGs + step15_coded.csv → `frontend/public/map/`, then deploy (push to main triggers AWS).
+
+Deliverable DOIs to fill in `frontend/src/lib/deliverables.ts` as they are minted:
+- D3: Zenodo DOI pending
+- D4: Zenodo DOI — mint on GitHub release (D4.4)
+- D5–D10: pending
 
 ### Pipeline — pending re-runs
 
