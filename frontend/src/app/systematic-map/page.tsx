@@ -117,9 +117,14 @@ export default function SystematicMapPage() {
 
       {/* Lightbox */}
       {lightbox && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6 cursor-zoom-out"
+        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center cursor-zoom-out"
           onClick={() => setLightbox(null)}>
-          <img src={lightbox} alt="Enlarged figure" className="max-w-full max-h-full rounded-xl shadow-2xl" />
+          <img
+            src={lightbox}
+            alt="Enlarged figure"
+            className="w-screen h-screen object-contain p-4"
+          />
+          <span className="absolute top-4 right-5 text-white/50 font-tagline text-xs select-none">click anywhere to close</span>
         </div>
       )}
 
