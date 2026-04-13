@@ -1,0 +1,9 @@
+smallholder* OR "small-scale farmer*" OR "subsistence farmer*" OR pastoralist* OR fisher* OR "agroforestry farmer*"
+AND
+"climate change" OR "climate adaptation" OR drought* OR flood* OR "climate risk" OR "climate variability"
+AND
+(adapt* OR resilience OR "coping strateg*" OR "adaptive capacity")
+AND
+(indicator* OR monitor* OR evaluat* OR assess* OR metric*)
+AND
+(africa OR asia OR "latin america" OR lmic* OR "developing countr*")
