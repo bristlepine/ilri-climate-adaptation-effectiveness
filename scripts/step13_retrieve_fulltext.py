@@ -58,14 +58,23 @@ API_TIMEOUT = 15         # seconds for metadata API calls
 
 PRINT_EVERY = 50
 
-# HTML patterns that indicate a bot-challenge, CAPTCHA, or paywall redirect page
+# HTML patterns that indicate a bot-challenge, CAPTCHA, paywall, or login-wall
 # rather than real full-text content.
 _HTML_BAD_PATTERNS = [
+    # Bot / CAPTCHA challenges
     r'captcha', r'bot.manager', r'cloudflare', r'just a moment',
     r'access denied', r'403 forbidden', r'enable javascript',
     r'checking your browser', r'ddos-guard', r'please wait',
     r'radware', r'incapsula', r'sucuri', r'perimeterx',
     r'are you human', r'verify you are human',
+    # Paywalls and login walls (Springer, Wiley, Taylor & Francis, etc.)
+    r'purchase this article', r'buy this article',
+    r'subscribe to (read|access|view)',
+    r'institutional login', r'log in (to|with) your institution',
+    r'sign in (to|with) your institution',
+    r'get full.text access', r'full.text not available',
+    r'access this article', r'read the full.text',
+    r'this content is not available',
 ]
 
 
@@ -867,6 +876,60 @@ def write_outputs(
     print(f"[step13] By source: {source_counts}")
     print(f"[step13] Missing-abstract retrieval: {ma_status}")
     return summary
+
+
+# =============================================================================
+# Rescan existing HTMLs against updated bad-pattern list
+# =============================================================================
+
+def rescan_html_files(out_root: Path) -> dict:
+    """
+    Re-check all HTML files already in the fulltext directory against the
+    current _HTML_BAD_PATTERNS list. Deletes fakes and marks them
+    needs_manual in the manifest.
+
+    Returns counts: {rescanned, newly_flagged, kept}.
+    Call this after updating _HTML_BAD_PATTERNS or after a fresh pipeline run.
+    """
+    base = out_root / "step13"
+    manifest_csv = base / "step13_manifest.csv"
+    fulltext_dir = base / "fulltext"
+
+    if not manifest_csv.exists():
+        print("[step13-rescan] No manifest found — run step13 first.")
+        return {}
+
+    df = pd.read_csv(manifest_csv, dtype=str)
+    newly_flagged = 0
+    rescanned = 0
+
+    for idx, row in df.iterrows():
+        fp = str(row.get("file_path", ""))
+        if not fp or not fp.endswith((".html", ".htm")):
+            continue
+        p = Path(fp)
+        if not p.exists():
+            continue
+        rescanned += 1
+        try:
+            text = p.read_text(errors="ignore").lower()
+        except Exception:
+            continue
+        bad = [pat for pat in _HTML_BAD_PATTERNS if re.search(pat, text)]
+        if bad:
+            p.unlink(missing_ok=True)
+            df.at[idx, "status"] = "needs_manual"
+            df.at[idx, "file_path"] = ""
+            df.at[idx, "file_size_kb"] = "0"
+            df.at[idx, "note"] = f"rescan: bad pattern ({bad[0]})"
+            newly_flagged += 1
+
+    df.to_csv(manifest_csv, index=False)
+    kept = rescanned - newly_flagged
+    print(f"[step13-rescan] Rescanned {rescanned} HTML files — "
+          f"flagged {newly_flagged} new fakes, kept {kept} legitimate HTMLs.")
+    print(f"[step13-rescan] Manifest updated: {manifest_csv}")
+    return {"rescanned": rescanned, "newly_flagged": newly_flagged, "kept": kept}
 
 
 # =============================================================================
