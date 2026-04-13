@@ -122,7 +122,29 @@ Full string file: `scripts/data/multidatabase/asp/search_string_ebsco.txt`
 
 ---
 
-## After all exports are in place
+## Saving the export files — two options for Jennifer
+
+**Option A — Google Drive (recommended if you don't use GitHub)**
+
+Upload all exported RIS files directly to the shared project folder:
+https://drive.google.com/drive/folders/1f5y8kjVAcHXBm74AM2wOXsdxrCTnh-ll
+
+Put each database's files in its own subfolder:
+```
+multidatabase/wos/wos_export_1.ris, wos_export_2.ris, ...
+multidatabase/cab/cab_export_1.ris, cab_export_2.ris, ...
+multidatabase/asp/asp_export_1.ris, asp_export_2.ris, ...
+multidatabase/agris/agris_export.ris
+```
+Zarrar will pull the files from Drive and run the deduplication pipeline.
+
+**Option B — GitHub (if you're comfortable with git)**
+
+Place files in the same folder structure under `scripts/data/multidatabase/` and push to main. The pipeline reads from there directly.
+
+---
+
+## After all exports are in place (Zarrar runs this)
 
 ```bash
 python scripts/step2b_multidatabase_dedupe.py
