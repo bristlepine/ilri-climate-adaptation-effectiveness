@@ -38,7 +38,11 @@ from dotenv import load_dotenv
 
 here = Path(__file__).parent
 sys.path.insert(0, str(here))
-from step13_retrieve_fulltext import step13_dirs, _is_html_fake
+from step13_retrieve_fulltext import step13_dirs, _HTML_BAD_PATTERNS
+
+def _is_html_fake(text: str) -> bool:
+    import re as _re
+    return any(_re.search(p, text) for p in _HTML_BAD_PATTERNS)
 
 load_dotenv()
 
