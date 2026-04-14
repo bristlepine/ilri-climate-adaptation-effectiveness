@@ -182,31 +182,39 @@ _HARDCODED_SCHEMA: Dict[str, Tuple[str, str]] = {
 }
 
 CODING_SCHEMA: Dict[str, Tuple[str, str]] = {}
+_CRITERIA_DATA: dict = {}   # raw YAML — used by build_system_prompt() for full prompt
 
 
 def _load_coding_schema(criteria_path: Path) -> bool:
     """
-    Load CODING_SCHEMA in-place from a YAML criteria file.
-    Returns True on success, False if file not found (falls back to hardcoded).
-    YAML format:
+    Load CODING_SCHEMA and _CRITERIA_DATA from a YAML criteria file.
+    Returns True on success, False on error (falls back to hardcoded schema).
+
+    YAML format (mirrors abstract-screening/criteria/criteria.yml):
         fields:
           field_name:
-            description: "..."
+            name: "Display name"
+            extract: "What to look for and how to decide"
             valid_values: "..."
+            r1_further_guidance: >   # optional, added after each round
+              ...
     """
-    global CODING_SCHEMA
+    global CODING_SCHEMA, _CRITERIA_DATA
     try:
         with open(criteria_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
         fields = data.get("fields", {})
         if not fields:
-            raise ValueError("No 'fields' key found in criteria YAML")
+            raise ValueError("No 'fields' key in criteria YAML")
+        # CODING_SCHEMA: field → (extract text, valid_values) — used for output column building
         loaded = {
-            name: (attrs.get("description", ""), attrs.get("valid_values", ""))
+            name: (attrs.get("extract", attrs.get("description", "")), attrs.get("valid_values", ""))
             for name, attrs in fields.items()
         }
         CODING_SCHEMA.clear()
         CODING_SCHEMA.update(loaded)
+        _CRITERIA_DATA.clear()
+        _CRITERIA_DATA.update(data)
         print(f"[step15] Criteria: {criteria_path.name}  ({len(loaded)} fields)")
         return True
     except FileNotFoundError:
@@ -215,6 +223,7 @@ def _load_coding_schema(criteria_path: Path) -> bool:
         print(f"[step15] Error loading criteria ({criteria_path.name}): {e} — using hardcoded defaults")
     CODING_SCHEMA.clear()
     CODING_SCHEMA.update(_HARDCODED_SCHEMA)
+    _CRITERIA_DATA.clear()
     return False
 
 
@@ -456,40 +465,68 @@ def load_inputs(out_root: Path) -> pd.DataFrame:
 # LLM prompt
 # =============================================================================
 
+import re as _re
+_ROUND_GUIDANCE_PAT = _re.compile(r'^r\d+[a-z]*_further_guidance$')
+
+
 def _build_extraction_prompt() -> str:
+    """
+    Build the EXTRACTION FIELDS block for the LLM prompt.
+    Mirrors step10's _build_criteria_prompt(): reads field name, extract guidance,
+    valid values, and any round-specific further guidance from _CRITERIA_DATA.
+    Falls back to CODING_SCHEMA tuples when _CRITERIA_DATA is not loaded.
+    """
+    fields_data = _CRITERIA_DATA.get("fields", {})
     lines: List[str] = []
-    for field, (desc, valid) in CODING_SCHEMA.items():
-        lines.append(f'  "{field}": {{')
-        lines.append(f'    "value": <{valid}>,')
-        lines.append(f'    "confidence": "high | low | not_found",')
-        lines.append(f'    "note": "<brief justification or direct quote>"')
-        lines.append("  },")
-    return "\n".join(lines)
 
+    for field, (extract_text, valid) in CODING_SCHEMA.items():
+        attrs = fields_data.get(field, {}) if fields_data else {}
+        display_name = attrs.get("name", field) if attrs else field
 
-SYSTEM_PROMPT_TEMPLATE = """You are a systematic review research assistant. Your task is to extract \
-structured data from a research paper for a systematic map of climate adaptation evidence for \
-smallholder producers in low- and middle-income countries.
+        lines.append(f"{display_name} ({field}):")
+        lines.append(f"   - Extract: {extract_text.strip()}")
+        lines.append(f"   - Valid values: {valid}")
 
-Extract ALL of the following fields. For each field:
-- Set "value" to the best answer based on the text provided.
-- Set "confidence" to "high" if clearly stated, "low" if inferred, or "not_found" if the \
-information is absent.
-- Set "note" to a brief justification or a direct quote from the text.
+        # Append any round-specific further guidance in round order
+        if attrs:
+            for key in sorted(k for k in attrs if _ROUND_GUIDANCE_PAT.match(k)):
+                if extra := str(attrs[key] or "").strip():
+                    lines.append(f"   - Further guidance [{key}]: {extra}")
 
-If you are extracting from an ABSTRACT ONLY, many fields will be "not_found" — that is \
-expected. Extract what you can.
+        lines.append("")
 
-CODING FIELDS:
-{schema_block}
-
-OUTPUT FORMAT:
-Return ONLY a valid JSON object with exactly the fields above. No markdown, no commentary."""
+    return "\n".join(lines).strip()
 
 
 def build_system_prompt() -> str:
-    schema_block = _build_extraction_prompt()
-    return SYSTEM_PROMPT_TEMPLATE.format(schema_block=schema_block)
+    """Build the complete LLM system prompt from loaded criteria."""
+    fields_block = _build_extraction_prompt()
+
+    # Build output JSON structure from CODING_SCHEMA field names
+    json_fields = "\n".join(
+        f'  "{f}": {{"value": <answer>, "confidence": "high|low|not_found", "note": "<justification>"}}'
+        for f in CODING_SCHEMA
+    )
+
+    return f"""You are a systematic review research assistant. Your task is to extract structured \
+data from a research paper for a systematic map of climate adaptation evidence for smallholder \
+producers in low- and middle-income countries (LMICs).
+
+For each field below:
+- Extract the best answer from the text.
+- Set confidence to "high" if clearly stated, "low" if inferred, "not_found" if absent.
+- Set note to a brief justification or a direct quote.
+
+If extracting from an ABSTRACT ONLY, many fields will be "not_found" — that is expected.
+
+EXTRACTION FIELDS:
+{fields_block}
+
+OUTPUT FORMAT:
+Return ONLY a valid JSON object with exactly these fields. No markdown, no commentary.
+{{
+{json_fields}
+}}"""
 
 
 def _user_prompt(title: str, text: str, coding_source: str) -> str:

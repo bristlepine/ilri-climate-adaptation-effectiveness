@@ -82,6 +82,12 @@ scripts/outputs_*/
 scripts/outputs_searchstrings/
 
 # -------------------------------
+# Coding round full texts (PDFs/HTMLs — not versioned, large files)
+# -------------------------------
+documentation/coding/systematic-map/rounds/*/pdfs/
+scripts/results/
+
+# -------------------------------
 # Temporary
 # -------------------------------
 *.tmp
