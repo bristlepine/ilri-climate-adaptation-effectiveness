@@ -222,18 +222,33 @@ def main():
 
     counters = {"success": 0, "no_url": 0, "still_failed": 0}
 
+    try:
+        from tqdm import tqdm
+        pbar = tqdm(total=len(retryable), unit="rec", dynamic_ncols=True)
+    except ImportError:
+        pbar = None
+
     for i, (idx, row) in enumerate(retryable.iterrows(), 1):
         doi = row["doi"].strip()
         note = row["note"]
         ftype = row["_failure"]
 
-        print(f"  [{i}/{len(retryable)}] {doi[:55]:<55} ({ftype})", end=" ... ", flush=True)
+        if pbar:
+            pbar.set_description(f"{doi[:45]:<45} ({ftype})")
+        else:
+            print(f"  [{i}/{len(retryable)}] {doi[:55]:<55} ({ftype})", end=" ... ", flush=True)
+
+        def _log(msg: str):
+            if pbar:
+                pbar.write(f"  {doi[:55]} → {msg}")
+            else:
+                print(msg)
 
         # Skip if file already in fulltext/
         dest_stem = doi_to_dest_stem(doi, fulltext_dir)
         for ext in [".pdf", ".html", ".htm"]:
             if dest_stem.with_suffix(ext).exists():
-                print("already present")
+                _log("already present")
                 df.at[idx, "status"] = "retrieved"
                 df.at[idx, "file_path"] = str(dest_stem.with_suffix(ext))
                 df.at[idx, "note"] = note + " | step13c: already present"
@@ -243,8 +258,10 @@ def main():
             # Resolve URL
             url = resolve_url(doi, note, ftype)
             if not url:
-                print("no URL found")
+                _log("no URL found")
                 counters["no_url"] += 1
+                if pbar:
+                    pbar.update(1)
                 continue
 
             # Download
@@ -252,7 +269,7 @@ def main():
             time.sleep(PAUSE)
 
             if saved:
-                print(f"OK → {saved.name}")
+                _log(f"OK → {saved.name}")
                 df.at[idx, "status"] = "retrieved"
                 df.at[idx, "file_path"] = str(saved)
                 df.at[idx, "source"] = "step13c_retry"
@@ -260,8 +277,15 @@ def main():
                 df.at[idx, "note"] = note + f" | step13c: retrieved ({ftype})"
                 counters["success"] += 1
             else:
-                print(f"still failed")
+                _log("still failed")
                 counters["still_failed"] += 1
+
+        if pbar:
+            pbar.set_postfix(ok=counters["success"], failed=counters["still_failed"], no_url=counters["no_url"])
+            pbar.update(1)
+
+    if pbar:
+        pbar.close()
 
     df.to_csv(manifest_csv, index=False)
 
