@@ -14,7 +14,7 @@ Everything is on Google Drive — no GitHub or local setup needed.
 **Three steps:**
 
 1. **Get your papers** — open the `FT-R1a pdfs` subfolder in the Drive link above
-2. **Open the coding sheet** — download `coding_template.csv`, save a copy as `coding_INITIALS.csv` (e.g. `coding_CS.csv`), and upload it back to the same Drive folder
+2. **Open the coding sheet** — download `coding_template.csv`, save a copy as `coding_ft_r1a_INITIALS.csv` (e.g. `coding_ft_r1a_CS.csv`), and upload it back to the same Drive folder
 3. **Code each paper** using the schema below — one row per paper, all 19 fields — save regularly
 
 **Rules while coding:**
