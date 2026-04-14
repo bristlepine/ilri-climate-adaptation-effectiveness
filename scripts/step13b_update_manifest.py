@@ -97,13 +97,68 @@ def main():
     needs_manual = int(status_counts.get("needs_manual", 0))
     failed = int(status_counts.get("failed", 0))
 
+    # --- Missing papers breakdown ---
+    missing = df[df["status"] == "needs_manual"].copy()
+
+    # By publisher (DOI prefix)
+    publisher_map = [
+        ("MDPI",              "10.3390"),
+        ("Taylor & Francis",  "10.1080"),
+        ("Wiley",             "10.1111"),
+        ("Wiley",             "10.1002"),
+        ("Springer",          "10.1007"),
+        ("Springer",          "10.1023"),
+        ("Elsevier",          "10.1016"),
+        ("Cambridge",         "10.1017"),
+        ("Oxford",            "10.1093"),
+        ("SAGE",              "10.1177"),
+        ("Frontiers",         "10.3389"),
+    ]
+    pub_counts: dict = {}
+    for label, prefix in publisher_map:
+        n = int(missing["doi"].str.startswith(prefix).sum())
+        if n:
+            pub_counts[label] = pub_counts.get(label, 0) + n
+    pub_counts["No DOI"] = int((missing["doi"] == "").sum())
+    pub_counts["Other"] = needs_manual - sum(pub_counts.values())
+
+    # By failure reason (parsed from note field)
+    import re as _re
+    def classify_note(note: str) -> str:
+        n = note.lower()
+        if "403" in n:
+            return "HTTP 403 (bot-blocked, OA available)"
+        if "404" in n:
+            return "HTTP 404 (broken link)"
+        if "nameresolution" in n or "failed to resolve" in n:
+            return "DNS / connection error (network issue at run time)"
+        if "timeout" in n:
+            return "Timeout"
+        if "no oa" in n or "no open" in n:
+            return "No OA version found (subscription only)"
+        if note.strip() == "":
+            return "No DOI / not attempted"
+        return "Other"
+
+    reason_counts: dict = {}
+    for note in missing["note"]:
+        r = classify_note(str(note))
+        reason_counts[r] = reason_counts.get(r, 0) + 1
+
     print()
-    print("=" * 50)
-    print(f"  Total records       : {total:,}")
-    print(f"  Retrieved           : {retrieved:,}  ({100*retrieved/total:.1f}%)")
-    print(f"  Still needs manual  : {needs_manual:,}  ({100*needs_manual/total:.1f}%)")
-    print(f"  Failed              : {failed:,}  ({100*failed/total:.1f}%)")
-    print("=" * 50)
+    print("=" * 56)
+    print(f"  Total records          : {total:,}")
+    print(f"  Retrieved              : {retrieved:,}  ({100*retrieved/total:.1f}%)")
+    print(f"  Still needs manual     : {needs_manual:,}  ({100*needs_manual/total:.1f}%)")
+    print()
+    print("  Missing — by publisher:")
+    for pub, n in sorted(pub_counts.items(), key=lambda x: -x[1]):
+        print(f"    {pub:<22}: {n:,}")
+    print()
+    print("  Missing — by failure reason:")
+    for reason, n in sorted(reason_counts.items(), key=lambda x: -x[1]):
+        print(f"    {reason}: {n:,}")
+    print("=" * 56)
     print(f"\n[step13b] Updated manifest : {manifest_csv}")
     print(f"[step13b] Updated manual CSV: {manual_csv}  ({needs_manual:,} records still outstanding)")
 
@@ -111,11 +166,18 @@ def main():
     if summary_json.exists():
         with open(summary_json) as f:
             summary = json.load(f)
-        summary["status_counts"] = {k: int(v) for k, v in status_counts.items()}
-        summary["step13b_newly_found"] = newly_found
-        with open(summary_json, "w") as f:
-            json.dump(summary, f, indent=2)
-        print(f"[step13b] Updated summary   : {summary_json}")
+    else:
+        summary = {}
+
+    summary["status_counts"] = {k: int(v) for k, v in status_counts.items()}
+    summary["step13b_newly_found"] = newly_found
+    summary["missing_by_publisher"] = {k: int(v) for k, v in pub_counts.items()}
+    summary["missing_by_failure_reason"] = {k: int(v) for k, v in reason_counts.items()}
+    summary["step13b_timestamp_utc"] = __import__("datetime").datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    with open(summary_json, "w") as f:
+        json.dump(summary, f, indent=2)
+    print(f"[step13b] Updated summary   : {summary_json}")
 
 if __name__ == "__main__":
     main()
