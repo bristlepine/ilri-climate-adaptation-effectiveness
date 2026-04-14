@@ -173,13 +173,13 @@ def download(url: str, dest_stem: Path) -> Path | None:
             return None
         ctype = r.headers.get("content-type", "").lower()
         is_html = "html" in ctype or url.rstrip("/").endswith(".html")
+        ext = ".html" if is_html else ".pdf"
         if is_html:
             text = content.decode("utf-8", errors="ignore").lower()
             if _is_html_fake(text):
                 return None
-            dest = dest_stem.with_suffix(".html")
-        else:
-            dest = dest_stem.with_suffix(".pdf")
+        # Use string concatenation to avoid Path.with_suffix() truncating DOIs with dots
+        dest = Path(str(dest_stem) + ext)
         dest.write_bytes(content)
         return dest
     except Exception:

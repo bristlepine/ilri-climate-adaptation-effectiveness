@@ -14,7 +14,9 @@ Two-pronged retrieval pass targeting the remaining ~2,242 missing records:
 Run step13b after this to refresh the summary JSON.
 
 Usage:
-    python scripts/step13d_title_retrieval.py
+    python scripts/step13d_title_retrieval.py           # run both pools
+    python scripts/step13d_title_retrieval.py --pool b  # Pool B only (CORE for 403s — faster)
+    python scripts/step13d_title_retrieval.py --pool a  # Pool A only (title search)
 """
 
 import os
@@ -87,13 +89,13 @@ def download(url: str, dest_stem: Path) -> Path | None:
             return None
         ctype = r.headers.get("content-type", "").lower()
         is_html = "html" in ctype or url.rstrip("/").endswith(".html")
+        # Use string concatenation to avoid Path.with_suffix() truncating DOIs with dots
+        ext = ".html" if is_html else ".pdf"
         if is_html:
             text = content.decode("utf-8", errors="ignore").lower()
             if _is_html_fake(text):
                 return None
-            dest = dest_stem.with_suffix(".html")
-        else:
-            dest = dest_stem.with_suffix(".pdf")
+        dest = Path(str(dest_stem) + ext)
         dest.write_bytes(content)
         return dest
     except Exception:
@@ -213,7 +215,7 @@ def core_url_from_title(title: str) -> str | None:
 # Main
 # =============================================================================
 
-def main():
+def main(pool: str = "both"):
     base, fulltext_dir, manifest_csv, _ = step13_dirs(out_dir)
     fulltext_dir.mkdir(parents=True, exist_ok=True)
 
@@ -232,8 +234,13 @@ def main():
         ~missing["note"].str.contains("step13c", na=False)  # not already retried successfully
     ].copy()
 
-    print(f"[step13d] Pool A — no DOI (title search) : {len(no_doi):,}")
-    print(f"[step13d] Pool B — remaining 403s (CORE)  : {len(has_403):,}")
+    if pool == "b":
+        no_doi = no_doi.iloc[0:0]  # empty
+    elif pool == "a":
+        has_403 = has_403.iloc[0:0]  # empty
+
+    print(f"[step13d] Pool A — no DOI (title search) : {len(no_doi):,}{'  (skipped)' if pool == 'b' else ''}")
+    print(f"[step13d] Pool B — remaining 403s (CORE)  : {len(has_403):,}{'  (skipped)' if pool == 'a' else ''}")
     print(f"[step13d] Total to attempt                : {len(no_doi) + len(has_403):,}")
     if not CORE_API_KEY:
         print("[step13d] NOTE: No CORE_API_KEY set — CORE requests will be rate-limited (unauthenticated)")
@@ -407,4 +414,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--pool", choices=["a", "b", "both"], default="both",
+                    help="Which pool to run: a=no-DOI title search, b=CORE for 403s, both=default")
+    args = ap.parse_args()
+    main(pool=args.pool)
