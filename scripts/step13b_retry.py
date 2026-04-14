@@ -1,5 +1,5 @@
 """
-step13c_retry.py
+step13b_retry.py
 -----------------
 Targeted retry for all records that failed during the original step13 run.
 Handles each failure type with the appropriate strategy:
@@ -20,10 +20,10 @@ Handles each failure type with the appropriate strategy:
   Other / unknown
       → Re-query OpenAlex and attempt download.
 
-Run step13b after this to refresh the summary JSON.
+Run step13d after this to refresh the summary JSON.
 
 Usage:
-    python scripts/step13c_retry.py
+    python scripts/step13b_retry.py
 """
 
 import os
@@ -201,7 +201,7 @@ def main():
     fulltext_dir.mkdir(parents=True, exist_ok=True)
 
     if not manifest_csv.exists():
-        print("[step13c] No manifest found — run step13 first.")
+        print("[step13b] No manifest found — run step13 first.")
         return
 
     df = pd.read_csv(manifest_csv, dtype=str).fillna("")
@@ -214,9 +214,9 @@ def main():
     retryable = missing[missing["_failure"] != "no_doi"].copy()
     skipped_no_doi = int((missing["_failure"] == "no_doi").sum())
 
-    print(f"[step13c] needs_manual total : {len(missing):,}")
-    print(f"[step13c] Skipped (no DOI)   : {skipped_no_doi:,}")
-    print(f"[step13c] Retrying           : {len(retryable):,}")
+    print(f"[step13b] needs_manual total : {len(missing):,}")
+    print(f"[step13b] Skipped (no DOI)   : {skipped_no_doi:,}")
+    print(f"[step13b] Retrying           : {len(retryable):,}")
     print()
 
     # Tally by failure type
@@ -251,11 +251,11 @@ def main():
         # Skip if file already in fulltext/
         dest_stem = doi_to_dest_stem(doi, fulltext_dir)
         for ext in [".pdf", ".html", ".htm"]:
-            if dest_stem.with_suffix(ext).exists():
+            if (Path(str(dest_stem) + ext)).exists():
                 _log("already present")
                 df.at[idx, "status"] = "retrieved"
-                df.at[idx, "file_path"] = str(dest_stem.with_suffix(ext))
-                df.at[idx, "note"] = note + " | step13c: already present"
+                df.at[idx, "file_path"] = str(Path(str(dest_stem) + ext))
+                df.at[idx, "note"] = note + " | step13b: already present"
                 counters["success"] += 1
                 break
         else:
@@ -276,10 +276,11 @@ def main():
                 _log(f"OK → {saved.name}")
                 df.at[idx, "status"] = "retrieved"
                 df.at[idx, "file_path"] = str(saved)
-                df.at[idx, "source"] = "step13c_retry"
+                df.at[idx, "source"] = "step13b_retry"
                 df.at[idx, "url"] = url
-                df.at[idx, "note"] = note + f" | step13c: retrieved ({ftype})"
+                df.at[idx, "note"] = note + f" | step13b: retrieved ({ftype})"
                 counters["success"] += 1
+                df.to_csv(manifest_csv, index=False)
             else:
                 _log("still failed")
                 counters["still_failed"] += 1
@@ -301,8 +302,8 @@ def main():
     print(f"  Still failing    : {counters['still_failed']:,}")
     print(f"  Skipped (no DOI) : {skipped_no_doi:,}")
     print("=" * 50)
-    print(f"\n[step13c] Manifest updated: {manifest_csv}")
-    print(f"[step13c] Run step13b next to refresh the summary JSON.")
+    print(f"\n[step13b] Manifest updated: {manifest_csv}")
+    print(f"[step13b] Run step13d next to refresh the summary JSON and export the missing papers list.")
 
 
 if __name__ == "__main__":

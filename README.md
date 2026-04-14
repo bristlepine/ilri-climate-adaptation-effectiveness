@@ -7,6 +7,7 @@ ILRI / Bristlepine Resilience Consultants — 2025–2026
 Systematic map and evidence synthesis on methods used to track climate adaptation processes and outcomes for smallholder producers in LMICs. Follows CEE/Campbell standards.
 
 Full methodology: [`documentation/methodology/METHODOLOGY.md`](documentation/methodology/METHODOLOGY.md)
+Systematic map codebook (D5.6): [`documentation/coding/systematic-map/CODEBOOK.md`](documentation/coding/systematic-map/CODEBOOK.md)
 Deliverables tracker: [`TODO.md`](TODO.md)
 
 ---
@@ -68,8 +69,9 @@ Multi-database export instructions: [`scripts/data/multidatabase/DATABASE_EXPORT
 |------|--------|-------------|
 | 13 | `step13_retrieve_fulltext.py` | Automated retrieval — Unpaywall, Elsevier API, Semantic Scholar, OpenAlex |
 | 13a | `step13a_rescan_fulltexts.py` | Rescan HTML files for paywalls / fake pages — run after copying in new files |
-| 13b | `step13b_update_manifest.py` | Reconcile manifest with fulltext/ folder, regenerate missing papers list and summary |
-| 13c | `step13c_retry.py` | Targeted retry for failed records — handles 403s, DNS errors, 404s with browser headers and OpenAlex fallback |
+| 13b | `step13b_retry.py` | Retry all failed records — handles 403s, DNS errors, 404s with browser headers and OpenAlex fallback |
+| 13c | `step13c_title_retrieval.py` | Title search (CrossRef → OpenAlex), CORE API, and MDPI direct PDF — three pools targeting remaining gaps |
+| 13d | `step13d_update_manifest.py` | **Run last.** Reconcile manifest, regenerate manual CSV, export versioned campus-retrieval list, update summary JSON |
 
 Typical sequence after a collaborator retrieval run:
 
@@ -80,15 +82,17 @@ unzip retrieved.zip -d scripts/outputs/step13/fulltext/
 # 2. Rescan for fake HTMLs
 python scripts/step13a_rescan_fulltexts.py
 
-# 3. Reconcile manifest + refresh missing list
-python scripts/step13b_update_manifest.py
+# 3. Retry remaining failures
+python scripts/step13b_retry.py
 
-# 4. Retry remaining failures
-python scripts/step13c_retry.py
+# 4. Title search + CORE + MDPI direct PDF
+python scripts/step13c_title_retrieval.py
 
-# 5. Refresh summary again
-python scripts/step13b_update_manifest.py
+# 5. Reconcile manifest, refresh summary, export campus list
+python scripts/step13d_update_manifest.py
 ```
+
+Step 13d generates a versioned campus-retrieval list (`step13_missing_papers_01.csv`, `_02.csv`, …) containing publisher-blocked papers (403 errors) that a collaborator can download via a campus library proxy.
 
 ---
 
@@ -114,7 +118,11 @@ python scripts/stepX_sync_frontend.py
 
 ---
 
-## Collaborator: running step13 from campus
+## Collaborator: manual full-text retrieval from campus
+
+Two ways to contribute retrieved papers:
+
+### Option A — Run the full pipeline from campus
 
 See setup instructions above. You only need steps 1–4 (git clone, conda, .env, outputs folder).
 
@@ -125,11 +133,17 @@ conda activate ilri01
 python scripts/step13_retrieve_fulltext.py
 ```
 
-Progress is saved continuously — safe to interrupt and resume. When done, zip the outputs and upload to Google Drive:
+Progress is saved continuously — safe to interrupt and resume. When done, zip the fulltext folder and upload to Google Drive:
 
 ```bash
-zip -r retrieved.zip scripts/outputs/step13/retrieved/
+zip -r retrieved.zip scripts/outputs/step13/fulltext/
 ```
+
+### Option B — Download from a targeted list (faster)
+
+Open `scripts/outputs/step13/step13_missing_papers_01.csv` (or the latest version). Each row has a DOI, title, year, and publisher. Download the PDF via your campus library proxy, name the file `doi_<DOI with slashes replaced by underscores>.pdf` (e.g. `doi_10.1080_12345678.pdf`), and upload to Google Drive.
+
+---
 
 Google Drive: https://drive.google.com/drive/folders/1f5y8kjVAcHXBm74AM2wOXsdxrCTnh-ll
 

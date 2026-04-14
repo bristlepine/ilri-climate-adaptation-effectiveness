@@ -22,7 +22,7 @@ Inputs:
   - outputs/step9a/step9a_scopus_enriched.csv  (abstracts)
 
 Outputs (under outputs/step15/):
-  - step15_coded.csv          one row per coded study, all 20 coding columns
+  - step15_coded.csv          one row per coded study, all 19 coding fields
   - step15_coded.meta.json    counts by coding_source, completion rates, timing
   - step15_needs_review.csv   records with low-confidence or missing fields
   - step15_summary.png        summary figure
@@ -52,6 +52,9 @@ try:
 except ImportError:
     _HAS_JSON_REPAIR = False
 
+_here = Path(__file__).resolve().parent
+_REPO_ROOT = _here.parent
+
 
 # =============================================================================
 # SETTINGS
@@ -69,14 +72,25 @@ ABSTRACT_MAX_CHARS = 4_000
 
 PRINT_EVERY = 50
 
+# Default criteria YAML — versioned alongside codebook in documentation/
+DEFAULT_CRITERIA_YML = (
+    _REPO_ROOT
+    / "documentation" / "coding" / "systematic-map" / "llm-criteria" / "criteria_v1.yml"
+)
+
 
 # =============================================================================
 # CODING SCHEMA  (protocol Table 3, Deliverable 3)
 # =============================================================================
-
+#
+# Loaded at startup from DEFAULT_CRITERIA_YML (or a path set in config/CLI).
+# Override per-round by pointing step15_criteria_yml in config.py to a newer
+# criteria file (e.g. criteria_v2.yml after FT-R1a reconciliation).
+#
+# Hardcoded fallback below is used only when the YAML file is missing.
 # Each entry: field_name -> (description, valid_values_hint)
-# valid_values_hint is included verbatim in the LLM prompt.
-CODING_SCHEMA: Dict[str, Tuple[str, str]] = {
+
+_HARDCODED_SCHEMA: Dict[str, Tuple[str, str]] = {
     "publication_year": (
         "Year of publication (use most recent if multiple versions exist).",
         "integer e.g. 2021",
@@ -151,13 +165,10 @@ CODING_SCHEMA: Dict[str, Tuple[str, str]] = {
         "Whether equity dimensions are explicitly addressed. List all that apply, or 'none_reported'.",
         "gender | youth | land_tenure | disability | other | none_reported",
     ),
-    "strengths": (
-        "Author-reported strengths of the study. Extract verbatim where possible.",
-        "free text",
-    ),
-    "limitations": (
-        "Author-reported limitations of the study. Extract verbatim where possible.",
-        "free text",
+    "strengths_and_limitations": (
+        "Author-reported strengths and limitations combined. "
+        "Label each as 'Strength: ...' or 'Limitation: ...'. Extract verbatim where possible.",
+        "free text e.g. 'Strength: large sample. Limitation: single-season follow-up.'",
     ),
     "lessons_learned": (
         "Key lessons or recommendations reported by the authors.",
@@ -169,6 +180,46 @@ CODING_SCHEMA: Dict[str, Tuple[str, str]] = {
         "free text",
     ),
 }
+
+CODING_SCHEMA: Dict[str, Tuple[str, str]] = {}
+
+
+def _load_coding_schema(criteria_path: Path) -> bool:
+    """
+    Load CODING_SCHEMA in-place from a YAML criteria file.
+    Returns True on success, False if file not found (falls back to hardcoded).
+    YAML format:
+        fields:
+          field_name:
+            description: "..."
+            valid_values: "..."
+    """
+    global CODING_SCHEMA
+    try:
+        with open(criteria_path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        fields = data.get("fields", {})
+        if not fields:
+            raise ValueError("No 'fields' key found in criteria YAML")
+        loaded = {
+            name: (attrs.get("description", ""), attrs.get("valid_values", ""))
+            for name, attrs in fields.items()
+        }
+        CODING_SCHEMA.clear()
+        CODING_SCHEMA.update(loaded)
+        print(f"[step15] Criteria: {criteria_path.name}  ({len(loaded)} fields)")
+        return True
+    except FileNotFoundError:
+        print(f"[step15] Criteria file not found: {criteria_path} — using hardcoded defaults")
+    except Exception as e:
+        print(f"[step15] Error loading criteria ({criteria_path.name}): {e} — using hardcoded defaults")
+    CODING_SCHEMA.clear()
+    CODING_SCHEMA.update(_HARDCODED_SCHEMA)
+    return False
+
+
+# Load at import time from default path (populated before any function runs)
+_load_coding_schema(DEFAULT_CRITERIA_YML)
 
 
 # =============================================================================
@@ -236,8 +287,13 @@ def _cache_key(base_key: str, coding_source: str) -> str:
     return f"{base_key}::{coding_source}"
 
 
-def _run_signature(*, model: str) -> str:
-    blob = f"model={model}\nschema_version=1\n"
+def _run_signature(*, model: str, criteria_path: Optional[Path] = None) -> str:
+    """Hash of model + criteria file — changes when criteria are updated, invalidating cache."""
+    criteria_hash = "hardcoded"
+    if criteria_path and criteria_path.exists():
+        with open(criteria_path, "rb") as f:
+            criteria_hash = hashlib.sha1(f.read()).hexdigest()[:12]
+    blob = f"model={model}\ncriteria={criteria_hash}\n"
     return hashlib.sha1(blob.encode()).hexdigest()[:12]
 
 
@@ -620,11 +676,12 @@ def extract_all(
     out_dir: Path,
     model: str,
     run_limit: Optional[int] = None,
+    criteria_path: Optional[Path] = None,
 ) -> pd.DataFrame:
 
     _ollama_fail_fast(model)
     system_prompt = build_system_prompt()
-    sig = _run_signature(model=model)
+    sig = _run_signature(model=model, criteria_path=criteria_path)
 
     jsonl_path = out_dir / "step15_results_details.jsonl"
     cache = _load_jsonl_cache(jsonl_path)
@@ -895,6 +952,12 @@ def run(config: dict) -> dict:
     model      = config.get("step15_model", "") or DEFAULT_MODEL
     run_limit  = config.get("step15_run_limit", None)
 
+    # Criteria YAML — reload if a round-specific version is set in config
+    crit_str = str(config.get("step15_criteria_yml", "")).strip()
+    criteria_path = Path(crit_str) if crit_str else DEFAULT_CRITERIA_YML
+    if criteria_path != DEFAULT_CRITERIA_YML or not CODING_SCHEMA:
+        _load_coding_schema(criteria_path)
+
     print(f"[step15] Model: {model}")
     print(f"[step15] Output dir: {out_dir}")
 
@@ -905,7 +968,8 @@ def run(config: dict) -> dict:
         print("[step15] No records to code — check step14 outputs.")
         return {"status": "empty"}
 
-    df = extract_all(df, out_dir=out_dir, model=model, run_limit=run_limit)
+    df = extract_all(df, out_dir=out_dir, model=model, run_limit=run_limit,
+                     criteria_path=criteria_path)
     elapsed = time.time() - t0
     meta = write_outputs(df, out_dir, elapsed)
 
@@ -914,5 +978,4 @@ def run(config: dict) -> dict:
 
 
 if __name__ == "__main__":
-    here = Path(__file__).resolve().parent
-    run({"out_dir": str(here / "outputs")})
+    run({"out_dir": str(_here / "outputs")})

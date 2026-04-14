@@ -1,0 +1,166 @@
+# LLM Extraction Criteria — v1
+# Used in: FT-R1a
+# Created: 2026-04-14
+# Loaded by: scripts/step15_extract_data.py
+#
+# To update: copy this file to criteria_v2.yml, edit, update CHANGELOG.md,
+# and set step15_criteria_yml in config.py to point to the new file.
+#
+# Format:
+#   fields:
+#     field_name:
+#       description: "What to extract and how to decide"
+#       valid_values: "Controlled vocabulary or 'free text'"
+
+fields:
+
+  publication_year:
+    description: "Year of publication. Use the most recent version date if the paper exists as both preprint and journal article."
+    valid_values: "integer e.g. 2021"
+
+  publication_type:
+    description: "Type of publication. Choose the single best match."
+    valid_values: "journal_article | report | working_paper | thesis | other"
+
+  country_region:
+    description: >
+      Country or countries where the study was conducted. Enter countries when specified;
+      use a region label only if countries are not named. Separate multiple entries with semicolons.
+      If no location is specified at all, enter 'not_reported'.
+    valid_values: "e.g. Kenya; Ethiopia  or  Sub-Saharan Africa  or  Global"
+
+  geographic_scale:
+    description: >
+      Spatial scale of the study's analysis. local = village/community/single site;
+      sub-national = district/province; national = one country; multi-country = two or more
+      specific named countries; regional = broad region without country-level focus.
+    valid_values: "local | sub-national | national | multi-country | regional"
+
+  producer_type:
+    description: >
+      Type(s) of agricultural producers studied. Select all that apply, separated by semicolons.
+      Use 'mixed' for explicitly mixed crop-livestock systems or when the paper says 'smallholder
+      farmers' without specifying the system.
+    valid_values: "crop | livestock | fisheries_aquaculture | agroforestry | mixed"
+
+  marginalized_subpopulations:
+    description: >
+      Whether the study explicitly targets or analyses marginalized groups. Code only what is
+      explicitly stated — do not infer. Select all that apply, separated by semicolons.
+      Use 'none_reported' if no marginalized groups are mentioned.
+    valid_values: "women | youth | landless | indigenous_peoples | ethnic_minorities | migrant_seasonal_workers | none_reported"
+
+  adaptation_focus:
+    description: >
+      The specific climate adaptation action, intervention, or practice the study tracks or evaluates.
+      This is an emergent free-text field. Be specific (5-15 words). Include both the adaptation type
+      and the domain if relevant. Do not use vague terms like 'climate change adaptation' alone.
+    valid_values: "free text e.g. 'drought-tolerant maize varieties' or 'seasonal climate forecasts for smallholder decision-making'"
+
+  domain_type:
+    description: >
+      Whether the study assesses adaptation processes, adaptation outcomes, or both.
+      Process = measures whether/how farmers adopt, learn, participate, or engage.
+      Outcome = measures what happened as a result (yields, income, wellbeing, resilience).
+      Decision rule: adoption rate only = adaptation_process; yield impact only = adaptation_outcome;
+      both measured = both.
+    valid_values: "adaptation_process | adaptation_outcome | both"
+
+  process_outcome_domains:
+    description: >
+      Specific domains assessed. Select all that apply, separated by semicolons.
+      Process domains: knowledge_awareness_learning (awareness, knowledge, learning outcomes);
+      decision_making_planning (farmer decision-making, information use in planning);
+      uptake_adoption (rates of practice or technology adoption);
+      behavioral_change (changes in farming or land management behaviour);
+      participation_coproduction (participation in programmes, co-design, farmer group engagement);
+      institutional_governance (policy uptake, institutional change, governance);
+      access_information_services (access to extension, credit, markets, climate information).
+      Outcome domains: yields_productivity (crop yield, livestock productivity, fish catch);
+      income_assets (household income, asset accumulation); livelihoods (food security, diversification);
+      wellbeing (health, nutrition, subjective wellbeing); risk_reduction (reduced exposure to shocks);
+      resilience_adaptive_capacity (adaptive capacity indices, resilience scores, vulnerability indices).
+    valid_values: "knowledge_awareness_learning | decision_making_planning | uptake_adoption | behavioral_change | participation_coproduction | institutional_governance | access_information_services | yields_productivity | income_assets | livelihoods | wellbeing | risk_reduction | resilience_adaptive_capacity"
+
+  indicators_measured:
+    description: >
+      The specific indicators or metrics used in the study. Emergent free-text field. Extract
+      actual indicators from the methods or results section. Include units where given.
+      Comma-separated. Avoid generic terms — name the actual metric.
+    valid_values: "free text e.g. 'yield (t/ha), income (USD/season), food security score (HFIAS), adoption rate (%)'"
+
+  methodological_approach:
+    description: >
+      Primary methodological design. Choose one. Use 'participatory' only when participation
+      is the primary design (PRA, photovoice, farmer-led trials), not when farmers are surveyed.
+      Use 'modeling_with_empirical_validation' for crop/climate/agent-based models validated
+      with field data.
+    valid_values: "qualitative | quantitative | mixed_methods | participatory | modeling_with_empirical_validation"
+
+  purpose_of_assessment:
+    description: >
+      Primary purpose of the measurement/tracking exercise as stated or implied. Choose one.
+      'research' = academic study with no specific programme affiliation.
+      'program_evaluation' = commissioned evaluation of a specific programme.
+      'project_learning' = M&E embedded in an ongoing project.
+      'donor_reporting' = explicitly for funder accountability.
+      'national_reporting' = contributing to NAPs, NDCs, national frameworks.
+    valid_values: "project_learning | program_evaluation | donor_reporting | national_reporting | research"
+
+  data_sources:
+    description: >
+      Data sources used. Select all that apply, separated by semicolons.
+      'surveys' = household surveys, farm questionnaires.
+      'administrative_data' = government records, national statistics, market data.
+      'remote_sensing' = satellite imagery, drone data.
+      'participatory_methods' = PRA, FGDs, key informant interviews.
+      'secondary_data' = existing datasets, meta-analysis inputs, systematic review data.
+    valid_values: "surveys | administrative_data | remote_sensing | participatory_methods | secondary_data"
+
+  temporal_coverage:
+    description: >
+      Time horizon of data collection. 'cross_sectional' = single point in time or single season.
+      'seasonal' = tracks across one or a few seasons (intra-annual). 'longitudinal' = multi-year,
+      panel data, repeated measures across years.
+    valid_values: "cross_sectional | seasonal | longitudinal"
+
+  cost_data_reported:
+    description: >
+      Whether cost or resource requirement data are reported. Code 'yes' only if the paper
+      explicitly reports cost figures, cost-effectiveness ratios, or resource requirements.
+      Mention of 'limited resources' without numbers = 'no'.
+    valid_values: "yes | no"
+
+  equity_inclusion:
+    description: >
+      Whether equity dimensions are explicitly addressed. Select all that apply, separated by
+      semicolons. Use 'none_reported' if equity is not mentioned.
+      'gender' = gender-disaggregated analysis or gender-targeted intervention.
+      'youth' = explicit focus on young farmers or age-disaggregated outcomes.
+      'land_tenure' = land access or tenure security as an explicit variable.
+      'disability' = explicit inclusion of persons with disabilities.
+      'other' = any other equity dimension (e.g. caste, religion, ethnicity).
+    valid_values: "gender | youth | land_tenure | disability | other | none_reported"
+
+  strengths_and_limitations:
+    description: >
+      Author-reported strengths and limitations, combined in one field (protocol Table 3).
+      Label each component: 'Strength: ...' for strengths, 'Limitation: ...' for limitations.
+      Extract verbatim where possible. Look in Discussion, Conclusion, and Limitations sections.
+      If neither are stated, enter 'not_reported'.
+    valid_values: "free text e.g. 'Strength: large sample size. Limitation: single-season follow-up. Limitation: self-reported yield data.'"
+
+  lessons_learned:
+    description: >
+      Key lessons or recommendations reported by the authors. Summarise in 1-3 sentences.
+      Focus on what the authors say should be done differently or recommend for policy/practice.
+      This is distinct from findings. If no lessons or recommendations are stated, enter 'not_reported'.
+    valid_values: "free text"
+
+  validity_notes:
+    description: >
+      Notes relevant to internal or external validity that affect how much weight this study
+      carries in synthesis. Flag: small sample (n < 30), single site, self-reported outcomes,
+      short follow-up (< 1 season), no control group, attrition not reported.
+      If no validity concerns are apparent, enter 'none_flagged'.
+    valid_values: "free text"

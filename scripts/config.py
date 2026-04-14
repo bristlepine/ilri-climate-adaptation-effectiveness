@@ -60,14 +60,16 @@ step9a_update_ris = None  # single-file override; set to a path string to use in
 # -----------------------------
 # Step 10 inputs / run label
 # -----------------------------
+_criteria_dir = os.path.join(here, "..", "documentation", "coding", "abstract-screening", "criteria")
+
 step10_calibration_ris = os.path.join(here, "data", "calibration_r3_107.ris.txt")
-step10_criteria_yml    = os.path.join(here, "criteria.yml")
+step10_criteria_yml    = os.path.join(_criteria_dir, "criteria.yml")
 step10_run_label       = "r3a"
 
 # -----------------------------
 # Step 12 inputs
 # -----------------------------
-step12_criteria_yml = os.path.join(here, "criteria.yml")
+step12_criteria_yml = os.path.join(_criteria_dir, "criteria.yml")
 step12_model        = ""          # leave blank to use DEFAULT_MODEL in step12
 step12_run_limit    = None        # None = all rows; set int for partial run
 
@@ -79,13 +81,15 @@ step13_run_limit    = None        # None = all included rows; set int for partia
 # -----------------------------
 # Step 14 inputs
 # -----------------------------
-step14_criteria_yml = os.path.join(here, "criteria.yml")
+step14_criteria_yml = os.path.join(_criteria_dir, "criteria.yml")
 step14_model        = ""          # leave blank to use DEFAULT_MODEL in step14
 step14_run_limit    = None        # None = all rows
 
 # -----------------------------
 # Step 15 inputs
 # -----------------------------
+_extraction_criteria_dir = os.path.join(here, "..", "documentation", "coding", "systematic-map", "llm-criteria")
+step15_criteria_yml = os.path.join(_extraction_criteria_dir, "criteria_v1.yml")  # update to v2, v3... after each round
 step15_model        = ""          # leave blank to use DEFAULT_MODEL in step15
 step15_run_limit    = None        # None = all rows
 

@@ -1,7 +1,7 @@
 # Deliverables Tracker — Climate Adaptation Effectiveness Systematic Map
 
 **Contract:** ILRI / Bristlepine consulting
-**Last updated:** 2026-04-10
+**Last updated:** 2026-04-14
 
 ---
 
@@ -20,7 +20,7 @@
 
 ## Critical — next binding deliverable: D5 Final Systematic Map (1 May 2026)
 
-Everything below must complete for D5 to ship on time. 21 days remaining.
+Everything below must complete for D5 to ship on time. 17 days remaining.
 
 | Owner | Task | Unlocks | Due |
 |---|---|---|---|
@@ -39,7 +39,7 @@ Everything below must complete for D5 to ship on time. 21 days remaining.
 
 | ID | Description | Type | Output | Revised due | Owner | Status |
 |---|---|---|---|---|---|---|
-| **D4** | **First draft systematic map — searchable database + evidence gap map (Scopus-based, preliminary)** | Report + Database | ILRI folder + GitHub + Zenodo DOI | ~~3 Apr~~ **14 Apr 2026** | Zarrar | ⚠ Overdue |
+| **D4** | **First draft systematic map — searchable database + evidence gap map (Scopus-based, preliminary)** | Report + Database | ILRI folder + GitHub + Zenodo DOI | ~~3 Apr~~ **14 Apr 2026** | Zarrar | 🔄 In progress — due today |
 | D4.2 | ROSES flow diagram — Scopus-based, labelled preliminary pending multi-database integration | Internal | `scripts/outputs/step16/roses_flow.png` | 12 Apr 2026 | Zarrar | ✓ Done — auto-regenerates on each step16 re-run as pipeline progresses |
 | D4.3 | Preliminary searchable database — step15_coded.csv served via frontend at /systematic-map; CSV download live; interactive table pending D5.6 | Internal | `frontend/public/map/step15_coded.csv` | 12 Apr 2026 | Zarrar | ✓ Done — preliminary CSV live on site |
 | D4.4 | Submit D4 draft to ILRI — GitHub release + Zenodo DOI, clearly labelled preliminary | Internal | ILRI folder + Zenodo | **14 Apr 2026** | Zarrar | — Not started |
@@ -48,7 +48,7 @@ Everything below must complete for D5 to ship on time. 21 days remaining.
 | D5.2 | Multi-database search — WoS Core Collection, CAB Abstracts, AGRIS, Academic Search Premier; adapted strings ready in `scripts/data/multidatabase/`; manual export via Cornell Library login (no VPN needed); RIS files → step2b_multidatabase_dedupe.py | Internal | `scripts/outputs/step2b/` | 22 Apr 2026 | Zarrar | 🔄 In progress — strings ready, exports pending |
 | D5.3 | Grey literature manual search — ~20 repositories per D3 §3.3 (CGIAR, World Bank, 3ie, GCF, FAO, IFAD, regional development banks) | Internal | `scripts/data/grey_literature/` | 25 Apr 2026 | Colleagues | — Not started |
 | D5.4 | Abstract screening — net-new records from additional databases; validated R2b/R3a criteria applied; deduplication against Scopus corpus | Internal | `scripts/outputs/step12/` | 28 Apr 2026 | Pipeline | ⏳ Pending D5.2–D5.3 |
-| D5.5 | Full-text screening — pipeline run on all retrieved full texts; supplemented with manual campus library collection | Internal | `scripts/outputs/step14/` | 28 Apr 2026 | Pipeline | ⏳ Pending Jennifer FT retrieval |
+| D5.5 | Full-text screening — pipeline run on all retrieved full texts; supplemented with manual campus library collection | Internal | `scripts/outputs/step14/` | 28 Apr 2026 | Pipeline | ⏳ Pending — retrieval at 64.4% (4,002/6,218); step13_missing_papers_01.csv ready for next campus pass; step14 can start |
 | D5.6 | Data extraction — iterative human-LLM co-coding in 100-paper buckets; H1 + H2 + LLM code simultaneously; reconcile → update codebook + LLM guidance; kappa + sensitivity per closed field; category saturation for emergent fields (Adaptation focus, Indicators); converge in ~3–4 rounds; LLM runs full corpus with uncertainty flagging; flagged records reviewed by humans | Internal | `scripts/outputs/step15/` | 28 Apr 2026 | Coders + Zarrar | ⏳ Pending D5.5 |
 | D5.7 | Protocol amendment v2 — Zenodo versioned update documenting all D3 deviations; all co-authors notified | Internal | Zenodo (existing DOI, v2) | 28 Apr 2026 | Zarrar | — Not started |
 | D5.8 | Final systematic map — updated ROSES flow diagram, full searchable extraction database, evidence gap map | Internal | `scripts/outputs/step16/` + frontend | **1 May 2026** | All | ⏳ Pending D5.2–D5.6 |
@@ -86,12 +86,12 @@ Everything below must complete for D5 to ship on time. 21 days remaining.
 
 ---
 
-## Immediate priorities (week of 9 April 2026)
+## Immediate priorities (week of 14 April 2026)
 
-1. **D4.2 / D4.3** — Generate ROSES flow diagram and preliminary searchable database from Scopus screening results → target 12 Apr
-2. **D4.4** — Submit D4 draft to ILRI → target 14 Apr
-3. **D5.1** — Begin full-text calibration design; send record set to Caroline and Jennifer → target start 14 Apr
-4. **D5.2** — WoS, CAB, AGRIS, Academic Search Premier queries → running in parallel
+1. **D4.4** — Submit D4 draft to ILRI today — GitHub release + Zenodo DOI ⚠ due today
+2. **D5.2** — Run WoS, CAB, AGRIS, ASP queries; import RIS exports via step2b → due 22 Apr
+3. **D5.3** — Grey literature manual search (CGIAR, World Bank, 3ie, GCF, FAO, IFAD) → due 25 Apr
+4. **D5.5** — Share `step13_missing_papers_01.csv` for next campus retrieval pass; start step14 on current 4,002 retrieved papers in parallel
 
 ---
 
