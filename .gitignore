@@ -84,7 +84,7 @@ scripts/outputs_searchstrings/
 # -------------------------------
 # Coding round full texts (PDFs/HTMLs — not versioned, large files)
 # -------------------------------
-documentation/coding/systematic-map/rounds/*/pdfs/
+documentation/coding/systematic-map/rounds/*/FT-R* pdfs/
 scripts/results/
 
 # -------------------------------
