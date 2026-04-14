@@ -14,11 +14,11 @@ Everything is on Google Drive — no GitHub or local setup needed.
 **Three steps:**
 
 1. **Get your papers** — open the `FT-R1a pdfs` subfolder in the Drive link above
-2. **Open your coding sheet** — `coding_H1.csv` (Coder 1) or `coding_H2.csv` (Coder 2)
-3. **Code each paper** using the schema below — one row per paper, all 19 fields — save back to Drive when done
+2. **Open the coding sheet** — download `coding_template.csv`, save a copy as `coding_INITIALS.csv` (e.g. `coding_CS.csv`), and upload it back to the same Drive folder
+3. **Code each paper** using the schema below — one row per paper, all 19 fields — save regularly
 
 **Rules while coding:**
-- Fill in `coder_id` with your initials (e.g. `CS`, `JD`) — same initials every row
+- Fill in `coder_id` with your initials — same initials every row
 - Code independently — no discussion with the other coder until reconciliation
 - If a field is genuinely not reported: leave blank or enter `not_reported`
 - If unsure: make your best judgement and add a note in the `notes` column
