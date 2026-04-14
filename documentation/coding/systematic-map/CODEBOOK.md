@@ -7,11 +7,13 @@
 
 ## Quick start for coders
 
+Everything is on Google Drive — no GitHub or local setup needed.
+
 **Three steps:**
 
-1. **Get your papers** — download the [FT-R1a pdfs](https://drive.google.com/drive/folders/13z0X2d1GWgqFBcMmj6xWOc-2V-wlh8oz?usp=sharing) folder from Google Drive and place it at `documentation/coding/systematic-map/rounds/FT-R1a/FT-R1a pdfs/`
-2. **Open your coding sheet** — `rounds/FT-R1a/coding_H1.csv` (Coder 1) or `coding_H2.csv` (Coder 2)
-3. **Code each paper** using the schema below — one row per paper, all 19 fields
+1. **Get your papers** — open the [FT-R1a pdfs](https://drive.google.com/drive/folders/13z0X2d1GWgqFBcMmj6xWOc-2V-wlh8oz?usp=sharing) folder on Google Drive
+2. **Open your coding sheet** — `coding_H1.csv` (Coder 1) or `coding_H2.csv` (Coder 2), also in the Drive folder
+3. **Code each paper** using the schema below — one row per paper, all 19 fields — then save back to Drive
 
 **Rules while coding:**
 - Code independently — no discussion with the other coder until reconciliation
