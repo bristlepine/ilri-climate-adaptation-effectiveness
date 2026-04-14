@@ -171,7 +171,7 @@ def core_url_from_doi(doi: str) -> str | None:
             f"https://api.core.ac.uk/v3/works",
             params={"q": f"doi:{doi}", "limit": 1},
             headers=headers,
-            timeout=15,
+            timeout=10,
         )
         if r.status_code != 200:
             return None
@@ -192,7 +192,7 @@ def core_url_from_title(title: str) -> str | None:
             f"https://api.core.ac.uk/v3/works",
             params={"q": f'title:"{title}"', "limit": 3},
             headers=headers,
-            timeout=15,
+            timeout=10,
         )
         if r.status_code != 200:
             return None
@@ -276,6 +276,9 @@ def main(pool: str = "both"):
 
         if pbar:
             pbar.set_description(f"[A] {title[:50]:<50}")
+            pbar.write(f"  [A] {title[:70]}", end=" ... ")
+        else:
+            print(f"  [A] {title[:70]}", end=" ... ", flush=True)
 
         if not title:
             _log(f"[A] no title — skipping")
@@ -357,6 +360,9 @@ def main(pool: str = "both"):
 
         if pbar:
             pbar.set_description(f"[B] {doi[:50]:<50}")
+            pbar.write(f"  [B] {doi[:70]}", end=" ... ")
+        else:
+            print(f"  [B] {doi[:70]}", end=" ... ", flush=True)
 
         dest_stem = doi_to_dest_stem(doi, fulltext_dir)
         for ext in [".pdf", ".html", ".htm"]:
