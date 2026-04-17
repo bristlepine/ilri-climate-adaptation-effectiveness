@@ -601,30 +601,29 @@ def screen_fulltext(
                     rec["s14_fulltext_note"] = "no_file"
                     n_no_text += 1
 
-                # Cache hit
-                elif k in processed:
+                # Cache hit — only valid if signature matches
+                elif k in processed and safe_str(cache[k].get("run_signature")) == sig:
                     cached = cache[k]
-                    if safe_str(cached.get("run_signature")) == sig:
-                        rec["s14_decision"] = safe_str(cached.get("s14_decision"))
-                        rec["s14_reasons"] = safe_str(cached.get("s14_reasons"))
-                        rec["s14_rule_hits"] = safe_str(cached.get("s14_rule_hits", ""))
-                        rec["s14_fulltext_chars"] = cached.get("s14_fulltext_chars", 0)
-                        rec["s14_fulltext_note"] = safe_str(cached.get("s14_fulltext_note", ""))
-                        n_cached += 1
-                        if rec["s14_decision"] == "Include":
-                            n_include += 1
-                        elif rec["s14_decision"] == "Exclude":
-                            n_exclude += 1
-                        else:
-                            n_no_text += 1
+                    rec["s14_decision"] = safe_str(cached.get("s14_decision"))
+                    rec["s14_reasons"] = safe_str(cached.get("s14_reasons"))
+                    rec["s14_rule_hits"] = safe_str(cached.get("s14_rule_hits", ""))
+                    rec["s14_fulltext_chars"] = cached.get("s14_fulltext_chars", 0)
+                    rec["s14_fulltext_note"] = safe_str(cached.get("s14_fulltext_note", ""))
+                    n_cached += 1
+                    if rec["s14_decision"] == "Include":
+                        n_include += 1
+                    elif rec["s14_decision"] == "Exclude":
+                        n_exclude += 1
+                    else:
+                        n_no_text += 1
 
-                        df.at[i, "s14_decision"] = rec["s14_decision"]
-                        df.at[i, "s14_reasons"] = rec["s14_reasons"]
-                        df.at[i, "s14_rule_hits"] = rec["s14_rule_hits"]
-                        df.at[i, "s14_fulltext_chars"] = rec["s14_fulltext_chars"]
-                        df.at[i, "s14_fulltext_note"] = rec["s14_fulltext_note"]
-                        df.at[i, "s14_checked_at_utc"] = safe_str(cached.get("timestamp_utc", ""))
-                        continue
+                    df.at[i, "s14_decision"] = rec["s14_decision"]
+                    df.at[i, "s14_reasons"] = rec["s14_reasons"]
+                    df.at[i, "s14_rule_hits"] = rec["s14_rule_hits"]
+                    df.at[i, "s14_fulltext_chars"] = rec["s14_fulltext_chars"]
+                    df.at[i, "s14_fulltext_note"] = rec["s14_fulltext_note"]
+                    df.at[i, "s14_checked_at_utc"] = safe_str(cached.get("timestamp_utc", ""))
+                    continue
 
                 else:
                     # Extract text from file
