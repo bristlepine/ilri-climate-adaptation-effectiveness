@@ -326,8 +326,8 @@ export default function MethodologyPage() {
           <div className="space-y-3">
             {pipelineSteps.map((step) => (
               <div key={step.step} className="flex gap-4 rounded-xl bg-white/15 border border-white/20 px-5 py-4 hover:bg-white/20 transition">
-                <div className="shrink-0 w-12 text-right">
-                  <span className="font-logo font-bold text-green text-sm">{step.step}</span>
+                <div className="shrink-0 w-10 text-right">
+                  <span className="font-logo font-bold text-white text-sm">{step.step}</span>
                 </div>
                 <div>
                   <h3 className="font-logo font-bold text-white text-sm mb-0.5">{step.title}</h3>
