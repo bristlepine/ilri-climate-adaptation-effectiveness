@@ -6,12 +6,12 @@ methodology. Loads actual run statistics from step output JSON files and embeds
 pipeline figures so the document is self-contained.
 
 Run from anywhere:
-    conda run -n ilri01 python documentation/methodology.py
+    conda run -n ilri01 python documentation/methodology/methodology.py
 
 Outputs:
     documentation/methodology/
-        Methodology_Appendix.docx
-        METHODOLOGY.md
+        methodology.docx
+        methodology.md
         figures/
 """
 
@@ -38,13 +38,13 @@ from docx.shared import Pt, RGBColor, Inches
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-HERE    = Path(__file__).resolve().parent.parent  # project root
+HERE    = Path(__file__).resolve().parent.parent.parent  # project root
 OUTPUTS = HERE / "scripts" / "outputs"
-OUT_DIR = Path(__file__).resolve().parent / "methodology"
+OUT_DIR = Path(__file__).resolve().parent               # documentation/methodology/
 FIG_DIR = OUT_DIR / "figures"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 FIG_DIR.mkdir(parents=True, exist_ok=True)
-DOCX_PATH = OUT_DIR / "Methodology_Appendix.docx"
+DOCX_PATH = OUT_DIR / "methodology.docx"
 
 # ---------------------------------------------------------------------------
 # Repository
@@ -1333,7 +1333,7 @@ def build_doc():
     print(f"Saved: {DOCX_PATH}")
 
 
-MD_PATH = OUT_DIR / "METHODOLOGY.md"
+MD_PATH = OUT_DIR / "methodology.md"
 
 
 def build_md():

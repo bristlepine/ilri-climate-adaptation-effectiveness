@@ -8,7 +8,7 @@ The markdown content is defined in the CONTENT constant below.
 This file is the canonical source for the reviewer responses document.
 
 Run from anywhere:
-    conda run -n ilri01 python documentation/reviewer_responses.py
+    conda run -n ilri01 python documentation/reviewer_responses/reviewer_responses.py
 
 Outputs:
     documentation/reviewer_responses/
@@ -30,9 +30,9 @@ from PIL import Image
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-HERE         = Path(__file__).resolve().parent.parent   # project root
+HERE         = Path(__file__).resolve().parent.parent.parent  # project root
 OUTPUTS      = HERE / "scripts" / "outputs"
-OUT_DIR      = Path(__file__).resolve().parent / "reviewer_responses"
+OUT_DIR      = Path(__file__).resolve().parent                # documentation/reviewer_responses/
 FIG_DIR      = OUT_DIR / "figures"
 DELIVERABLES = HERE / "deliverables" / "deliverables.md"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
