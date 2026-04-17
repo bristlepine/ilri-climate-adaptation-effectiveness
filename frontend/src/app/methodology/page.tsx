@@ -368,7 +368,7 @@ export default function MethodologyPage() {
         <div className="max-w-5xl mx-auto">
           <SectionHeading
             label="Computational efficiency"
-            title="~6,000 person-hours of systematic review work completed in under 3 days of compute"
+            title="~6,000 person-hours of systematic review work completed in ~70 hours of compute"
             subtitle="Manual estimates use published rates (O'Mara-Eves 2015). Compute times are actual measured durations or per-record extrapolations from pipeline run logs. Manual and pipeline totals are calculated on the same set of records — the pipeline cannot retrieve papers that are inaccessible to any automated method."
           />
 
