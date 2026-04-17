@@ -76,7 +76,7 @@ fields:
       Code only what is explicitly stated — do not infer from context.
       Select all that apply, separated by semicolons.
       none_reported = no marginalized groups mentioned anywhere in the paper.
-    valid_values: "women | youth | landless | indigenous_peoples | ethnic_minorities | migrant_seasonal_workers | none_reported"
+    valid_values: "women | youth | landless | indigenous_peoples | ethnic_minorities | migrant_seasonal_workers | other | none_reported"
 
   adaptation_focus:
     name: "Adaptation Focus"
@@ -182,18 +182,6 @@ fields:
       yes = paper reports cost figures, cost-effectiveness ratios, or resource requirements.
       no = cost not reported, or only mentioned qualitatively (e.g. 'limited resources') without numbers.
     valid_values: "yes | no"
-
-  equity_inclusion:
-    name: "Equity and Inclusion Considerations"
-    extract: >
-      Whether equity dimensions are explicitly addressed. Select all that apply, separated by
-      semicolons. Use none_reported if equity is not mentioned anywhere.
-      gender = gender-disaggregated analysis or gender-targeted intervention.
-      youth = explicit focus on young farmers or age-disaggregated outcomes.
-      land_tenure = land access or tenure security as an explicit variable.
-      disability = explicit inclusion of persons with disabilities.
-      other = any other equity dimension stated (e.g. caste, religion, ethnicity).
-    valid_values: "gender | youth | land_tenure | disability | other | none_reported"
 
   strengths_and_limitations:
     name: "Strengths and Limitations"

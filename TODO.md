@@ -101,6 +101,12 @@ Everything below must complete for D5 to ship on time. 17 days remaining.
 
 Dropped due to timeline constraints. D3 protocol does not mandate FT-stage calibration (§4.2 covers abstract stage only). Caroline and Jennifer notified. To be documented in protocol amendment D5.7 as a deviation with justification.
 
+### Protocol amendment note — field changes (17 Apr 2026)
+
+Field 16 (`equity_inclusion`) removed from the extraction schema. Its content is now captured under field 6 (`marginalized_subpopulations`), which has been extended with an `other` value (with free-text note in the `notes` column) to cover equity dimensions such as disability, caste, and religion that are not already named. This change should be documented in the protocol amendment (D5.7) as a post-protocol schema simplification, with justification that the two fields were substantially overlapping and the consolidated field retains full information.
+
+Calibration round size reduced from 100 to 5 papers per round for the FT coding phase. To be documented in D5.7 as a scope adjustment.
+
 ### D5.6 — Data extraction calibration design
 
 Iterative human-LLM co-development of codebook across 5-paper buckets. Covers both closed fields (pre-specified from PCCM/Table 3) and emergent fields (Adaptation focus, Indicators measured — per D3 §6). Two convergences tracked simultaneously: LLM accuracy (kappa) and category saturation (no new codes appearing).

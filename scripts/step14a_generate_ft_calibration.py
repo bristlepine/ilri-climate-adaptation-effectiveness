@@ -2,7 +2,7 @@
 """
 step14a_generate_ft_calibration.py
 
-Draw a stratified random sample of ~100 INCLUDEs from the abstract screening
+Draw a stratified random sample of ~5 INCLUDEs from the abstract screening
 (step12) that have retrieved full texts (step13), for use in full-text
 calibration (D5.1).
 

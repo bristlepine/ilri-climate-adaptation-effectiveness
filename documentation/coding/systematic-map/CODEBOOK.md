@@ -31,7 +31,7 @@ publication_year, publication_type, country_region, geographic_scale,
 producer_type, marginalized_subpopulations, adaptation_focus, domain_type,
 process_outcome_domains, indicators_measured, methodological_approach,
 purpose_of_assessment, data_sources, temporal_coverage, cost_data_reported,
-equity_inclusion, strengths_and_limitations, lessons_learned, validity_notes,
+strengths_and_limitations, lessons_learned, validity_notes,
 coder_id, notes
 ```
 The first two columns (`doi`, `filename`) are pre-filled. Fill the rest.
@@ -87,7 +87,16 @@ Select all that apply, semicolons between multiple values.
 
 ### 6. `marginalized_subpopulations`
 Code only what is explicitly stated — do not infer. Select all that apply.
-**Valid values:** `women` | `youth` | `landless` | `indigenous_peoples` | `ethnic_minorities` | `migrant_seasonal_workers` | `none_reported`
+**Valid values:** `women` | `youth` | `landless` | `indigenous_peoples` | `ethnic_minorities` | `migrant_seasonal_workers` | `other` | `none_reported`
+
+- `women` — women explicitly targeted or gender-disaggregated analysis
+- `youth` — young farmers or age-disaggregated outcomes
+- `landless` — landless households or tenure-insecure groups
+- `indigenous_peoples` — Indigenous communities named
+- `ethnic_minorities` — ethnic minority groups named
+- `migrant_seasonal_workers` — migrant or seasonal agricultural workers
+- `other` — any other marginalised group explicitly named (e.g. persons with disabilities, caste-based groups, religious minorities); add a brief note in the `notes` field
+- `none_reported` — no marginalised groups mentioned
 
 ---
 
@@ -170,13 +179,7 @@ Code `yes` only if the paper explicitly reports cost figures or cost-effectivene
 
 ---
 
-### 16. `equity_inclusion`
-Select all that apply. Use `none_reported` if equity is not mentioned.
-**Valid values:** `gender` | `youth` | `land_tenure` | `disability` | `other` | `none_reported`
-
----
-
-### 17. `strengths_and_limitations` ⚠ *free text*
+### 16. `strengths_and_limitations` ⚠ *free text*
 Author-reported strengths and limitations combined (protocol Table 3). Label each component.
 
 **Format:** `Strength: <text>. Limitation: <text>.`
@@ -184,12 +187,12 @@ Look in Discussion, Conclusion, and Limitations sections. Extract verbatim where
 
 ---
 
-### 18. `lessons_learned` ⚠ *free text*
+### 17. `lessons_learned` ⚠ *free text*
 Key lessons or recommendations the authors report. 1–3 sentences. Focus on what they say should be done differently — not findings. Enter `not_reported` if absent.
 
 ---
 
-### 19. `validity_notes` ⚠ *free text*
+### 18. `validity_notes` ⚠ *free text*
 Notes on methodological robustness that affect how much weight this study carries. Flag: small sample (n < 30), single site, self-reported outcomes, short follow-up, no control group, attrition not reported. Enter `none_flagged` if no concerns.
 
 ---
@@ -354,7 +357,7 @@ documentation/coding/abstract-screening/
 | `publication_type` | journal_article, report, working_paper, thesis, other |
 | `geographic_scale` | local, sub-national, national, multi-country, regional |
 | `producer_type` | crop, livestock, fisheries_aquaculture, agroforestry, mixed |
-| `marginalized_subpopulations` | women, youth, landless, indigenous_peoples, ethnic_minorities, migrant_seasonal_workers, none_reported |
+| `marginalized_subpopulations` | women, youth, landless, indigenous_peoples, ethnic_minorities, migrant_seasonal_workers, other, none_reported |
 | `adaptation_focus` | **free text** |
 | `domain_type` | adaptation_process, adaptation_outcome, both |
 | `process_outcome_domains` | knowledge_awareness_learning, decision_making_planning, uptake_adoption, behavioral_change, participation_coproduction, institutional_governance, access_information_services, yields_productivity, income_assets, livelihoods, wellbeing, risk_reduction, resilience_adaptive_capacity |
@@ -364,7 +367,6 @@ documentation/coding/abstract-screening/
 | `data_sources` | surveys, administrative_data, remote_sensing, participatory_methods, secondary_data |
 | `temporal_coverage` | cross_sectional, seasonal, longitudinal |
 | `cost_data_reported` | yes, no |
-| `equity_inclusion` | gender, youth, land_tenure, disability, other, none_reported |
 | `strengths_and_limitations` | **free text** (Strength: ... / Limitation: ...) |
 | `lessons_learned` | **free text** |
 | `validity_notes` | **free text** |

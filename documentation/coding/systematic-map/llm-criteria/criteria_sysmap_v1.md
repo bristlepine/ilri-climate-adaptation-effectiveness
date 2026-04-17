@@ -61,6 +61,7 @@ Select all that apply, separated by semicolons. Code only what is explicitly sta
 - `indigenous_peoples` — Indigenous communities named
 - `ethnic_minorities` — ethnic minority groups named
 - `migrant_seasonal_workers` — migrant or seasonal agricultural workers
+- `other` — any other marginalised group explicitly named (e.g. persons with disabilities, caste-based groups, religious minorities); note the specific group in the `notes` field
 - `none_reported` — no marginalized groups mentioned
 
 ### 7. `adaptation_focus` [EMERGENT — free text]
@@ -143,28 +144,19 @@ Choose one:
 - `yes` — the paper explicitly reports cost figures, cost-effectiveness ratios, or resource requirements for the adaptation
 - `no` — cost not reported, or only mentioned qualitatively (e.g. "limited resources")
 
-### 16. `equity_inclusion`
-Select all that apply, separated by semicolons. Use `none_reported` if none:
-- `gender` — gender-disaggregated analysis or gender-targeted intervention
-- `youth` — explicit focus on young farmers or age-disaggregated outcomes
-- `land_tenure` — land access or tenure security as an explicit variable
-- `disability` — explicit inclusion of persons with disabilities
-- `other` — any other equity dimension (e.g. caste, religion)
-- `none_reported` — equity not mentioned
-
-### 17. `strengths_and_limitations`
+### 16. `strengths_and_limitations`
 Extract author-reported strengths and limitations as free text. Label each:
 - `Strength: <text>` for strengths
 - `Limitation: <text>` for limitations
 
 Extract verbatim where possible. Look in the Discussion, Conclusion, and Limitations sections. If the paper has no explicit strengths section but does state limitations, record only the limitations. If neither are stated, enter `not_reported`.
 
-### 18. `lessons_learned`
+### 17. `lessons_learned`
 Summarise key lessons or recommendations reported by the authors in 1–3 sentences. Focus on what the authors say should be done differently or recommend for policy/practice. This is distinct from findings — it is the authors' evaluative take.
 
 If no lessons or recommendations are stated, enter `not_reported`.
 
-### 19. `validity_notes`
+### 18. `validity_notes`
 Note any issues that affect how much weight this study can carry in the synthesis. Flag:
 - Small sample (n < 30)
 - Single-site study (limits generalisability)
@@ -186,7 +178,7 @@ publication_year, publication_type, country_region, geographic_scale,
 producer_type, marginalized_subpopulations, adaptation_focus, domain_type,
 process_outcome_domains, indicators_measured, methodological_approach,
 purpose_of_assessment, data_sources, temporal_coverage, cost_data_reported,
-equity_inclusion, strengths_and_limitations, lessons_learned, validity_notes
+strengths_and_limitations, lessons_learned, validity_notes
 ```
 
 Use semicolons within fields for multi-select values. Do not use commas within free-text fields (use semicolons or periods instead to avoid CSV parsing errors). Wrap free-text fields in double quotes.
