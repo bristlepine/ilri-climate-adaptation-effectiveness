@@ -4,8 +4,15 @@ run.py
 
 Orchestrates Scopus pipeline steps using flags from config.py,
 with consistent step console logging.
+
+Usage:
+    python run.py                        # use flags from config.py
+    python run.py --step=14              # run only step 14
+    python run.py --step=14,15,16        # run steps 14, 15, and 16
+    python run.py --step=9a,10,11        # step 9a is also valid
 """
 
+import argparse
 import logging
 import sys
 import time
@@ -148,11 +155,51 @@ def run_step(enabled: bool, step_num: int, title: str, module_label: str, fn: Ca
         raise
 
 
+# Maps CLI step names → config dict keys
+_STEP_FLAG: dict[str, str] = {
+    '1': 'run_step1', '2': 'run_step2', '3': 'run_step3',
+    '4': 'run_step4', '5': 'run_step5', '6': 'run_step6',
+    '7': 'run_step7', '8': 'run_step8', '9': 'run_step9',
+    '9a': 'run_step9a', '10': 'run_step10', '11': 'run_step11',
+    '12': 'run_step12', '13': 'run_step13', '14': 'run_step14',
+    '15': 'run_step15', '16': 'run_step16',
+}
+
+
+def parse_args() -> list[str] | None:
+    """Return a list of step identifiers from --step=X,Y,Z, or None if not supplied."""
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--step', type=str, default=None)
+    args, _ = parser.parse_known_args()
+    if args.step is None:
+        return None
+    steps = [s.strip().lower() for s in args.step.split(',') if s.strip()]
+    unknown = [s for s in steps if s not in _STEP_FLAG]
+    if unknown:
+        print(f"Unknown step(s): {', '.join(unknown)}. Valid: {', '.join(sorted(_STEP_FLAG, key=lambda x: (len(x), x)))}")
+        sys.exit(1)
+    return steps
+
+
+def apply_step_overrides(config: dict, steps: list[str]) -> dict:
+    """Disable all steps, then enable only the requested ones."""
+    for key in _STEP_FLAG.values():
+        config[key] = 0
+    for s in steps:
+        config[_STEP_FLAG[s]] = 1
+    return config
+
+
 def main() -> None:
     load_dotenv()
     config = build_config_dict()
 
-    logger.info("%s Scopus pipeline", ICONS["start"])
+    steps = parse_args()
+    if steps is not None:
+        config = apply_step_overrides(config, steps)
+        logger.info("%s Scopus pipeline  [--step=%s]", ICONS["start"], ','.join(steps))
+    else:
+        logger.info("%s Scopus pipeline", ICONS["start"])
 
     run_step(
         config.get("run_step1", 1),
