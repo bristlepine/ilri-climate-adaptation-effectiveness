@@ -59,10 +59,42 @@ const pipelineSteps = [
 ];
 
 const efficiencyData = [
-  { stage: 'Title/abstract screening (17,021 records)', manual: '~1,135 h', compute: '03:05' },
-  { stage: 'Full-text retrieval (6,206 records)',       manual: '~1,552 h', compute: '10:47' },
-  { stage: 'Full-text screening (6,206 records)',       manual: '~2,069 h', compute: '03:50' },
-  { stage: 'Data extraction (6,076 records)',           manual: '~2,532 h', compute: '00:14' },
+  {
+    stage: 'Title/abstract screening',
+    n: '17,021',
+    manualPerRecord: '4 min\n(2 min × 2 reviewers)',
+    manualTotal: '1,135 person-hr',
+    computePerRecord: '~0.65 sec',
+    computeTotal: '3 hr 5 min',
+    saved: '~1,132 person-hr',
+  },
+  {
+    stage: 'Full-text retrieval',
+    n: '6,218',
+    manualPerRecord: '15 min\n(locate, access, download)',
+    manualTotal: '1,552 person-hr',
+    computePerRecord: '~6 sec',
+    computeTotal: '10 hr 47 min',
+    saved: '~1,541 person-hr',
+  },
+  {
+    stage: 'Full-text screening',
+    n: '6,206',
+    manualPerRecord: '20 min\n(10 min × 2 reviewers)',
+    manualTotal: '2,069 person-hr',
+    computePerRecord: '~44 sec †',
+    computeTotal: '3 hr 50 min †',
+    saved: '~2,065 person-hr',
+  },
+  {
+    stage: 'Data extraction & coding',
+    n: '6,076',
+    manualPerRecord: '25 min\n(1 coder)',
+    manualTotal: '2,532 person-hr',
+    computePerRecord: '~5 sec ‡',
+    computeTotal: '~8 hr est. ‡',
+    saved: '~2,524 person-hr',
+  },
 ];
 
 const reproducibilityPrinciples = [
@@ -341,43 +373,63 @@ export default function MethodologyPage() {
 
       {/* Efficiency */}
       <section className="bg-sand px-6 py-16">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <SectionHeading
             label="Computational efficiency"
-            title="Hours of manual work → minutes of compute"
-            subtitle="Estimates for manual screening assume two reviewers at standard rates (O'Mara-Eves 2015). Compute times are actual wall-clock times from the pipeline run logs."
+            title="~7,300 person-hours of manual work condensed to ~24 wall-clock hours"
+            subtitle="Manual estimates use published rates (O'Mara-Eves 2015). Compute times are actual wall-clock durations from pipeline run logs. Both sides shown per record and in full."
           />
+
           <div className="overflow-x-auto rounded-xl border border-gray-200">
-            <table className="w-full border-collapse">
+            <table className="w-full border-collapse text-xs font-tagline">
               <thead className="bg-white">
                 <tr>
-                  <Th>Stage</Th>
-                  <Th>Estimated manual (2 reviewers)</Th>
-                  <Th>Actual pipeline compute</Th>
-                  <Th>Factor</Th>
+                  <th className="text-left px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Stage</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">n</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 bg-orange-50/40" colSpan={2}>Manual (estimated)</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-green/80 uppercase tracking-wide border-b border-gray-200 bg-green/5" colSpan={2}>Pipeline (actual)</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Saved</th>
+                </tr>
+                <tr className="bg-gray-50">
+                  <td className="px-3 py-1.5 border-b border-gray-100" />
+                  <td className="px-3 py-1.5 border-b border-gray-100" />
+                  <td className="px-3 py-1.5 text-center text-gray-400 text-xs border-b border-gray-100 bg-orange-50/40">Per record</td>
+                  <td className="px-3 py-1.5 text-center text-gray-400 text-xs border-b border-gray-100 bg-orange-50/40">Total</td>
+                  <td className="px-3 py-1.5 text-center text-green/70 text-xs border-b border-gray-100 bg-green/5">Per record</td>
+                  <td className="px-3 py-1.5 text-center text-green/70 text-xs border-b border-gray-100 bg-green/5">Total (wall-clock)</td>
+                  <td className="px-3 py-1.5 border-b border-gray-100" />
                 </tr>
               </thead>
               <tbody>
-                {efficiencyData.map((row, i) => {
-                  const manualH = parseFloat(row.manual.replace(/[^0-9.]/g, ''));
-                  const [h, m] = row.compute.split(':').map(Number);
-                  const computeH = h + m / 60;
-                  const factor = Math.round(manualH / computeH);
-                  return (
-                    <tr key={row.stage} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
-                      <Td>{row.stage}</Td>
-                      <Td className="text-gray-500">{row.manual}</Td>
-                      <Td className="font-semibold text-green">{row.compute}</Td>
-                      <Td><span className="font-logo font-bold text-green">{factor}×</span> faster</Td>
-                    </tr>
-                  );
-                })}
+                {efficiencyData.map((row, i) => (
+                  <tr key={row.stage} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}>
+                    <td className="px-3 py-3 font-semibold text-charcoal">{row.stage}</td>
+                    <td className="px-3 py-3 text-center text-gray-500">{row.n}</td>
+                    <td className="px-3 py-3 text-center text-gray-500 bg-orange-50/30 whitespace-pre-line">{row.manualPerRecord}</td>
+                    <td className="px-3 py-3 text-center text-gray-500 bg-orange-50/30 font-semibold">{row.manualTotal}</td>
+                    <td className="px-3 py-3 text-center text-green bg-green/5 font-semibold">{row.computePerRecord}</td>
+                    <td className="px-3 py-3 text-center text-green bg-green/5 font-bold">{row.computeTotal}</td>
+                    <td className="px-3 py-3 text-center font-semibold text-charcoal">{row.saved}</td>
+                  </tr>
+                ))}
+                {/* Total row */}
+                <tr className="border-t-2 border-gray-300 bg-charcoal text-white">
+                  <td className="px-3 py-3 font-logo font-bold text-sm" colSpan={2}>Total</td>
+                  <td className="px-3 py-3 text-center text-white/60 text-xs">—</td>
+                  <td className="px-3 py-3 text-center font-bold">~7,288 person-hr<br/><span className="font-tagline font-normal text-white/60">(~304 person-days)</span></td>
+                  <td className="px-3 py-3 text-center text-white/60 text-xs">—</td>
+                  <td className="px-3 py-3 text-center font-bold text-green">~24 hr<br/><span className="font-tagline font-normal text-white/60">(overnight run)</span></td>
+                  <td className="px-3 py-3 text-center font-bold text-green">~7,260 person-hr</td>
+                </tr>
               </tbody>
             </table>
           </div>
-          <p className="mt-4 text-xs font-tagline text-gray-400">
-            Manual estimate methodology: title/abstract screening at 2 min per record × 2 reviewers; full-text retrieval at 15 min per record; full-text screening at 10 min × 2 reviewers; data extraction at 25 min per record × 1 coder. These are conservative estimates; published ranges are wider.
-          </p>
+
+          <div className="mt-4 space-y-1.5 text-xs font-tagline text-gray-400">
+            <p>Manual rates: title/abstract screening 2 min/record/reviewer × 2 reviewers; full-text retrieval 15 min/record; full-text screening 10 min/record/reviewer × 2 reviewers; data extraction 25 min/record × 1 coder (conservative; published ranges are wider).</p>
+            <p>† Full-text screening: 3 hr 50 min elapsed for 6,206 records, of which only 314 had full text retrieved and were LLM-screened (~44 sec/record); 5,892 passed through near-instantly. The planned overnight re-run against all 4,002 retrieved full texts will take approximately 48 hr.</p>
+            <p>‡ Data extraction: compute time estimated from calibration run (~100 records); full-corpus run scheduled overnight.</p>
+          </div>
         </div>
       </section>
 
