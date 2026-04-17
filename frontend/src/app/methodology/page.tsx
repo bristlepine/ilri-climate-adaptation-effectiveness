@@ -62,38 +62,30 @@ const efficiencyData = [
   {
     stage: 'Title/abstract screening',
     n: '17,021',
-    manualPerRecord: '4 min\n(2 min × 2 reviewers)',
-    manualTotal: '1,135 person-hr',
-    computePerRecord: '~0.65 sec',
-    computeTotal: '3 hr 5 min',
-    saved: '~1,132 person-hr',
+    manualHr: '1,135',
+    pipelineHr: '3',
+    savedHr: '~1,132',
   },
   {
     stage: 'Full-text retrieval',
-    n: '6,218',
-    manualPerRecord: '15 min\n(locate, access, download)',
-    manualTotal: '1,552 person-hr',
-    computePerRecord: '~6 sec',
-    computeTotal: '10 hr 47 min',
-    saved: '~1,541 person-hr',
+    n: '4,002 †',
+    manualHr: '~1,001',
+    pipelineHr: '11',
+    savedHr: '~991',
   },
   {
     stage: 'Full-text screening',
     n: '4,002',
-    manualPerRecord: '20 min\n(10 min × 2 reviewers)',
-    manualTotal: '2,069 person-hr',
-    computePerRecord: '~44 sec †',
-    computeTotal: '~48 hr est. †',
-    saved: '~2,065 person-hr',
+    manualHr: '~1,334',
+    pipelineHr: '~48 ‡',
+    savedHr: '~1,330',
   },
   {
     stage: 'Data extraction & coding',
-    n: '6,076',
-    manualPerRecord: '25 min\n(1 coder)',
-    manualTotal: '2,532 person-hr',
-    computePerRecord: '~5 sec ‡',
-    computeTotal: '~8 hr est. ‡',
-    saved: '~2,524 person-hr',
+    n: '~6,076',
+    manualHr: '~2,532',
+    pipelineHr: '~8 ‡',
+    savedHr: '~2,524',
   },
 ];
 
@@ -376,28 +368,19 @@ export default function MethodologyPage() {
         <div className="max-w-5xl mx-auto">
           <SectionHeading
             label="Computational efficiency"
-            title="~7,300 person-hours of manual work condensed to ~3 pipeline days"
-            subtitle="Manual estimates use published rates (O'Mara-Eves 2015). Compute times are actual measured durations or per-record extrapolations from pipeline run logs. Both sides shown per record and in full."
+            title="~5,900 person-hours automated — a further ~600 remaining manual"
+            subtitle="Manual estimates use published rates (O'Mara-Eves 2015). Compute times are actual measured durations or per-record extrapolations from pipeline run logs. Manual and pipeline totals are calculated on the same set of records — the pipeline cannot retrieve papers that are inaccessible to any automated method."
           />
 
           <div className="overflow-x-auto rounded-xl border border-gray-200">
             <table className="w-full border-collapse text-xs font-tagline">
-              <thead className="bg-white">
+              <thead className="bg-gray-50">
                 <tr>
                   <th className="text-left px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Stage</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">n</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 bg-orange-50/40" colSpan={2}>Manual (estimated)</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-green/80 uppercase tracking-wide border-b border-gray-200 bg-green/5" colSpan={2}>Pipeline (actual)</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Saved</th>
-                </tr>
-                <tr className="bg-gray-50">
-                  <td className="px-3 py-1.5 border-b border-gray-100" />
-                  <td className="px-3 py-1.5 border-b border-gray-100" />
-                  <td className="px-3 py-1.5 text-center text-gray-400 text-xs border-b border-gray-100 bg-orange-50/40">Per record</td>
-                  <td className="px-3 py-1.5 text-center text-gray-400 text-xs border-b border-gray-100 bg-orange-50/40">Total</td>
-                  <td className="px-3 py-1.5 text-center text-green/70 text-xs border-b border-gray-100 bg-green/5">Per record</td>
-                  <td className="px-3 py-1.5 text-center text-green/70 text-xs border-b border-gray-100 bg-green/5">Total (wall-clock)</td>
-                  <td className="px-3 py-1.5 border-b border-gray-100" />
+                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Records (n)</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 bg-orange-50/50">Manual — person-hr</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-green/80 uppercase tracking-wide border-b border-gray-200 bg-green/5">Pipeline — hr (automated)</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Person-hr saved</th>
                 </tr>
               </thead>
               <tbody>
@@ -405,30 +388,25 @@ export default function MethodologyPage() {
                   <tr key={row.stage} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}>
                     <td className="px-3 py-3 font-semibold text-charcoal">{row.stage}</td>
                     <td className="px-3 py-3 text-center text-gray-500">{row.n}</td>
-                    <td className="px-3 py-3 text-center text-gray-500 bg-orange-50/30 whitespace-pre-line">{row.manualPerRecord}</td>
-                    <td className="px-3 py-3 text-center text-gray-500 bg-orange-50/30 font-semibold">{row.manualTotal}</td>
-                    <td className="px-3 py-3 text-center text-green bg-green/5 font-semibold">{row.computePerRecord}</td>
-                    <td className="px-3 py-3 text-center text-green bg-green/5 font-bold">{row.computeTotal}</td>
-                    <td className="px-3 py-3 text-center font-semibold text-charcoal">{row.saved}</td>
+                    <td className="px-3 py-3 text-center text-gray-600 bg-orange-50/30 font-semibold">{row.manualHr}</td>
+                    <td className="px-3 py-3 text-center text-green bg-green/5 font-bold">{row.pipelineHr}</td>
+                    <td className="px-3 py-3 text-center font-semibold text-charcoal">{row.savedHr}</td>
                   </tr>
                 ))}
-                {/* Total row */}
                 <tr className="border-t-2 border-gray-300 bg-charcoal text-white">
                   <td className="px-3 py-3 font-logo font-bold text-sm" colSpan={2}>Total</td>
-                  <td className="px-3 py-3 text-center text-white/60 text-xs">—</td>
-                  <td className="px-3 py-3 text-center font-bold">~7,288 person-hr<br/><span className="font-tagline font-normal text-white/60">(~304 person-days)</span></td>
-                  <td className="px-3 py-3 text-center text-white/60 text-xs">—</td>
-                  <td className="px-3 py-3 text-center font-bold text-green">~65 hr<br/><span className="font-tagline font-normal text-white/60">(~3 pipeline days)</span></td>
-                  <td className="px-3 py-3 text-center font-bold text-green">~7,220 person-hr</td>
+                  <td className="px-3 py-3 text-center font-bold text-white">~6,000 person-hr</td>
+                  <td className="px-3 py-3 text-center font-bold text-emerald-300">~70 hr</td>
+                  <td className="px-3 py-3 text-center font-bold text-emerald-300">~5,935 person-hr</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <div className="mt-4 space-y-1.5 text-xs font-tagline text-gray-400">
-            <p>Manual rates: title/abstract screening 2 min/record/reviewer × 2 reviewers; full-text retrieval 15 min/record; full-text screening 10 min/record/reviewer × 2 reviewers; data extraction 25 min/record × 1 coder (conservative; published ranges are wider).</p>
-            <p>† Full-text screening: measured at ~44 sec/record for LLM-screened records. Applied to the full 4,002 retrieved full texts gives an estimated ~48 hr for a complete run. Steps 14 + 15 together therefore require approximately 2–3 days of continuous compute, not a single overnight run.</p>
-            <p>‡ Data extraction: compute time estimated from calibration run (~100 records); full-corpus run scheduled overnight.</p>
+          <div className="mt-3 space-y-1 text-xs font-tagline text-gray-400">
+            <p>Manual rates estimated at 4 min/record (title/abstract, 2 reviewers), 15 min/record (retrieval), 20 min/record (full-text, 2 reviewers), 25 min/record (extraction). Pipeline times are wall-clock hours on a single machine running unattended.</p>
+            <p>† Full-text retrieval: pipeline retrieved 4,002 of 6,218 records (64%). The remaining 2,216 are behind paywalls or lack DOIs — barriers that apply equally to any automated system. All figures in this table are based on the 4,002 records retrieved.</p>
+            <p>‡ Full-text screening and data extraction times are estimated from calibration runs; full-corpus runs in progress.</p>
           </div>
         </div>
       </section>
