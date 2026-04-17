@@ -321,17 +321,17 @@ export default function MethodologyPage() {
           <div className="mb-10">
             <p className="text-xs font-tagline uppercase tracking-widest text-clay mb-2">Pipeline</p>
             <h2 className="text-2xl md:text-3xl font-logo font-bold text-sand mb-2">Sixteen sequential steps</h2>
-            <p className="font-tagline text-clay text-sm max-w-2xl">Each step produces auditable CSV and JSON outputs. The pipeline is fully resumable — re-runs skip cached results and process only new records.</p>
+            <p className="font-tagline text-white/75 text-sm max-w-2xl">Each step produces auditable CSV and JSON outputs. The pipeline is fully resumable — re-runs skip cached results and process only new records.</p>
           </div>
           <div className="space-y-3">
             {pipelineSteps.map((step) => (
-              <div key={step.step} className="flex gap-4 rounded-xl bg-white/8 border border-white/10 px-5 py-4 backdrop-blur-sm hover:bg-white/12 transition">
+              <div key={step.step} className="flex gap-4 rounded-xl bg-white/15 border border-white/20 px-5 py-4 hover:bg-white/20 transition">
                 <div className="shrink-0 w-12 text-right">
                   <span className="font-logo font-bold text-green text-sm">{step.step}</span>
                 </div>
                 <div>
-                  <h3 className="font-logo font-bold text-sand text-sm mb-0.5">{step.title}</h3>
-                  <p className="font-tagline text-xs text-clay/80 leading-relaxed">{step.desc}</p>
+                  <h3 className="font-logo font-bold text-white text-sm mb-0.5">{step.title}</h3>
+                  <p className="font-tagline text-xs text-white/75 leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             ))}
