@@ -79,11 +79,11 @@ const efficiencyData = [
   },
   {
     stage: 'Full-text screening',
-    n: '6,206',
+    n: '4,002',
     manualPerRecord: '20 min\n(10 min × 2 reviewers)',
     manualTotal: '2,069 person-hr',
     computePerRecord: '~44 sec †',
-    computeTotal: '3 hr 50 min †',
+    computeTotal: '~48 hr est. †',
     saved: '~2,065 person-hr',
   },
   {
@@ -376,8 +376,8 @@ export default function MethodologyPage() {
         <div className="max-w-5xl mx-auto">
           <SectionHeading
             label="Computational efficiency"
-            title="~7,300 person-hours of manual work condensed to ~24 wall-clock hours"
-            subtitle="Manual estimates use published rates (O'Mara-Eves 2015). Compute times are actual wall-clock durations from pipeline run logs. Both sides shown per record and in full."
+            title="~7,300 person-hours of manual work condensed to ~3 pipeline days"
+            subtitle="Manual estimates use published rates (O'Mara-Eves 2015). Compute times are actual measured durations or per-record extrapolations from pipeline run logs. Both sides shown per record and in full."
           />
 
           <div className="overflow-x-auto rounded-xl border border-gray-200">
@@ -418,8 +418,8 @@ export default function MethodologyPage() {
                   <td className="px-3 py-3 text-center text-white/60 text-xs">—</td>
                   <td className="px-3 py-3 text-center font-bold">~7,288 person-hr<br/><span className="font-tagline font-normal text-white/60">(~304 person-days)</span></td>
                   <td className="px-3 py-3 text-center text-white/60 text-xs">—</td>
-                  <td className="px-3 py-3 text-center font-bold text-green">~24 hr<br/><span className="font-tagline font-normal text-white/60">(overnight run)</span></td>
-                  <td className="px-3 py-3 text-center font-bold text-green">~7,260 person-hr</td>
+                  <td className="px-3 py-3 text-center font-bold text-green">~65 hr<br/><span className="font-tagline font-normal text-white/60">(~3 pipeline days)</span></td>
+                  <td className="px-3 py-3 text-center font-bold text-green">~7,220 person-hr</td>
                 </tr>
               </tbody>
             </table>
@@ -427,7 +427,7 @@ export default function MethodologyPage() {
 
           <div className="mt-4 space-y-1.5 text-xs font-tagline text-gray-400">
             <p>Manual rates: title/abstract screening 2 min/record/reviewer × 2 reviewers; full-text retrieval 15 min/record; full-text screening 10 min/record/reviewer × 2 reviewers; data extraction 25 min/record × 1 coder (conservative; published ranges are wider).</p>
-            <p>† Full-text screening: 3 hr 50 min elapsed for 6,206 records, of which only 314 had full text retrieved and were LLM-screened (~44 sec/record); 5,892 passed through near-instantly. The planned overnight re-run against all 4,002 retrieved full texts will take approximately 48 hr.</p>
+            <p>† Full-text screening: measured at ~44 sec/record for LLM-screened records. Applied to the full 4,002 retrieved full texts gives an estimated ~48 hr for a complete run. Steps 14 + 15 together therefore require approximately 2–3 days of continuous compute, not a single overnight run.</p>
             <p>‡ Data extraction: compute time estimated from calibration run (~100 records); full-corpus run scheduled overnight.</p>
           </div>
         </div>
