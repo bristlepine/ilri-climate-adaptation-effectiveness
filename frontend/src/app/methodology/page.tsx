@@ -368,7 +368,7 @@ export default function MethodologyPage() {
         <div className="max-w-5xl mx-auto">
           <SectionHeading
             label="Computational efficiency"
-            title="~5,900 person-hours automated — a further ~600 remaining manual"
+            title="~6,000 person-hours of systematic review work completed in under 3 days of compute"
             subtitle="Manual estimates use published rates (O'Mara-Eves 2015). Compute times are actual measured durations or per-record extrapolations from pipeline run logs. Manual and pipeline totals are calculated on the same set of records — the pipeline cannot retrieve papers that are inaccessible to any automated method."
           />
 
@@ -396,8 +396,8 @@ export default function MethodologyPage() {
                 <tr className="border-t-2 border-gray-300 bg-charcoal text-white">
                   <td className="px-3 py-3 font-logo font-bold text-sm" colSpan={2}>Total</td>
                   <td className="px-3 py-3 text-center font-bold text-white">~6,000 person-hr</td>
-                  <td className="px-3 py-3 text-center font-bold text-emerald-300">~70 hr</td>
-                  <td className="px-3 py-3 text-center font-bold text-emerald-300">~5,935 person-hr</td>
+                  <td className="px-3 py-3 text-center font-bold text-sand">~70 hr</td>
+                  <td className="px-3 py-3 text-center font-bold text-sand">~5,935 person-hr</td>
                 </tr>
               </tbody>
             </table>
