@@ -253,10 +253,10 @@ Tracked by category saturation, not kappa. Saturated when no new codes appear ac
 
 | Label | Who codes | Papers |
 |-------|-----------|--------|
-| `FT-R1a` | H1 + H2 + LLM independently | First 100 papers |
-| `FT-R1b` | **LLM only** (re-codes same R1a papers after criteria update) | Same 100 papers as R1a |
-| `FT-R2a` | H1 + H2 + LLM independently | Next 100 papers (101–200) |
-| `FT-R2b` | **LLM only** (re-codes R2a papers after criteria update) | Same 100 as R2a |
+| `FT-R1a` | H1 + H2 + LLM independently | First 5 papers |
+| `FT-R1b` | **LLM only** (re-codes same R1a papers after criteria update) | Same 5 papers as R1a |
+| `FT-R2a` | H1 + H2 + LLM independently | Next 5 papers (6–10) |
+| `FT-R2b` | **LLM only** (re-codes R2a papers after criteria update) | Same 5 as R2a |
 
 **`a` rounds** = full human + LLM pass on new papers. **`b` rounds** = LLM verification only, same papers, after criteria update. Human coders only ever code in `a` rounds.
 
@@ -264,7 +264,7 @@ Tracked by category saturation, not kappa. Saturated when no new codes appear ac
 
 ```
 Step 1 — Code independently
-  H1, H2, and LLM all code the same 100 papers. No discussion.
+  H1, H2, and LLM all code the same 5 papers. No discussion.
   ↓
 Step 2 — Reconcile (H1 + H2 only)
   Compare field by field. Agree on gold standard → reconciled.csv
@@ -339,9 +339,9 @@ documentation/coding/abstract-screening/
 
 | Round | Papers | Date | H-H κ | LLM sensitivity | Status |
 |-------|--------|------|--------|-----------------|--------|
-| FT-R1a | 100 | — | — | — | ⏳ In progress |
-| FT-R1b | same 100 | — | — | — | — Not started |
-| FT-R2a | 100 | — | — | — | — Not started |
+| FT-R1a | 5 | — | — | — | ⏳ In progress |
+| FT-R1b | same 5 | — | — | — | — Not started |
+| FT-R2a | 5 | — | — | — | — Not started |
 
 *Update after each round's IRR run.*
 

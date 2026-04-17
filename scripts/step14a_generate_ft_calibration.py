@@ -52,7 +52,7 @@ REVIEWER_CSV  = RESULTS_DIR / "EPPI Review - FT-R1a.csv"
 GUIDANCE_MD   = OUT_DIR / "FT_Criteria_Guidance.md"
 
 # ── Settings ───────────────────────────────────────────────────────────────────
-SAMPLE_N      = 100
+SAMPLE_N      = 5
 RANDOM_SEED   = 42
 
 YEAR_BANDS = [
@@ -62,7 +62,7 @@ YEAR_BANDS = [
     ("2020–2022", 2020, 2022),
     ("2023–2026", 2023, 2026),
 ]
-PER_BAND = SAMPLE_N // len(YEAR_BANDS)   # 20 each
+PER_BAND = max(1, SAMPLE_N // len(YEAR_BANDS))   # 1 each
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────

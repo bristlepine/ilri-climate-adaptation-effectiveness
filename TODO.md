@@ -49,7 +49,7 @@ Everything below must complete for D5 to ship on time. 17 days remaining.
 | D5.3 | Grey literature manual search — ~20 repositories per D3 §3.3 (CGIAR, World Bank, 3ie, GCF, FAO, IFAD, regional development banks) | Internal | `scripts/data/grey_literature/` | 25 Apr 2026 | Colleagues | — Not started |
 | D5.4 | Abstract screening — net-new records from additional databases; validated R2b/R3a criteria applied; deduplication against Scopus corpus | Internal | `scripts/outputs/step12/` | 28 Apr 2026 | Pipeline | ⏳ Pending D5.2–D5.3 |
 | D5.5 | Full-text screening — pipeline run on all retrieved full texts; supplemented with manual campus library collection | Internal | `scripts/outputs/step14/` | 28 Apr 2026 | Pipeline | ⏳ Pending — retrieval at 64.4% (4,002/6,218); step13_missing_papers_01.csv ready for next campus pass; step14 can start |
-| D5.6 | Data extraction — iterative human-LLM co-coding in 100-paper buckets; H1 + H2 + LLM code simultaneously; reconcile → update codebook + LLM guidance; kappa + sensitivity per closed field; category saturation for emergent fields (Adaptation focus, Indicators); converge in ~3–4 rounds; LLM runs full corpus with uncertainty flagging; flagged records reviewed by humans | Internal | `scripts/outputs/step15/` | 28 Apr 2026 | Coders + Zarrar | ⏳ Pending D5.5 |
+| D5.6 | Data extraction — iterative human-LLM co-coding in 5-paper buckets; H1 + H2 + LLM code simultaneously; reconcile → update codebook + LLM guidance; kappa + sensitivity per closed field; category saturation for emergent fields (Adaptation focus, Indicators); converge in ~3–4 rounds; LLM runs full corpus with uncertainty flagging; flagged records reviewed by humans | Internal | `scripts/outputs/step15/` | 28 Apr 2026 | Coders + Zarrar | ⏳ Pending D5.5 |
 | D5.7 | Protocol amendment v2 — Zenodo versioned update documenting all D3 deviations; all co-authors notified | Internal | Zenodo (existing DOI, v2) | 28 Apr 2026 | Zarrar | — Not started |
 | D5.8 | Final systematic map — updated ROSES flow diagram, full searchable extraction database, evidence gap map | Internal | `scripts/outputs/step16/` + frontend | **1 May 2026** | All | ⏳ Pending D5.2–D5.6 |
 | **D6** | **First draft SR/meta-analysis protocol** | Report | ILRI folder + GitHub + Zenodo DOI | **15 May 2026** | Zarrar | — Not started |
@@ -103,10 +103,10 @@ Dropped due to timeline constraints. D3 protocol does not mandate FT-stage calib
 
 ### D5.6 — Data extraction calibration design
 
-Iterative human-LLM co-development of codebook across 100-paper buckets. Covers both closed fields (pre-specified from PCCM/Table 3) and emergent fields (Adaptation focus, Indicators measured — per D3 §6). Two convergences tracked simultaneously: LLM accuracy (kappa) and category saturation (no new codes appearing).
+Iterative human-LLM co-development of codebook across 5-paper buckets. Covers both closed fields (pre-specified from PCCM/Table 3) and emergent fields (Adaptation focus, Indicators measured — per D3 §6). Two convergences tracked simultaneously: LLM accuracy (kappa) and category saturation (no new codes appearing).
 
 **Per bucket (RNa → RNb):**
-1. H1, H2, and LLM all code the same 100 papers **independently and simultaneously**
+1. H1, H2, and LLM all code the same 5 papers **independently and simultaneously**
 2. H1 + H2 reconcile disagreements → gold standard RNa
 3. Compare LLM against gold standard → kappa + sensitivity **per field**
 4. Review LLM-invented or missed categories — these are diagnostic of underspecified guidance, not just LLM errors
