@@ -294,8 +294,8 @@ After each round's reconciliation, the LLM extraction prompt is updated and vers
 
 ```
 documentation/coding/systematic-map/llm-criteria/
-├── criteria_v1.yml     ← loaded by step15; used in FT-R1a
-├── criteria_v1.md      ← human-readable companion
+├── criteria_sysmap_v1.yml     ← loaded by step15; used in FT-R1a
+├── criteria_sysmap_v1.md      ← human-readable companion
 ├── criteria_v2.yml     ← updated after FT-R1a reconciliation; used in FT-R1b and FT-R2a
 └── CHANGELOG.md        ← one line per version: round, date, what changed and why
 ```
@@ -315,8 +315,8 @@ documentation/coding/systematic-map/llm-criteria/
 documentation/coding/systematic-map/
 ├── CODEBOOK.md                 ← this document
 ├── llm-criteria/
-│   ├── criteria_v1.yml         ← machine-readable LLM prompt (loaded by step15)
-│   ├── criteria_v1.md          ← human-readable companion
+│   ├── criteria_sysmap_v1.yml         ← machine-readable LLM prompt (loaded by step15)
+│   ├── criteria_sysmap_v1.md          ← human-readable companion
 │   └── CHANGELOG.md
 └── rounds/
     ├── FT-R1a/

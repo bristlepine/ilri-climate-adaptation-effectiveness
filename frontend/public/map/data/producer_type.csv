@@ -1,0 +1,9 @@
+producer_type,n_studies
+crop,95
+mixed,24
+livestock,13
+fisheries_aquaculture,9
+agroforestry,8
+agriculture,2
+crop | livestock,2
+horticulture,1

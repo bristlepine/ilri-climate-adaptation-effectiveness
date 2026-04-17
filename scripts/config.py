@@ -26,8 +26,8 @@ run_step10 = 0 # Title/abstract check (Step 10)
 run_step11 = 0 # Inter-rater reliability analysis (Step 11)
 run_step12 = 0 # Full-corpus screening (Step 12)
 run_step13 = 0 # Full-text retrieval (Step 13)
-run_step14 = 0 # Full-text screening (Step 14)
-run_step15 = 0 # Data extraction / coding (Step 15)
+run_step14 = 1 # Full-text screening (Step 14)
+run_step15 = 1 # Data extraction / coding (Step 15)
 run_step16 = 1 # Systematic map visualisations (Step 16)
 
 # optional convenience list
@@ -89,9 +89,21 @@ step14_run_limit    = None        # None = all rows
 # Step 15 inputs
 # -----------------------------
 _extraction_criteria_dir = os.path.join(here, "..", "documentation", "coding", "systematic-map", "llm-criteria")
-step15_criteria_yml = os.path.join(_extraction_criteria_dir, "criteria_v1.yml")  # update to v2, v3... after each round
+_rounds_dir              = os.path.join(here, "..", "documentation", "coding", "systematic-map", "rounds")
+
+step15_criteria_yml = os.path.join(_extraction_criteria_dir, "criteria_sysmap_v1.yml")  # update to v2, v3... after each round
 step15_model        = ""          # leave blank to use DEFAULT_MODEL in step15
 step15_run_limit    = None        # None = all rows
+
+# Calibration-round mode — set these to run LLM on a specific round batch
+# instead of the full corpus.  Leave step15_round_template blank ("") to
+# run full-corpus mode.
+#
+# To run FT-R1a:  set step15_round_template to the template CSV path below
+#                 and flip run_step15 = 1
+step15_round_template = ""  # full-corpus mode — set to round path for calibration runs
+step15_pdfs_dir       = os.path.join(_rounds_dir, "FT-R1a", "FT-R1a pdfs")
+step15_round_out_csv  = os.path.join(_rounds_dir, "FT-R1a", "coding_ft_r1a_LLM.csv")
 
 # -----------------------------
 # Step 16 inputs

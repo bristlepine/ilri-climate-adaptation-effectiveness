@@ -1,4 +1,4 @@
-# LLM Extraction Criteria — v1
+# LLM Extraction Criteria — sysmap v1
 # Used in rounds: FT-R1a (LLM initial pass), FT-R1b (LLM re-code after R1a reconciliation)
 # Created: 2026-04-14
 # Loaded by: scripts/step15_extract_data.py

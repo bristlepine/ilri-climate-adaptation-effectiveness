@@ -1,0 +1,66 @@
+domain_code,domain_label,producer_code,producer_label,n_studies
+knowledge_awareness_learning,Knowledge & Awareness,crop,Crop farmers,3
+knowledge_awareness_learning,Knowledge & Awareness,livestock,Livestock,0
+knowledge_awareness_learning,Knowledge & Awareness,fisheries_aquaculture,Fisheries/Aquaculture,0
+knowledge_awareness_learning,Knowledge & Awareness,agroforestry,Agroforestry,0
+knowledge_awareness_learning,Knowledge & Awareness,mixed,Mixed/General,1
+decision_making_planning,Decision-making & Planning,crop,Crop farmers,5
+decision_making_planning,Decision-making & Planning,livestock,Livestock,0
+decision_making_planning,Decision-making & Planning,fisheries_aquaculture,Fisheries/Aquaculture,0
+decision_making_planning,Decision-making & Planning,agroforestry,Agroforestry,0
+decision_making_planning,Decision-making & Planning,mixed,Mixed/General,2
+uptake_adoption,Uptake & Adoption,crop,Crop farmers,2
+uptake_adoption,Uptake & Adoption,livestock,Livestock,0
+uptake_adoption,Uptake & Adoption,fisheries_aquaculture,Fisheries/Aquaculture,0
+uptake_adoption,Uptake & Adoption,agroforestry,Agroforestry,0
+uptake_adoption,Uptake & Adoption,mixed,Mixed/General,1
+behavioral_change,Behavioral Change,crop,Crop farmers,1
+behavioral_change,Behavioral Change,livestock,Livestock,0
+behavioral_change,Behavioral Change,fisheries_aquaculture,Fisheries/Aquaculture,0
+behavioral_change,Behavioral Change,agroforestry,Agroforestry,0
+behavioral_change,Behavioral Change,mixed,Mixed/General,1
+participation_coproduction,Participation & Co-production,crop,Crop farmers,2
+participation_coproduction,Participation & Co-production,livestock,Livestock,0
+participation_coproduction,Participation & Co-production,fisheries_aquaculture,Fisheries/Aquaculture,0
+participation_coproduction,Participation & Co-production,agroforestry,Agroforestry,0
+participation_coproduction,Participation & Co-production,mixed,Mixed/General,0
+institutional_governance,Institutional Governance,crop,Crop farmers,0
+institutional_governance,Institutional Governance,livestock,Livestock,0
+institutional_governance,Institutional Governance,fisheries_aquaculture,Fisheries/Aquaculture,0
+institutional_governance,Institutional Governance,agroforestry,Agroforestry,0
+institutional_governance,Institutional Governance,mixed,Mixed/General,0
+access_information_services,Access to Services,crop,Crop farmers,0
+access_information_services,Access to Services,livestock,Livestock,0
+access_information_services,Access to Services,fisheries_aquaculture,Fisheries/Aquaculture,0
+access_information_services,Access to Services,agroforestry,Agroforestry,0
+access_information_services,Access to Services,mixed,Mixed/General,0
+yields_productivity,Yields & Productivity,crop,Crop farmers,0
+yields_productivity,Yields & Productivity,livestock,Livestock,0
+yields_productivity,Yields & Productivity,fisheries_aquaculture,Fisheries/Aquaculture,0
+yields_productivity,Yields & Productivity,agroforestry,Agroforestry,0
+yields_productivity,Yields & Productivity,mixed,Mixed/General,0
+income_assets,Income & Assets,crop,Crop farmers,0
+income_assets,Income & Assets,livestock,Livestock,0
+income_assets,Income & Assets,fisheries_aquaculture,Fisheries/Aquaculture,0
+income_assets,Income & Assets,agroforestry,Agroforestry,0
+income_assets,Income & Assets,mixed,Mixed/General,0
+livelihoods,Livelihoods,crop,Crop farmers,0
+livelihoods,Livelihoods,livestock,Livestock,0
+livelihoods,Livelihoods,fisheries_aquaculture,Fisheries/Aquaculture,0
+livelihoods,Livelihoods,agroforestry,Agroforestry,0
+livelihoods,Livelihoods,mixed,Mixed/General,0
+wellbeing,Wellbeing,crop,Crop farmers,0
+wellbeing,Wellbeing,livestock,Livestock,0
+wellbeing,Wellbeing,fisheries_aquaculture,Fisheries/Aquaculture,0
+wellbeing,Wellbeing,agroforestry,Agroforestry,0
+wellbeing,Wellbeing,mixed,Mixed/General,0
+risk_reduction,Risk Reduction,crop,Crop farmers,0
+risk_reduction,Risk Reduction,livestock,Livestock,0
+risk_reduction,Risk Reduction,fisheries_aquaculture,Fisheries/Aquaculture,0
+risk_reduction,Risk Reduction,agroforestry,Agroforestry,0
+risk_reduction,Risk Reduction,mixed,Mixed/General,0
+resilience_adaptive_capacity,Resilience & Adaptive Capacity,crop,Crop farmers,1
+resilience_adaptive_capacity,Resilience & Adaptive Capacity,livestock,Livestock,0
+resilience_adaptive_capacity,Resilience & Adaptive Capacity,fisheries_aquaculture,Fisheries/Aquaculture,0
+resilience_adaptive_capacity,Resilience & Adaptive Capacity,agroforestry,Agroforestry,0
+resilience_adaptive_capacity,Resilience & Adaptive Capacity,mixed,Mixed/General,0

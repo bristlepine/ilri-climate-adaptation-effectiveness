@@ -74,6 +74,75 @@ PALETTE = [BLUE, TEAL, GREEN, ORANGE, RED, PURPLE, GREY,
 
 
 # =============================================================================
+# Evidence Gap Map constants
+# Must match the actual coded field values in step15_coded.csv
+# =============================================================================
+
+# Process domains (coded values from process_outcome_domains_value)
+PROCESS_DOMAINS: List[str] = [
+    "knowledge_awareness_learning",
+    "decision_making_planning",
+    "uptake_adoption",
+    "behavioral_change",
+    "participation_coproduction",
+    "institutional_governance",
+    "access_information_services",
+]
+
+# Outcome domains
+OUTCOME_DOMAINS: List[str] = [
+    "yields_productivity",
+    "income_assets",
+    "livelihoods",
+    "wellbeing",
+    "risk_reduction",
+    "resilience_adaptive_capacity",
+]
+
+# Process first, then outcome (matches display order: process on top)
+ALL_DOMAINS: List[str] = PROCESS_DOMAINS + OUTCOME_DOMAINS
+N_PROCESS = len(PROCESS_DOMAINS)   # 7
+
+# Producer types (coded values from producer_type_value)
+PRODUCER_TYPES: List[str] = [
+    "crop",
+    "livestock",
+    "fisheries_aquaculture",
+    "agroforestry",
+    "mixed",
+]
+
+# Human-readable labels for display
+DOMAIN_LABELS: Dict[str, str] = {
+    "knowledge_awareness_learning":  "Knowledge & Awareness",
+    "decision_making_planning":      "Decision-making & Planning",
+    "uptake_adoption":               "Uptake & Adoption",
+    "behavioral_change":             "Behavioral Change",
+    "participation_coproduction":    "Participation & Co-production",
+    "institutional_governance":      "Institutional Governance",
+    "access_information_services":   "Access to Services",
+    "yields_productivity":           "Yields & Productivity",
+    "income_assets":                 "Income & Assets",
+    "livelihoods":                   "Livelihoods",
+    "wellbeing":                     "Wellbeing",
+    "risk_reduction":                "Risk Reduction",
+    "resilience_adaptive_capacity":  "Resilience & Adaptive Capacity",
+}
+
+PRODUCER_LABELS: Dict[str, str] = {
+    "crop":                  "Crop farmers",
+    "livestock":             "Livestock",
+    "fisheries_aquaculture": "Fisheries/Aquaculture",
+    "agroforestry":          "Agroforestry",
+    "mixed":                 "Mixed/General",
+}
+
+# Frontend data directory
+_HERE         = Path(__file__).resolve().parent
+_FRONTEND_MAP = _HERE.parent / "frontend" / "public" / "map"
+
+
+# =============================================================================
 # Paths
 # =============================================================================
 
@@ -143,6 +212,31 @@ def _save(fig, path: Path) -> None:
     fig.savefig(path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     print(f"[step16] Saved -> {path.name}")
+
+
+def _save_plotly(fig: Any, name: str, out_dir: Path) -> None:
+    """Save a Plotly figure as JSON for the frontend interactive viewer."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+    try:
+        int_dir = out_dir / "interactive"
+        int_dir.mkdir(exist_ok=True)
+        fig.write_json(str(int_dir / f"{name}.json"))
+        print(f"[step16] Interactive JSON -> interactive/{name}.json")
+    except Exception as e:
+        print(f"[step16] WARNING: Could not save interactive {name} — {e}")
+
+
+def _save_csv(data: "pd.DataFrame", name: str, out_dir: Path) -> None:
+    """Save a small CSV alongside the interactive JSON for download."""
+    try:
+        int_dir = out_dir / "interactive"
+        int_dir.mkdir(exist_ok=True)
+        data.to_csv(int_dir / f"{name}.csv", index=False)
+    except Exception as e:
+        print(f"[step16] WARNING: Could not save CSV {name} — {e}")
 
 
 # =============================================================================
@@ -567,12 +661,14 @@ def _geographic_map(df: pd.DataFrame, out_dir: Path) -> None:
     counts.columns = ["country", "count"]
 
     try:
-        world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
+        _NE_ZIP = _HERE / "data" / "naturalearth" / "ne_110m_admin_0_countries.zip"
+        world = gpd.read_file(str(_NE_ZIP))
     except Exception:
         print("[step16] Could not load naturalearth dataset — skipping choropleth")
         return
 
-    merged = world.merge(counts, left_on="name", right_on="country", how="left")
+    name_col = "NAME" if "NAME" in world.columns else "name"
+    merged = world.merge(counts, left_on=name_col, right_on="country", how="left")
     merged["count"] = merged["count"].fillna(0)
 
     fig, ax = plt.subplots(figsize=(15, 8))
@@ -840,6 +936,818 @@ def _dashboard(df: pd.DataFrame, out_dir: Path) -> None:
 
 
 # =============================================================================
+# INTERACTIVE PLOTLY FIGURES
+# =============================================================================
+
+def _egm_interactive(df: pd.DataFrame, out_root: Path, out_dir: Path) -> None:
+    """Interactive Evidence Gap Map (bubble chart) using Plotly."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+
+    dom_col  = "process_outcome_domains_value"
+    prod_col = "producer_type_value"
+    if df.empty or dom_col not in df.columns or prod_col not in df.columns:
+        return
+
+    # Count studies per (domain, producer_type) cell
+    cell_counts: Dict[Tuple[str, str], int] = {}
+    n_contributing = 0
+    for _, row in df.iterrows():
+        domains   = [d.strip() for d in str(row.get(dom_col, "")).split(";")
+                     if d.strip() and d.strip().lower() not in _SKIP]
+        prodtypes = [p.strip() for p in str(row.get(prod_col, "")).split(";")
+                     if p.strip() and p.strip().lower() not in _SKIP]
+        contributed = False
+        for d in domains:
+            for p in prodtypes:
+                cell_counts[(d, p)] = cell_counts.get((d, p), 0) + 1
+                contributed = True
+        if contributed:
+            n_contributing += 1
+
+    n_out   = len(ALL_DOMAINS) - N_PROCESS   # number of outcome domains
+    total   = len(ALL_DOMAINS)
+
+    traces = []
+
+    # Use labels for display
+    d_labels = [DOMAIN_LABELS.get(d, d) for d in ALL_DOMAINS]
+    p_labels  = [PRODUCER_LABELS.get(p, p) for p in PRODUCER_TYPES]
+    max_n     = max((cell_counts.get((d, p), 0) for d in ALL_DOMAINS for p in PRODUCER_TYPES), default=1)
+    max_n     = max(max_n, 1)
+
+    # Process domain bubbles (blue)
+    proc_x, proc_y, proc_size, proc_text = [], [], [], []
+    for d in PROCESS_DOMAINS:
+        dl = DOMAIN_LABELS.get(d, d)
+        for p in PRODUCER_TYPES:
+            pl = PRODUCER_LABELS.get(p, p)
+            n = cell_counts.get((d, p), 0)
+            if n > 0:
+                proc_x.append(pl)
+                proc_y.append(dl)
+                proc_size.append(n)
+                proc_text.append(f"<b>{dl}</b><br>Producer: {pl}<br>Studies: {n}")
+    if proc_x:
+        traces.append(go.Scatter(
+            x=proc_x, y=proc_y, mode="markers+text",
+            name="Process domain",
+            marker=dict(
+                size=proc_size, sizemode="area",
+                sizeref=max_n / (38 ** 2), sizemin=10,
+                color=BLUE, opacity=0.85,
+                line=dict(color="white", width=1.5),
+            ),
+            text=[str(s) for s in proc_size],
+            textposition="middle center",
+            textfont=dict(size=10, color="white"),
+            hovertext=proc_text, hoverinfo="text",
+            showlegend=False,
+        ))
+
+    # Outcome domain bubbles (green)
+    out_x, out_y, out_size, out_text = [], [], [], []
+    for d in OUTCOME_DOMAINS:
+        dl = DOMAIN_LABELS.get(d, d)
+        for p in PRODUCER_TYPES:
+            pl = PRODUCER_LABELS.get(p, p)
+            n = cell_counts.get((d, p), 0)
+            if n > 0:
+                out_x.append(pl)
+                out_y.append(dl)
+                out_size.append(n)
+                out_text.append(f"<b>{dl}</b><br>Producer: {pl}<br>Studies: {n}")
+    if out_x:
+        traces.append(go.Scatter(
+            x=out_x, y=out_y, mode="markers+text",
+            name="Outcome domain",
+            marker=dict(
+                size=out_size, sizemode="area",
+                sizeref=max_n / (38 ** 2), sizemin=10,
+                color=GREEN, opacity=0.85,
+                line=dict(color="white", width=1.5),
+            ),
+            text=[str(s) for s in out_size],
+            textposition="middle center",
+            textfont=dict(size=10, color="white"),
+            hovertext=out_text, hoverinfo="text",
+            showlegend=False,
+        ))
+
+    # Gap cells (light grey)
+    gap_x, gap_y, gap_text = [], [], []
+    for d in ALL_DOMAINS:
+        dl = DOMAIN_LABELS.get(d, d)
+        for p in PRODUCER_TYPES:
+            pl = PRODUCER_LABELS.get(p, p)
+            if cell_counts.get((d, p), 0) == 0:
+                gap_x.append(pl)
+                gap_y.append(dl)
+                gap_text.append(f"<b>{dl}</b><br>Producer: {pl}<br><i>No studies — evidence gap</i>")
+    if gap_x:
+        traces.append(go.Scatter(
+            x=gap_x, y=gap_y, mode="markers",
+            name="Evidence gap",
+            marker=dict(size=14, color="#E0E0E0", line=dict(color="#BDBDBD", width=1)),
+            hovertext=gap_text, hoverinfo="text",
+            showlegend=False,
+        ))
+
+    # Dedicated legend-only traces (fixed visible size)
+    for cat, color in [("Process domain", BLUE), ("Outcome domain", GREEN)]:
+        traces.append(go.Scatter(
+            x=[None], y=[None], name=cat, mode="markers",
+            marker=dict(size=14, color=color, opacity=0.85, line=dict(color="white", width=1.5)),
+            showlegend=True,
+        ))
+    traces.append(go.Scatter(
+        x=[None], y=[None], name="Evidence gap", mode="markers",
+        marker=dict(size=10, color="#E0E0E0", line=dict(color="#BDBDBD", width=1)),
+        showlegend=True,
+    ))
+
+    # Background shading: process=light blue (top), outcome=light green (bottom)
+    # With autorange=reversed, index 0 (first process domain) is at top
+    proc_labels = [DOMAIN_LABELS[d] for d in PROCESS_DOMAINS]
+    out_labels  = [DOMAIN_LABELS[d] for d in OUTCOME_DOMAINS]
+
+    fig = go.Figure(data=traces)
+    fig.add_shape(type="rect",
+        xref="paper", yref="y",
+        x0=0, x1=1,
+        y0=out_labels[0], y1=proc_labels[-1],   # outcome band (bottom)
+        fillcolor="#E8F5E9", opacity=0.3, line_width=0, layer="below",
+    )
+    fig.add_shape(type="rect",
+        xref="paper", yref="y",
+        x0=0, x1=1,
+        y0=proc_labels[0], y1=out_labels[-1],   # process band (top)
+        fillcolor="#E3F2FD", opacity=0.3, line_width=0, layer="below",
+    )
+    # Separator line between process and outcome
+    fig.add_shape(type="line",
+        xref="paper", yref="y",
+        x0=0, x1=1,
+        y0=out_labels[0], y1=out_labels[0],
+        line=dict(color="#9E9E9E", width=1.5, dash="dot"),
+    )
+
+    fig.update_layout(
+        title=dict(
+            text=f"Evidence Gap Map (n = {n_contributing})",
+            x=0.5, xanchor="center", font=dict(size=15),
+        ),
+        height=700,
+        xaxis=dict(
+            title=dict(text="Producer Type", standoff=20),
+            side="top",
+            categoryorder="array", categoryarray=p_labels,
+            showgrid=True, gridcolor="#F0F0F0",
+            tickfont=dict(size=12, color=DKGREY),
+        ),
+        yaxis=dict(
+            categoryorder="array",
+            # Process domains on top, outcome on bottom — reverse the full list
+            categoryarray=list(reversed(d_labels)),
+            showgrid=True, gridcolor="#F0F0F0",
+            tickfont=dict(size=11, color=DKGREY),
+        ),
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(family="Lato, Arial, sans-serif", color=DKGREY),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.14, xanchor="center", x=0.5),
+        hovermode="closest",
+        margin=dict(l=210, r=80, t=130, b=80),
+    )
+
+    # Side annotations for domain groups
+    fig.add_annotation(
+        x=1.02, xref="paper",
+        y=proc_labels[N_PROCESS // 2], yref="y",
+        text="<b>PROCESS<br>DOMAINS</b>",
+        font=dict(size=10, color=BLUE),
+        showarrow=False, xanchor="left", yanchor="middle",
+        textangle=90,
+    )
+    fig.add_annotation(
+        x=1.02, xref="paper",
+        y=out_labels[len(OUTCOME_DOMAINS) // 2], yref="y",
+        text="<b>OUTCOME<br>DOMAINS</b>",
+        font=dict(size=10, color=GREEN),
+        showarrow=False, xanchor="left", yanchor="middle",
+        textangle=90,
+    )
+
+    _save_plotly(fig, "evidence_gap_map", out_dir)
+
+    # CSV export
+    egm_rows = []
+    for d in ALL_DOMAINS:
+        for p in PRODUCER_TYPES:
+            n = cell_counts.get((d, p), 0)
+            egm_rows.append({
+                "domain_code": d,
+                "domain_label": DOMAIN_LABELS.get(d, d),
+                "producer_code": p,
+                "producer_label": PRODUCER_LABELS.get(p, p),
+                "n_studies": n,
+            })
+    egm_df = pd.DataFrame(egm_rows)
+    _save_csv(egm_df, "evidence_gap_map", out_dir)
+
+
+def _geographic_interactive(df: pd.DataFrame, out_dir: Path) -> None:
+    """Geographic choropleth (primary) + bar chart (secondary), both as interactive Plotly JSON."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+
+    col = "country_region_value"
+    if df.empty or col not in df.columns:
+        return
+
+    # Skip regional/global labels that can't be mapped
+    SKIP_GEO = {
+        "global", "sub-saharan africa", "east africa", "west africa",
+        "central africa", "southern africa", "north africa",
+        "south asia", "south-east asia", "southeast asia", "latin america",
+        "caribbean", "lmics", "low-income countries", "not_reported", "",
+    }
+    country_counts: Dict[str, int] = {}
+    for val in df[col].dropna().astype(str):
+        for c in val.split(";"):
+            c = c.strip()
+            if c and c.lower() not in SKIP_GEO:
+                country_counts[c] = country_counts.get(c, 0) + 1
+
+    if not country_counts:
+        return
+
+    # Shared CSV (used by both views)
+    geo_df = (pd.DataFrame(list(country_counts.items()), columns=["country", "n_studies"])
+              .sort_values("n_studies", ascending=False))
+    _save_csv(geo_df, "geographic_map", out_dir)
+
+    # ── Choropleth (default view) ────────────────────────────────────────────
+    fig_map = go.Figure(go.Choropleth(
+        locations=list(country_counts.keys()),
+        z=list(country_counts.values()),
+        locationmode="country names",
+        colorscale="YlOrRd",
+        colorbar_title="Studies",
+        hovertemplate="<b>%{location}</b><br>Studies: %{z}<extra></extra>",
+    ))
+    fig_map.update_layout(
+        title=dict(
+            text="<b>Geographic Distribution of Studies</b>"
+                 "<br><sup>Hover for country-level detail · multi-country studies counted in each</sup>",
+            x=0.5, xanchor="center", font=dict(size=14),
+        ),
+        geo=dict(
+            showframe=False, showcoastlines=True,
+            projection_type="natural earth",
+            showland=True, landcolor="#F5F5F5",
+            showocean=True, oceancolor="#EBF4FB",
+            showcountries=True, countrycolor="#D0D0D0",
+        ),
+        height=480,
+        paper_bgcolor="white",
+        font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+        margin=dict(l=0, r=0, t=90, b=0),
+    )
+    _save_plotly(fig_map, "geographic_map", out_dir)
+
+    # ── Bar chart (secondary view) ───────────────────────────────────────────
+    sorted_counts = sorted(country_counts.items(), key=lambda x: -x[1])
+    countries = [c for c, _ in sorted_counts]
+    values    = [v for _, v in sorted_counts]
+
+    fig_bar = go.Figure(go.Bar(
+        x=values, y=countries, orientation="h",
+        marker_color=BLUE,
+        hovertemplate="<b>%{y}</b><br>Studies: %{x}<extra></extra>",
+        text=values, textposition="outside",
+    ))
+    fig_bar.update_layout(
+        title=dict(
+            text="<b>Studies by Country / Region</b>",
+            x=0.5, xanchor="center", font=dict(size=14),
+        ),
+        height=max(400, len(countries) * 22 + 120),
+        xaxis_title="Number of Studies",
+        yaxis=dict(autorange="reversed"),
+        plot_bgcolor="white", paper_bgcolor="white",
+        font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+        margin=dict(l=160, r=60, t=80, b=40),
+        showlegend=False,
+    )
+    _save_plotly(fig_bar, "geographic_bar", out_dir)
+
+
+def _temporal_interactive(df: pd.DataFrame, out_dir: Path) -> None:
+    """Interactive temporal trends chart using Plotly."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+
+    col = "publication_year_value"
+    if df.empty or col not in df.columns:
+        return
+
+    years = pd.to_numeric(df[col], errors="coerce").dropna().astype(int)
+    years = years[(years >= 2005) & (years <= 2027)]
+    if years.empty:
+        return
+
+    counts = years.value_counts().sort_index()
+
+    fig = go.Figure(go.Bar(
+        x=counts.index.tolist(),
+        y=counts.values.tolist(),
+        marker_color=BLUE,
+        hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
+    ))
+    fig.update_layout(
+        title=dict(
+            text=f"<b>Publications Over Time</b><br><sup>Number of included studies per publication year · n={len(years):,}</sup>",
+            x=0.5, xanchor="center", font=dict(size=14),
+        ),
+        height=380,
+        xaxis_title="Publication Year",
+        yaxis_title="Number of Studies",
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+        margin=dict(l=60, r=40, t=100, b=60),
+    )
+    temp_df = pd.DataFrame({"year": counts.index.tolist(), "n_studies": counts.values.tolist()})
+    _save_csv(temp_df, "temporal_trends", out_dir)
+    _save_plotly(fig, "temporal_trends", out_dir)
+
+
+def _producer_interactive(df: pd.DataFrame, out_dir: Path) -> None:
+    """Interactive producer type bar chart using Plotly."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+
+    col = "producer_type_value"
+    if df.empty or col not in df.columns:
+        return
+
+    items = _split_multi(df[col])
+    if not items:
+        return
+
+    counts = pd.Series(items).value_counts()
+
+    fig = go.Figure(go.Bar(
+        x=counts.values.tolist(),
+        y=counts.index.tolist(),
+        orientation="h",
+        marker_color=TEAL,
+        hovertemplate="<b>%{y}</b><br>Studies: %{x}<extra></extra>",
+    ))
+    fig.update_layout(
+        title=dict(
+            text=f"<b>Producer Types Studied</b><br><sup>n={len(df):,} studies · multi-select</sup>",
+            x=0.5, xanchor="center", font=dict(size=14),
+        ),
+        height=380,
+        xaxis_title="Number of Studies",
+        yaxis=dict(autorange="reversed"),
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+        margin=dict(l=180, r=40, t=100, b=60),
+    )
+    prod_df = pd.DataFrame({"producer_type": counts.index.tolist(), "n_studies": counts.values.tolist()})
+    _save_csv(prod_df, "producer_type", out_dir)
+    _save_plotly(fig, "producer_type", out_dir)
+
+
+def _methodology_interactive(df: pd.DataFrame, out_dir: Path) -> None:
+    """Interactive methodology bar chart using Plotly."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+
+    col = "methodological_approach_value"
+    if df.empty or col not in df.columns:
+        return
+
+    vals = df[col].dropna().astype(str).str.strip()
+    vals = vals[vals.str.lower().isin(["", "nan", "not_found"]) == False]
+    if vals.empty:
+        return
+
+    counts = vals.value_counts()
+
+    fig = go.Figure(go.Bar(
+        x=counts.values.tolist(),
+        y=counts.index.tolist(),
+        orientation="h",
+        marker_color=PALETTE[:len(counts)],
+        hovertemplate="<b>%{y}</b><br>Studies: %{x}<extra></extra>",
+    ))
+    fig.update_layout(
+        title=dict(
+            text=f"<b>Methodological Approach</b><br><sup>n={len(vals):,} studies</sup>",
+            x=0.5, xanchor="center", font=dict(size=14),
+        ),
+        height=380,
+        xaxis_title="Number of Studies",
+        yaxis=dict(autorange="reversed"),
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+        margin=dict(l=200, r=40, t=100, b=60),
+    )
+    meth_df = pd.DataFrame({"methodology": counts.index.tolist(), "n_studies": counts.values.tolist()})
+    _save_csv(meth_df, "methodology", out_dir)
+    _save_plotly(fig, "methodology", out_dir)
+
+
+def _domain_type_interactive(df: pd.DataFrame, out_dir: Path) -> None:
+    """Interactive domain type bar chart using Plotly."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+
+    col = "domain_type_value"
+    if df.empty or col not in df.columns:
+        return
+
+    vals = df[col].dropna().astype(str).str.strip()
+    vals = vals[vals.str.lower().isin(["", "nan", "not_found"]) == False]
+    if vals.empty:
+        return
+
+    counts = vals.value_counts()
+    colors = [BLUE, GREEN, ORANGE][:len(counts)]
+
+    fig = go.Figure(go.Bar(
+        x=counts.index.tolist(),
+        y=counts.values.tolist(),
+        marker_color=colors,
+        hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
+    ))
+    fig.update_layout(
+        title=dict(
+            text=f"<b>Adaptation Domain Type</b><br><sup>n={len(vals):,} studies</sup>",
+            x=0.5, xanchor="center", font=dict(size=14),
+        ),
+        height=380,
+        yaxis_title="Number of Studies",
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+        margin=dict(l=60, r=40, t=100, b=60),
+    )
+    dtype_df = pd.DataFrame({"domain_type": counts.index.tolist(), "n_studies": counts.values.tolist()})
+    _save_csv(dtype_df, "domain_type", out_dir)
+    _save_plotly(fig, "domain_type", out_dir)
+
+
+def _equity_interactive(df: pd.DataFrame, out_dir: Path) -> None:
+    """Interactive equity bar chart using Plotly."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+
+    col = "equity_inclusion_value"
+    if df.empty or col not in df.columns:
+        return
+
+    items = [i for i in _split_multi(df[col])
+             if i.lower() not in ("none_reported", "nan", "")]
+    if not items:
+        return
+
+    counts = pd.Series(items).value_counts()
+
+    fig = go.Figure(go.Bar(
+        x=counts.index.tolist(),
+        y=counts.values.tolist(),
+        marker_color=PURPLE,
+        hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
+    ))
+    fig.update_layout(
+        title=dict(
+            text="<b>Equity & Inclusion Dimensions Reported</b><br><sup>Multi-select — studies may address multiple dimensions</sup>",
+            x=0.5, xanchor="center", font=dict(size=14),
+        ),
+        height=380,
+        yaxis_title="Number of Studies",
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+        margin=dict(l=60, r=40, t=100, b=80),
+    )
+    eq_df = pd.DataFrame({"equity_dimension": counts.index.tolist(), "n_studies": counts.values.tolist()})
+    _save_csv(eq_df, "equity", out_dir)
+    _save_plotly(fig, "equity", out_dir)
+
+
+def _domain_heatmap_interactive(df: pd.DataFrame, out_dir: Path) -> None:
+    """Interactive domain heatmap using Plotly."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+
+    dom_col  = "process_outcome_domains_value"
+    prod_col = "producer_type_value"
+    if df.empty or dom_col not in df.columns or prod_col not in df.columns:
+        return
+
+    rows = []
+    for _, row in df.iterrows():
+        domains   = [d.strip() for d in str(row.get(dom_col, "")).split(";")
+                     if d.strip() and d.strip().lower() not in _SKIP]
+        prodtypes = [p.strip() for p in str(row.get(prod_col, "")).split(";")
+                     if p.strip() and p.strip().lower() not in _SKIP]
+        for d in domains:
+            for p in prodtypes:
+                rows.append({"domain": d, "producer": p})
+
+    if not rows:
+        return
+
+    ct = pd.DataFrame(rows).pivot_table(
+        index="domain", columns="producer", aggfunc="size", fill_value=0
+    )
+    if ct.empty:
+        return
+
+    fig = go.Figure(go.Heatmap(
+        z=ct.values.tolist(),
+        x=ct.columns.tolist(),
+        y=ct.index.tolist(),
+        colorscale="YlOrRd",
+        hovertemplate="<b>%{y}</b><br>%{x}<br>Studies: %{z}<extra></extra>",
+        text=ct.values.tolist(),
+        texttemplate="%{text}",
+    ))
+    fig.update_layout(
+        title=dict(
+            text="<b>Process/Outcome Domains × Producer Type</b><br><sup>Number of studies per cell</sup>",
+            x=0.5, xanchor="center", font=dict(size=14),
+        ),
+        height=max(400, ct.shape[0] * 28 + 150),
+        xaxis=dict(tickangle=-30, side="top"),
+        yaxis=dict(autorange="reversed"),
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(family="Lato, Arial, sans-serif", size=10, color=DKGREY),
+        margin=dict(l=240, r=40, t=130, b=60),
+    )
+    _save_plotly(fig, "domain_heatmap", out_dir)
+
+    # Tidy CSV
+    heat_rows = []
+    for d in ct.index:
+        for p in ct.columns:
+            n = int(ct.loc[d, p])
+            if n > 0:
+                heat_rows.append({"domain": d, "producer_type": p, "n_studies": n})
+    heat_df = pd.DataFrame(heat_rows)
+    _save_csv(heat_df, "domain_heatmap", out_dir)
+
+
+def _roses_interactive(out_root: Path, out_dir: Path) -> None:
+    """Interactive Plotly ROSES flow diagram using Sankey."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+
+    s12 = _load_json(_step12_meta(out_root))
+    s13 = _load_json(_step13_meta(out_root))
+    s14 = _load_json(_step14_meta(out_root))
+    s15 = _load_json(_step15_meta(out_root))
+
+    n_identified   = s12.get("rows_total", 0)
+    dec12          = s12.get("decision_counts", {})
+    n_abs_include  = dec12.get("Include", 0)
+    n_abs_exclude  = dec12.get("Exclude", 0)
+    n_missing_abs  = s12.get("missing_abstract_count", 0)
+    excl12         = s12.get("excluded_by_criterion", {})
+
+    status13       = s13.get("status_counts", {})
+    n_ft_retrieved = status13.get("retrieved", 0)
+    n_ft_not_found = status13.get("needs_manual", 0)
+
+    dec14          = s14.get("decision_counts", {})
+    n_ft_include   = dec14.get("Include", 0)
+    n_ft_exclude   = dec14.get("Exclude", 0)
+    excl14         = s14.get("excluded_by_criterion", {})
+
+    src15          = s15.get("coding_source_counts", {})
+    n_coded_ft     = src15.get("full_text", 0)
+
+    # Papers retrieved but not yet screened (step14 may not have been re-run after step13 completed)
+    n_ft_screened         = n_ft_include + n_ft_exclude
+    n_ft_pending_screen   = max(0, n_ft_retrieved - n_ft_screened)
+
+    labels = [
+        f"Records identified<br>n={n_identified:,}",                      # 0
+        f"After abstract screening<br>n={n_abs_include:,}",               # 1
+        f"Excluded at abstract<br>n={n_abs_exclude:,}",                   # 2
+        f"Full texts retrieved<br>n={n_ft_retrieved:,}",                  # 3
+        f"Full texts not retrieved<br>n={n_ft_not_found:,}",              # 4
+        f"Included<br>n={n_ft_include:,}",                                # 5
+        f"Excluded at full-text<br>n={n_ft_exclude:,}",                   # 6
+        f"Data extraction<br>n={n_coded_ft:,}",                           # 7
+        f"Awaiting manual retrieval<br>n={n_ft_not_found:,}",             # 8
+        f"Pending full-text screening<br>n={n_ft_pending_screen:,}",      # 9
+    ]
+
+    excl12_text = "; ".join(f"{k}: {v}" for k, v in sorted(excl12.items(), key=lambda x: -x[1])[:5])
+    excl14_text = "; ".join(f"{k}: {v}" for k, v in sorted(excl14.items(), key=lambda x: -x[1])[:5])
+
+    node_colors = [TEAL, BLUE, ORANGE, BLUE, GREY, GREEN, ORANGE, GREEN, GREY, ORANGE]
+
+    sources = [0, 0, 1, 1, 3, 3, 5, 4, 3]
+    targets = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    values  = [
+        max(n_abs_include, 1),
+        max(n_abs_exclude, 1),
+        max(n_ft_retrieved, 1),
+        max(n_ft_not_found, 1),
+        max(n_ft_include, 1),
+        max(n_ft_exclude, 1),
+        max(n_coded_ft, 1),
+        max(n_ft_not_found, 1),
+        max(n_ft_pending_screen, 1),
+    ]
+    link_colors = [
+        "rgba(78,121,167,0.3)",
+        "rgba(255,160,72,0.3)",
+        "rgba(78,121,167,0.3)",
+        "rgba(158,158,158,0.25)",
+        "rgba(89,161,79,0.3)",
+        "rgba(255,160,72,0.3)",
+        "rgba(89,161,79,0.3)",
+        "rgba(158,158,158,0.2)",
+        "rgba(255,160,72,0.25)",
+    ]
+    link_labels = [
+        f"Included after abstract screening: {n_abs_include:,}",
+        f"Excluded at abstract: {n_abs_exclude:,}" + (f"<br>{excl12_text}" if excl12_text else ""),
+        f"Full texts retrieved: {n_ft_retrieved:,}",
+        f"Full text not retrievable automatically: {n_ft_not_found:,}",
+        f"Included after full-text screening: {n_ft_include:,}",
+        f"Excluded at full-text: {n_ft_exclude:,}" + (f"<br>{excl14_text}" if excl14_text else ""),
+        f"Data extraction complete: {n_coded_ft:,}",
+        f"Awaiting manual retrieval: {n_ft_not_found:,}",
+        f"Full text retrieved — full-text screening pending: {n_ft_pending_screen:,}",
+    ]
+
+    fig = go.Figure(go.Sankey(
+        arrangement="snap",
+        node=dict(
+            pad=20, thickness=25,
+            line=dict(color="white", width=1),
+            label=labels,
+            color=node_colors,
+            hovertemplate="%{label}<extra></extra>",
+        ),
+        link=dict(
+            source=sources, target=targets, value=values,
+            color=link_colors, label=link_labels,
+            hovertemplate="%{label}<extra></extra>",
+        ),
+    ))
+
+    fig.update_layout(
+        title=dict(
+            text="<b>ROSES Flow Diagram</b><br><sup>Record flow across all screening stages · hover nodes and links for detail</sup>",
+            x=0.5, xanchor="center", font=dict(size=14),
+        ),
+        height=520,
+        font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+        paper_bgcolor="white",
+        margin=dict(l=20, r=20, t=90, b=20),
+    )
+    _save_plotly(fig, "roses_flow", out_dir)
+
+    roses_df = pd.DataFrame({
+        "stage": ["Records identified", "Abstract screening — included", "Abstract screening — excluded",
+                  "Full texts retrieved", "Full texts not retrieved (pending retrieval)",
+                  "Full-text screening — included", "Full-text screening — excluded", "Data extraction"],
+        "n": [n_identified, n_abs_include, n_abs_exclude,
+              n_ft_retrieved, n_ft_not_found,
+              n_ft_include, n_ft_exclude, n_coded_ft],
+    })
+    _save_csv(roses_df, "roses_flow", out_dir)
+
+
+_BLANK = {"nan", "not_reported", "not_found", "none_reported", ""}
+
+def _export_studies_json(df: pd.DataFrame, out_dir: Path) -> None:
+    """Export a simplified studies JSON for the frontend searchable database."""
+    KEEP = [
+        ("doi",                           "doi"),
+        ("title",                         "title"),
+        ("publication_year_value",        "year"),
+        ("publication_type_value",        "pub_type"),
+        ("country_region_value",          "country"),
+        ("geographic_scale_value",        "geo_scale"),
+        ("producer_type_value",           "producer_type"),
+        ("adaptation_focus_value",        "adaptation_focus"),
+        ("domain_type_value",             "domain_type"),
+        ("methodological_approach_value", "methodology"),
+        ("equity_inclusion_value",        "equity"),
+    ]
+    rows = []
+    for _, row in df.iterrows():
+        rec = {}
+        for src_col, dst_col in KEEP:
+            val = str(row.get(src_col, "") or "").strip()
+            if val.lower() in _BLANK:
+                val = ""
+            # Year fallback: use Scopus metadata 'year' when LLM extraction is missing
+            if dst_col == "year" and not val:
+                fallback = str(row.get("year", "") or "").strip()
+                if fallback and fallback.lower() not in _BLANK:
+                    val = fallback
+            rec[dst_col] = val
+        rows.append(rec)
+
+    out_path = out_dir / "interactive" / "studies.json"
+    out_path.parent.mkdir(exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(rows, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"[step16] Studies JSON -> interactive/studies.json ({len(rows)} records)")
+
+
+def _export_studies_csv(df: pd.DataFrame, out_dir: Path) -> None:
+    """Export simplified studies CSV for download."""
+    KEEP = [
+        ("doi",                           "doi"),
+        ("title",                         "title"),
+        ("publication_year_value",        "year"),
+        ("country_region_value",          "country"),
+        ("producer_type_value",           "producer_type"),
+        ("adaptation_focus_value",        "adaptation_focus"),
+        ("domain_type_value",             "domain_type"),
+        ("methodological_approach_value", "methodology"),
+        ("equity_inclusion_value",        "equity"),
+    ]
+    out_df = pd.DataFrame()
+    for src_col, dst_col in KEEP:
+        if src_col in df.columns:
+            col_vals = df[src_col].fillna("").astype(str).str.strip()
+            # Year fallback: use Scopus metadata 'year' where LLM extraction is missing
+            if dst_col == "year" and "year" in df.columns:
+                meta_year = df["year"].fillna("").astype(str).str.strip()
+                col_vals = col_vals.where(
+                    ~col_vals.str.lower().isin(_BLANK), meta_year
+                )
+            out_df[dst_col] = col_vals
+
+    _save_csv(out_df, "studies", out_dir)
+    print(f"[step16] Studies CSV -> interactive/studies.csv ({len(out_df)} records)")
+
+
+def _sync_frontend(out_dir: Path) -> None:
+    """Sync step16 outputs to the Next.js frontend public directory."""
+    import shutil
+
+    frontend_map = _FRONTEND_MAP
+    frontend_map.mkdir(parents=True, exist_ok=True)
+
+    data_dir = frontend_map / "data"
+    data_dir.mkdir(exist_ok=True)
+
+    # Static PNGs
+    n_png = 0
+    for png in out_dir.glob("*.png"):
+        shutil.copy2(png, frontend_map / png.name)
+        n_png += 1
+
+    # Interactive JSONs + CSVs
+    n_json = 0
+    int_dir = out_dir / "interactive"
+    if int_dir.exists():
+        for f in list(int_dir.glob("*.json")) + list(int_dir.glob("*.csv")):
+            shutil.copy2(f, data_dir / f.name)
+            if f.suffix == ".json":
+                n_json += 1
+    n_csv = len(list(data_dir.glob("*.csv"))) if data_dir.exists() else 0
+    print(f"[step16] Synced to frontend: {n_png} PNGs + {n_json} JSONs + {n_csv} CSVs -> {_FRONTEND_MAP}")
+
+
+# =============================================================================
 # Entrypoint
 # =============================================================================
 
@@ -856,6 +1764,8 @@ def run(config: dict) -> dict:
     print("[step16] Producing ROSES flow diagram...")
     _roses_flow(out_root, out_dir)
     figures_saved.append("roses_flow.png")
+    _roses_interactive(out_root, out_dir)
+    figures_saved.append("roses_flow.json")
 
     # Load coded data for all other figures
     df = _load_coded(out_root)
@@ -864,7 +1774,7 @@ def run(config: dict) -> dict:
         print("[step16] No full-text coded records yet — only ROSES diagram produced.")
         print("[step16] Re-run after step15 completes to produce all figures.")
     else:
-        print("[step16] Producing evidence map figures...")
+        print("[step16] Producing evidence map figures (static)...")
         for fn, label in [
             (_dashboard,         "dashboard.png"),
             (_temporal_trends,   "temporal_trends.png"),
@@ -881,6 +1791,44 @@ def run(config: dict) -> dict:
                 figures_saved.append(label)
             except Exception as e:
                 print(f"[step16] WARNING: {label} failed — {type(e).__name__}: {e}")
+
+        print("[step16] Producing evidence map figures (interactive)...")
+        for fn, label in [
+            (_egm_interactive,           "evidence_gap_map.json"),
+            (_geographic_interactive,    "geographic_map.json + geographic_bar.json"),
+            (_temporal_interactive,      "temporal_trends.json"),
+            (_producer_interactive,      "producer_type.json"),
+            (_methodology_interactive,   "methodology.json"),
+            (_domain_type_interactive,   "domain_type.json"),
+            (_equity_interactive,        "equity.json"),
+            (_domain_heatmap_interactive,"domain_heatmap.json"),
+        ]:
+            try:
+                if fn == _egm_interactive:
+                    fn(df, out_root, out_dir)
+                else:
+                    fn(df, out_dir)
+                figures_saved.append(label)
+            except Exception as e:
+                print(f"[step16] WARNING: {label} failed — {type(e).__name__}: {e}")
+
+        try:
+            _export_studies_json(df, out_dir)
+            figures_saved.append("studies.json")
+        except Exception as e:
+            print(f"[step16] WARNING: studies.json failed — {e}")
+
+        try:
+            _export_studies_csv(df, out_dir)
+            figures_saved.append("studies.csv")
+        except Exception as e:
+            print(f"[step16] WARNING: studies.csv failed — {e}")
+
+    # Sync to frontend
+    try:
+        _sync_frontend(out_dir)
+    except Exception as e:
+        print(f"[step16] WARNING: frontend sync failed — {e}")
 
     elapsed = time.time() - t0
     meta = {

@@ -97,9 +97,13 @@ def build_config_dict() -> dict:
         "step14_model":      cfg.step14_model,
         "step14_run_limit":  cfg.step14_run_limit,
 
-        "run_step15":        cfg.run_step15,
-        "step15_model":      cfg.step15_model,
-        "step15_run_limit":  cfg.step15_run_limit,
+        "run_step15":             cfg.run_step15,
+        "step15_model":           cfg.step15_model,
+        "step15_run_limit":       cfg.step15_run_limit,
+        "step15_criteria_yml":    cfg.step15_criteria_yml,
+        "step15_round_template":  cfg.step15_round_template,
+        "step15_pdfs_dir":        cfg.step15_pdfs_dir,
+        "step15_round_out_csv":   cfg.step15_round_out_csv,
 
         "run_step16":        cfg.run_step16,
     }

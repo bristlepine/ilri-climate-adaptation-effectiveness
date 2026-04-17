@@ -20,6 +20,7 @@ const stages = [
     description: 'Catalogues the full range of adaptation processes, outcomes, and measurement approaches used in the agriculture sector. Produces a searchable database and evidence gap map.',
     deliverables: 'D1 – D5',
     image: '/images/adaptation.jpg',
+    href: '/systematic-map',
   },
   {
     number: '02',
@@ -27,6 +28,7 @@ const stages = [
     description: 'Focuses on methodological strengths, limitations, and suitability of measurement approaches for different users and contexts.',
     deliverables: 'D6 – D9',
     image: '/images/resilience.jpg',
+    href: '/systematic-review',
   },
 ];
 
@@ -95,7 +97,8 @@ export default function AboutPage() {
           <p className="font-tagline text-clay mb-8">The project proceeds in two sequential stages.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {stages.map((stage) => (
-              <div key={stage.number} className="group rounded-xl overflow-hidden bg-sand text-charcoal shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.015] flex flex-col">
+              <Link key={stage.number} href={stage.href}
+                className="group rounded-xl overflow-hidden bg-sand text-charcoal shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.015] flex flex-col">
                 <div className="relative h-48 overflow-hidden">
                   <img src={stage.image} alt={stage.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
@@ -105,9 +108,14 @@ export default function AboutPage() {
                 <div className="p-6 flex flex-col flex-1">
                   <h3 className="font-logo font-bold text-charcoal text-xl mb-2">{stage.title}</h3>
                   <p className="font-tagline text-sm text-gray-600 leading-relaxed flex-1 mb-4">{stage.description}</p>
-                  <span className="text-xs font-tagline font-semibold text-green bg-green/10 px-3 py-1 rounded-full self-start">{stage.deliverables}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-tagline font-semibold text-green bg-green/10 px-3 py-1 rounded-full">{stage.deliverables}</span>
+                    <span className="flex items-center gap-1 text-xs font-tagline font-semibold text-green group-hover:gap-2 transition-all">
+                      Explore <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

@@ -12,7 +12,7 @@ One line per version. Each entry links to the round that triggered the change an
 
 After reconciling a round and updating the criteria file:
 
-1. Copy `criteria_vN.md` → `criteria_v(N+1).md`
+1. Copy `criteria_sysmap_vN.md` → `criteria_v(N+1).md`
 2. Apply changes to the new file
 3. Add a row to the table above: version, rounds, date, one-sentence summary
 4. The summary should name the specific field(s) changed and the reason (e.g. "Revised `domain_type` decision rule — LLM was coding process+outcome papers as `both` when only one domain was assessed; added threshold example")

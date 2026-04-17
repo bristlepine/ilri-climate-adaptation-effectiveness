@@ -1,6 +1,6 @@
-# LLM Extraction Criteria — v1
+# LLM Extraction Criteria — sysmap v1
 
-**Version:** 1
+**Version:** sysmap_v1
 **Used in rounds:** FT-R1a
 **Created:** 2026-04-14
 **Previous version:** n/a (initial)

@@ -75,7 +75,7 @@ PRINT_EVERY = 50
 # Default criteria YAML — versioned alongside codebook in documentation/
 DEFAULT_CRITERIA_YML = (
     _REPO_ROOT
-    / "documentation" / "coding" / "systematic-map" / "llm-criteria" / "criteria_v1.yml"
+    / "documentation" / "coding" / "systematic-map" / "llm-criteria" / "criteria_sysmap_v1.yml"
 )
 
 
@@ -983,18 +983,46 @@ def _plot_summary(meta: dict, df: pd.DataFrame, out_dir: Path) -> None:
 # =============================================================================
 
 def run(config: dict) -> dict:
-    import config as cfg_module
-    out_root   = Path(config.get("out_dir", "outputs"))
-    out_dir    = _out_dir(out_root)
-    model      = config.get("step15_model", "") or DEFAULT_MODEL
-    run_limit  = config.get("step15_run_limit", None)
+    model     = config.get("step15_model", "") or DEFAULT_MODEL
+    run_limit = config.get("step15_run_limit", None)
 
-    # Criteria YAML — reload if a round-specific version is set in config
-    crit_str = str(config.get("step15_criteria_yml", "")).strip()
+    # Criteria YAML
+    crit_str      = str(config.get("step15_criteria_yml", "")).strip()
     criteria_path = Path(crit_str) if crit_str else DEFAULT_CRITERIA_YML
     if criteria_path != DEFAULT_CRITERIA_YML or not CODING_SCHEMA:
         _load_coding_schema(criteria_path)
 
+    # --- Calibration-round mode ---
+    tmpl_str = str(config.get("step15_round_template", "")).strip()
+    if tmpl_str:
+        tmpl_path = Path(tmpl_str)
+        pdfs_str  = str(config.get("step15_pdfs_dir", "")).strip()
+        out_str   = str(config.get("step15_round_out_csv", "")).strip()
+
+        # Infer pdfs dir and output path from template if not set
+        stem = tmpl_path.stem
+        m    = re.search(r"ft_r(\d+[a-z]?)", stem, re.IGNORECASE)
+        round_label = f"FT-R{m.group(1).upper()}" if m else "FT"
+
+        pdfs_path = Path(pdfs_str) if pdfs_str else tmpl_path.parent / f"{round_label} pdfs"
+        if out_str:
+            out_path = Path(out_str)
+        else:
+            new_stem = stem.replace("_XX", "_LLM").replace("_xx", "_LLM")
+            out_path = tmpl_path.parent / (new_stem + ".csv")
+
+        return run_calibration_round(
+            tmpl_path,
+            pdfs_path,
+            out_path,
+            model=model,
+            criteria_path=criteria_path,
+            run_limit=run_limit,
+        )
+
+    # --- Full-corpus mode ---
+    out_root = Path(config.get("out_dir", "outputs"))
+    out_dir  = _out_dir(out_root)
     print(f"[step15] Model: {model}")
     print(f"[step15] Output dir: {out_dir}")
 
@@ -1014,5 +1042,227 @@ def run(config: dict) -> dict:
     return meta
 
 
+# =============================================================================
+# Calibration-round mode
+# =============================================================================
+
+def run_calibration_round(
+    template_csv: Path,
+    pdfs_dir: Path,
+    out_csv: Path,
+    *,
+    model: str = DEFAULT_MODEL,
+    criteria_path: Optional[Path] = None,
+    coder_id: str = "LLM",
+    run_limit: Optional[int] = None,
+) -> dict:
+    """
+    Run LLM coding for a single calibration round (FT-R1a, FT-R2a, etc.).
+
+    Reads doi + filename from template_csv, finds each full-text file in
+    pdfs_dir (falls back to outputs/step13/fulltext/ if not found there),
+    calls the LLM, and writes results to out_csv in human coding sheet format:
+
+        doi, filename, <19 coding fields>, coder_id, notes
+
+    This is the same column layout as coding_ft_r1a_XX.csv so the LLM sheet
+    can be placed next to the human sheets for reconciliation.
+
+    Usage:
+        python step15_extract_data.py \\
+            --round-template documentation/coding/systematic-map/rounds/FT-R1a/coding_ft_r1a_XX.csv \\
+            --pdfs-dir "documentation/coding/systematic-map/rounds/FT-R1a/FT-R1a pdfs" \\
+            --out-csv documentation/coding/systematic-map/rounds/FT-R1a/coding_ft_r1a_LLM.csv
+    """
+    _load_coding_schema(criteria_path or DEFAULT_CRITERIA_YML)
+    _ollama_fail_fast(model)
+    system_prompt = build_system_prompt()
+    sig = _run_signature(model=model, criteria_path=criteria_path or DEFAULT_CRITERIA_YML)
+
+    tmpl = pd.read_csv(template_csv)
+    n_total = len(tmpl)
+    n_run = min(int(run_limit), n_total) if run_limit else n_total
+
+    jsonl_path = out_csv.with_suffix(".jsonl")
+    cache = _load_jsonl_cache(jsonl_path)
+
+    print(f"[step15-cal] Template : {template_csv}")
+    print(f"[step15-cal] PDFs dir : {pdfs_dir}")
+    print(f"[step15-cal] Output   : {out_csv}")
+    print(f"[step15-cal] Model    : {model}")
+    print(f"[step15-cal] Papers   : {n_run}/{n_total}  |  cache warm: {len(cache)}")
+
+    ft_fallback = _here / "outputs" / "step13" / "fulltext"
+    rows: list = []
+    t0 = time.time()
+    n_hit = n_ok = n_err = 0
+
+    with requests.Session() as session:
+        with open(jsonl_path, "a", encoding="utf-8", buffering=1) as jf:
+            for i in range(n_run):
+                row      = tmpl.iloc[i]
+                doi      = safe_str(row.get("doi", ""))
+                filename = safe_str(row.get("filename", ""))
+                ck       = f"cal:{doi}::{sig}"
+
+                if i == 0 or (i + 1) % PRINT_EVERY == 0 or (i + 1) == n_run:
+                    elapsed = time.time() - t0
+                    rate    = (i + 1) / elapsed if elapsed > 0 else 0
+                    eta     = (n_run - i - 1) / rate if rate > 0 else 0
+                    print(
+                        f"[step15-cal] {i+1}/{n_run} | "
+                        f"ok={n_ok} err={n_err} cached={n_hit} | "
+                        f"elapsed={elapsed:.0f}s ETA={eta:.0f}s"
+                    )
+
+                # --- Cache hit ---
+                if ck in cache and safe_str(cache[ck].get("run_signature")) == sig:
+                    cached = cache[ck]
+                    out_row: dict = {"doi": doi, "filename": filename}
+                    for field in CODING_SCHEMA:
+                        out_row[field] = cached.get(f"{field}_value", "")
+                    out_row["coder_id"] = coder_id
+                    out_row["notes"]    = cached.get("_cal_note", "")
+                    rows.append(out_row)
+                    n_hit += 1
+                    continue
+
+                # --- Find full-text file ---
+                file_path = pdfs_dir / filename
+                text, note = extract_text(file_path, FULLTEXT_MAX_CHARS)
+                if not text.strip() and (ft_fallback / filename).exists():
+                    text, note = extract_text(ft_fallback / filename, FULLTEXT_MAX_CHARS)
+                    note = f"fallback:{note}" if note else "fallback"
+
+                coding_source = SOURCE_FULL_TEXT if text.strip() else SOURCE_NEEDS_MANUAL
+
+                # --- LLM call (or skip if no text) ---
+                if text.strip():
+                    llm_resp = call_ollama(
+                        session,
+                        title=doi,
+                        text=text,
+                        coding_source=coding_source,
+                        system_prompt=system_prompt,
+                        model=model,
+                    )
+                    coded, parse_ok = _parse_response(llm_resp)
+                    if parse_ok:
+                        n_ok += 1
+                    else:
+                        n_err += 1
+                        note = (note + " parse_error").strip()
+                else:
+                    coded, parse_ok = {}, False
+                    n_err += 1
+                    note = (note or "no_text").strip()
+
+                flat = flatten_coded(coded, parse_ok, coding_source)
+
+                # Build cache record
+                rec: dict = {
+                    "run_signature": sig,
+                    "timestamp_utc": _now_utc(),
+                    "cache_key":     ck,
+                    "doi":           doi,
+                    "filename":      filename,
+                    "_cal_note":     note,
+                    **flat,
+                }
+                cache[ck] = rec
+                jf.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+                # Build output row (coding-sheet format)
+                out_row = {"doi": doi, "filename": filename}
+                for field in CODING_SCHEMA:
+                    out_row[field] = flat.get(f"{field}_value", "")
+                out_row["coder_id"] = coder_id
+                out_row["notes"]    = note
+                rows.append(out_row)
+
+    # Write coding sheet CSV
+    cols = ["doi", "filename"] + list(CODING_SCHEMA.keys()) + ["coder_id", "notes"]
+    out_df = pd.DataFrame(rows, columns=cols)
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    out_df.to_csv(out_csv, index=False)
+
+    elapsed = time.time() - t0
+    print(
+        f"[step15-cal] Done in {time.strftime('%H:%M:%S', time.gmtime(elapsed))} | "
+        f"ok={n_ok} err={n_err} cached={n_hit} | output={out_csv}"
+    )
+    return {"rows": len(out_df), "ok": n_ok, "err": n_err, "cached": n_hit,
+            "elapsed_seconds": round(elapsed, 1)}
+
+
 if __name__ == "__main__":
-    run({"out_dir": str(_here / "outputs")})
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Step 15 — data extraction")
+    ap.add_argument(
+        "--round-template",
+        metavar="CSV",
+        help="Calibration-round template CSV (e.g. coding_ft_r1a_XX.csv). "
+             "Runs calibration mode instead of full-corpus mode.",
+    )
+    ap.add_argument(
+        "--pdfs-dir",
+        metavar="DIR",
+        help="Folder containing PDFs/HTMLs for the calibration round. "
+             "Defaults to '<template-dir>/<round> pdfs/' if omitted.",
+    )
+    ap.add_argument(
+        "--out-csv",
+        metavar="CSV",
+        help="Output CSV path. Defaults to coding_ft_r1a_LLM.csv next to template.",
+    )
+    ap.add_argument(
+        "--model",
+        default=DEFAULT_MODEL,
+        help=f"Ollama model (default: {DEFAULT_MODEL})",
+    )
+    ap.add_argument(
+        "--criteria-yml",
+        metavar="YML",
+        help="Criteria YAML file (default: criteria_sysmap_v1.yml)",
+    )
+    ap.add_argument(
+        "--run-limit",
+        type=int,
+        metavar="N",
+        help="Process only first N papers (for testing)",
+    )
+    args = ap.parse_args()
+
+    if args.round_template:
+        tmpl_path = Path(args.round_template).resolve()
+
+        # Infer round label from template name (e.g. coding_ft_r1a_XX -> FT-R1a)
+        stem = tmpl_path.stem  # e.g. coding_ft_r1a_XX
+        # Extract round identifier: ft_r1a → FT-R1a
+        m = re.search(r"ft_r(\d+[a-z]?)", stem, re.IGNORECASE)
+        round_label = f"FT-R{m.group(1).upper()}" if m else "FT"
+
+        if args.pdfs_dir:
+            pdfs = Path(args.pdfs_dir).resolve()
+        else:
+            pdfs = tmpl_path.parent / f"{round_label} pdfs"
+
+        if args.out_csv:
+            out = Path(args.out_csv).resolve()
+        else:
+            new_stem = stem.replace("_XX", "_LLM").replace("_xx", "_LLM")
+            out = tmpl_path.parent / (new_stem + ".csv")
+
+        crit = Path(args.criteria_yml).resolve() if args.criteria_yml else None
+
+        run_calibration_round(
+            tmpl_path,
+            pdfs,
+            out,
+            model=args.model,
+            criteria_path=crit,
+            run_limit=args.run_limit,
+        )
+    else:
+        run({"out_dir": str(_here / "outputs")})

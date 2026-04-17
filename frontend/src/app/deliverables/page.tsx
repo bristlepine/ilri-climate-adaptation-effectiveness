@@ -14,13 +14,13 @@ const statusConfig: Record<DeliverableStatus, { label: string; classes: string }
 };
 
 const cardImages: Record<string, string> = {
-  D1:  '/images/data.jpg',
+  D1:  '/images/dashboard.jpg',
   D2:  '/images/adaptation.jpg',
   D3:  '/images/resilience.jpg',
   D4:  '/images/climate.jpg',
-  D5:  '/images/market.jpg',
-  D6:  '/images/cassava.jpg',
-  D7:  '/images/ag.jpg',
+  D5:  '/images/pacific.jpg',
+  D6:  '/images/morocco.jpg',
+  D7:  '/images/urban.jpg',
   D8:  '/images/network.png',
   D9:  '/images/winwin.jpg',
   D10: '/images/pexels-tomfisk-3145153.jpg',
