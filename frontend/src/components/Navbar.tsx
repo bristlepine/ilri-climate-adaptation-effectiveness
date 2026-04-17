@@ -13,6 +13,7 @@ const links: { name: string; href: string }[] = [
   { name: 'Deliverables', href: '/deliverables' },
   { name: 'Systematic Map', href: '/systematic-map' },
   { name: 'Systematic Review', href: '/systematic-review' },
+  { name: 'Methodology', href: '/methodology' },
 ];
 
 export default function Navbar() {
