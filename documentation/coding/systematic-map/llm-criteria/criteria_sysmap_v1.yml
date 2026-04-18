@@ -65,9 +65,9 @@ fields:
       livestock = pastoralists, agropastoralists, dairy/beef farmers.
       fisheries_aquaculture = artisanal fishing, small-scale aquaculture.
       agroforestry = tree crop farmers, silvopastoral systems.
-      mixed = explicitly mixed crop-livestock systems, or generic 'smallholder farmers'
-              with no further specification of system type.
-    valid_values: "crop | livestock | fisheries_aquaculture | agroforestry | mixed"
+      mixed = explicitly mixed crop-livestock systems.
+      undefined = generic 'smallholder farmers' with no further specification of system type.
+    valid_values: "crop | livestock | fisheries_aquaculture | agroforestry | mixed | undefined"
 
   marginalized_subpopulations:
     name: "Marginalized Subpopulations"
@@ -76,7 +76,7 @@ fields:
       Code only what is explicitly stated — do not infer from context.
       Select all that apply, separated by semicolons.
       none_reported = no marginalized groups mentioned anywhere in the paper.
-    valid_values: "women | youth | landless | indigenous_peoples | ethnic_minorities | migrant_seasonal_workers | other | none_reported"
+    valid_values: "women | youth | people_with_disabilities | landless | indigenous_peoples | ethnic_minorities | migrant_seasonal_workers | other | none_reported"
 
   adaptation_focus:
     name: "Adaptation Focus"
@@ -86,7 +86,7 @@ fields:
       about in 5-15 words. Be specific enough to be useful, brief enough to scan.
       Include both the adaptation type and the domain if relevant.
       Do not use vague terms like 'climate change adaptation' alone.
-    valid_values: "free text e.g. 'drought-tolerant maize varieties' or 'seasonal climate forecasts for smallholder decision-making' or 'index-based livestock insurance'"
+    valid_values: "free text e.g. 'crop management practices' or 'water management and irrigation' or 'climate information and advisory services' or 'livelihood diversification (non-farm)'"
 
   domain_type:
     name: "Domain Type"
@@ -135,14 +135,16 @@ fields:
   methodological_approach:
     name: "Methodological Approach"
     extract: >
-      Primary methodological design of the study. Choose one.
+      Methodological design of the study. Select all that apply, separated by semicolons.
       qualitative = interviews, focus groups, ethnography, document analysis only.
       quantitative = surveys, trials, observational data, statistical analysis.
-      mixed_methods = explicit combination of qualitative and quantitative.
       participatory = PRA, participatory mapping, photovoice, farmer-led trials —
-                     only when participation IS the primary design, not when farmers are surveyed.
+                     only when participation IS the primary design, not when farmers are merely surveyed.
       modeling_with_empirical_validation = crop/climate/agent-based models validated with field data.
-    valid_values: "qualitative | quantitative | mixed_methods | participatory | modeling_with_empirical_validation"
+      experimental = RCTs, natural experiments, quasi-experimental approaches;
+                    purely lab or field experiments without social application excluded.
+      For explicitly mixed-methods studies: select both qualitative and quantitative.
+    valid_values: "qualitative | quantitative | participatory | modeling_with_empirical_validation | experimental"
 
   purpose_of_assessment:
     name: "Purpose of Assessment"
@@ -164,7 +166,7 @@ fields:
       remote_sensing = satellite imagery, drone data, remote sensing products.
       participatory_methods = PRA, FGDs, key informant interviews, participatory mapping.
       secondary_data = existing datasets, meta-analysis inputs, systematic review data.
-    valid_values: "surveys | administrative_data | remote_sensing | participatory_methods | secondary_data"
+    valid_values: "surveys | administrative_data | remote_sensing | participatory_methods | secondary_data | other"
 
   temporal_coverage:
     name: "Temporal Coverage"
@@ -172,8 +174,9 @@ fields:
       Time horizon of data collection.
       cross_sectional = single point in time or single season.
       seasonal = tracks across one or a few seasons (intra-annual).
-      longitudinal = multi-year data, panel data, repeated measures across years.
-    valid_values: "cross_sectional | seasonal | longitudinal"
+      longitudinal = multi-year data, panel data, repeated measures with the same individuals.
+      repeated_cross_sectional = multi-year repeated measures with different individuals/units each time.
+    valid_values: "cross_sectional | seasonal | longitudinal | repeated_cross_sectional"
 
   cost_data_reported:
     name: "Cost Data Reported"

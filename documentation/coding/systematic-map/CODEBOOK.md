@@ -19,7 +19,7 @@ Everything is on Google Drive — no GitHub or local setup needed.
 
 **Rules while coding:**
 - Fill in `coder_id` with your initials — same initials every row
-- Code independently — no discussion with the other coder until reconciliation
+- Code independently — no discussion with the other coder until review
 - If a field is genuinely not reported: leave blank or enter `not_reported`
 - If unsure: make your best judgement and add a note in the `notes` column
 - Do not look at the other coder's sheet
@@ -80,17 +80,19 @@ Country or countries where the study was conducted. Use region label only if no 
 
 ### 5. `producer_type`
 Select all that apply, semicolons between multiple values.
-**Valid values:** `crop` | `livestock` | `fisheries_aquaculture` | `agroforestry` | `mixed`
-- `mixed` — explicitly mixed crop-livestock, or generic "smallholder farmers" with no system specified
+**Valid values:** `crop` | `livestock` | `fisheries_aquaculture` | `agroforestry` | `mixed` | `undefined`
+- `mixed` — explicitly mixed crop-livestock
+- `undefined` — generic "smallholder farmers" with no further system specified
 
 ---
 
 ### 6. `marginalized_subpopulations`
 Code only what is explicitly stated — do not infer. Select all that apply.
-**Valid values:** `women` | `youth` | `landless` | `indigenous_peoples` | `ethnic_minorities` | `migrant_seasonal_workers` | `other` | `none_reported`
+**Valid values:** `women` | `youth` | `people_with_disabilities` | `landless` | `indigenous_peoples` | `ethnic_minorities` | `migrant_seasonal_workers` | `other` | `none_reported`
 
 - `women` — women explicitly targeted or gender-disaggregated analysis
 - `youth` — young farmers or age-disaggregated outcomes
+- `people_with_disabilities` — persons with disabilities explicitly named
 - `landless` — landless households or tenure-insecure groups
 - `indigenous_peoples` — Indigenous communities named
 - `ethnic_minorities` — ethnic minority groups named
@@ -103,7 +105,7 @@ Code only what is explicitly stated — do not infer. Select all that apply.
 ### 7. `adaptation_focus` ⚠ *free text — emergent*
 The specific climate adaptation action, intervention, or practice the study tracks. 5–15 words.
 
-**Examples:** `drought-tolerant maize varieties` | `seasonal climate forecasts for farmer decision-making` | `index-based livestock insurance` | `farmer field schools for climate-resilient agriculture`
+**Examples:** `crop management practices` | `crop varieties and genetics` | `water management and irrigation` | `soil and land management` | `agroforestry` | `livestock management` | `livelihood diversification (non-farm)` | `financial strategies` | `climate information and advisory services` | `migration and mobility` | `social and community networking` | `post-harvest and consumption adjustments`
 
 ---
 
@@ -137,7 +139,7 @@ Select all that apply, semicolons between multiple values.
 
 ---
 
-### 10. `indicators_measured` ⚠ *free text — emergent*
+### 10. `indicators_measured` ⚠ *free text*
 The specific indicators or metrics used. Extract actual indicators from methods/results. Include units.
 
 **Examples:** `yield (t/ha), income (USD/season), food security score (HFIAS)` | `adoption rate (%), area under improved variety (ha)`
@@ -145,9 +147,12 @@ The specific indicators or metrics used. Extract actual indicators from methods/
 ---
 
 ### 11. `methodological_approach`
-**Valid values:** `qualitative` | `quantitative` | `mixed_methods` | `participatory` | `modeling_with_empirical_validation`
+Select all that apply, semicolons between multiple values.
+**Valid values:** `qualitative` | `quantitative` | `participatory` | `modeling_with_empirical_validation` | `experimental`
 - `participatory` — only when participation IS the primary design (PRA, photovoice), not when farmers are merely surveyed
 - `modeling_with_empirical_validation` — crop/climate/agent-based models validated with field data
+- `experimental` — Randomised Controlled Trials (RCTs), natural experiments, quasi-experimental approaches; purely lab or field experiments without social application should not be included
+- For explicitly mixed-methods studies: select both `qualitative` and `quantitative`
 
 ---
 
@@ -161,15 +166,16 @@ The specific indicators or metrics used. Extract actual indicators from methods/
 
 ### 13. `data_sources`
 Select all that apply.
-**Valid values:** `surveys` | `administrative_data` | `remote_sensing` | `participatory_methods` | `secondary_data`
+**Valid values:** `surveys` | `administrative_data` | `remote_sensing` | `participatory_methods` | `secondary_data` | `other`
 
 ---
 
 ### 14. `temporal_coverage`
-**Valid values:** `cross_sectional` | `seasonal` | `longitudinal`
+**Valid values:** `cross_sectional` | `seasonal` | `longitudinal` | `repeated_cross_sectional`
 - `cross_sectional` — single point in time or single season
 - `seasonal` — intra-annual, across one or a few seasons
-- `longitudinal` — multi-year, panel data, repeated measures
+- `longitudinal` — multi-year, panel data, repeated measures with the same individuals
+- `repeated_cross_sectional` — multi-year, repeated measures with different individuals/units each time
 
 ---
 
@@ -199,14 +205,18 @@ Notes on methodological robustness that affect how much weight this study carrie
 
 ## Reconciliation (Step 2)
 
-After both coders finish independently:
+**Initial round (FT-R1a, 5 papers) — full reconciliation:**
 
 1. Open both sheets side by side
 2. For each paper and each field:
-   - Agree → enter that value in `reconciled.csv`
+   - Agree → enter that value in `reconciled_ft_r1a.csv`
    - Disagree → discuss until you reach agreement, then enter it
 3. Record the reason for any substantive disagreement in `reconciliation_notes`
 4. Cannot agree → escalate to lead researcher
+
+**Subsequent rounds — random subset spot-checks:**
+
+The LLM codes the full corpus. Human coders independently code a random subset from each batch — no H-H reconciliation required, as coding is designed to be objective. Human codes serve as spot-checks against the LLM's full-corpus output. Agreement rate between human and LLM across subsets is the ongoing quality signal. Subset size agreed before each round.
 
 Do not average numeric fields — always discuss to a single agreed value.
 
@@ -237,7 +247,7 @@ python scripts/step11_irr_analysis.py \
 
 **Threshold to lock a closed field: κ ≥ 0.60 AND sensitivity ≥ 0.80 in the same batch.**
 
-### Emergent fields (`adaptation_focus`, `indicators_measured`)
+### Emergent field (`adaptation_focus`)
 Tracked by category saturation, not kappa. Saturated when no new codes appear across two consecutive batches.
 
 ---
@@ -245,8 +255,8 @@ Tracked by category saturation, not kappa. Saturated when no new codes appear ac
 ## Stopping rules
 
 - **Closed fields** — locked once κ ≥ 0.60 AND sensitivity ≥ 0.80 in the same batch. Locked fields are not retested.
-- **Emergent fields** — saturated when no new codes appear across two consecutive batches.
-- **Full corpus run** — proceed to step15 once all closed fields are locked AND both emergent fields are saturated. Expected: 3–4 rounds (300–400 papers).
+- **Emergent field** — `adaptation_focus` saturated when no new codes appear across two consecutive batches.
+- **Full corpus run** — proceed to step15 once all closed fields are locked AND `adaptation_focus` is saturated.
 
 ---
 
@@ -329,7 +339,7 @@ documentation/coding/systematic-map/
     │   └── irr_ft_r1a.json           ← kappa, sensitivity, field-level stats (generated)
     │   [on Drive only: coding_ft_r1a_CS.csv, coding_ft_r1a_JD.csv, coding_ft_r1a_LLM.csv]
     ├── FT-R1b/                       ← LLM re-code only (same papers as R1a)
-    ├── FT-R2a/                 ← next 100 papers
+    ├── FT-R2a/                 ← next batch
     └── ...
 
 documentation/coding/abstract-screening/
@@ -356,16 +366,16 @@ documentation/coding/abstract-screening/
 |-------|--------|
 | `publication_type` | journal_article, report, working_paper, thesis, other |
 | `geographic_scale` | local, sub-national, national, multi-country, regional |
-| `producer_type` | crop, livestock, fisheries_aquaculture, agroforestry, mixed |
-| `marginalized_subpopulations` | women, youth, landless, indigenous_peoples, ethnic_minorities, migrant_seasonal_workers, other, none_reported |
+| `producer_type` | crop, livestock, fisheries_aquaculture, agroforestry, mixed, undefined |
+| `marginalized_subpopulations` | women, youth, people_with_disabilities, landless, indigenous_peoples, ethnic_minorities, migrant_seasonal_workers, other, none_reported |
 | `adaptation_focus` | **free text** |
 | `domain_type` | adaptation_process, adaptation_outcome, both |
 | `process_outcome_domains` | knowledge_awareness_learning, decision_making_planning, uptake_adoption, behavioral_change, participation_coproduction, institutional_governance, access_information_services, yields_productivity, income_assets, livelihoods, wellbeing, risk_reduction, resilience_adaptive_capacity |
 | `indicators_measured` | **free text** |
-| `methodological_approach` | qualitative, quantitative, mixed_methods, participatory, modeling_with_empirical_validation |
+| `methodological_approach` | qualitative, quantitative, participatory, modeling_with_empirical_validation, experimental |
 | `purpose_of_assessment` | project_learning, program_evaluation, donor_reporting, national_reporting, research |
-| `data_sources` | surveys, administrative_data, remote_sensing, participatory_methods, secondary_data |
-| `temporal_coverage` | cross_sectional, seasonal, longitudinal |
+| `data_sources` | surveys, administrative_data, remote_sensing, participatory_methods, secondary_data, other |
+| `temporal_coverage` | cross_sectional, seasonal, longitudinal, repeated_cross_sectional |
 | `cost_data_reported` | yes, no |
 | `strengths_and_limitations` | **free text** (Strength: ... / Limitation: ...) |
 | `lessons_learned` | **free text** |
