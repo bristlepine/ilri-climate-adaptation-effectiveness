@@ -214,11 +214,11 @@ Notes on methodological robustness that affect how much weight this study carrie
 3. Record the reason for any substantive disagreement in `reconciliation_notes`
 4. Cannot agree → escalate to lead researcher
 
-**Subsequent rounds — random subset spot-checks:**
-
-The LLM codes the full corpus. Human coders independently code a random subset from each batch — no H-H reconciliation required, as coding is designed to be objective. Human codes serve as spot-checks against the LLM's full-corpus output. Agreement rate between human and LLM across subsets is the ongoing quality signal. Subset size agreed before each round.
-
 Do not average numeric fields — always discuss to a single agreed value.
+
+**Subsequent rounds — random subset convergence:**
+
+Each coder independently codes their assigned papers. After each round, a random subset is compared across coders to check agreement. The goal is convergence — when agreement is stable across two consecutive subsets, coding is considered consistent. Subset size agreed with the lead researcher before each round.
 
 ---
 
@@ -301,26 +301,6 @@ Step 6 — Check stopping rules
 
 ---
 
-## LLM criteria tracking
-
-After each round's reconciliation, the LLM extraction prompt is updated and versioned — analogous to how the abstract screening criteria evolved across calibration rounds.
-
-```
-documentation/coding/systematic-map/llm-criteria/
-├── criteria_sysmap_v1.yml     ← loaded by step15; used in FT-R1a
-├── criteria_sysmap_v1.md      ← human-readable companion
-├── criteria_v2.yml     ← updated after FT-R1a reconciliation; used in FT-R1b and FT-R2a
-└── CHANGELOG.md        ← one line per version: round, date, what changed and why
-```
-
-**To update after a round:**
-1. Review fields where LLM underperformed (κ < 0.60 or sensitivity < 0.80)
-2. Copy `criteria_vN.yml` → `criteria_v(N+1).yml`
-3. Add `r1_further_guidance:` (or `r2_`, etc.) to any field that needed clarification
-4. Add one line to `CHANGELOG.md`
-5. Update `step15_criteria_yml` in `config.py` to point to the new file
-
----
 
 ## Folder structure
 
@@ -350,11 +330,10 @@ documentation/coding/abstract-screening/
 
 ## Round log
 
-| Round | Papers | Date | H-H κ | LLM sensitivity | Status |
-|-------|--------|------|--------|-----------------|--------|
-| FT-R1a | 5 | — | — | — | ⏳ In progress |
-| FT-R1b | same 5 | — | — | — | — Not started |
-| FT-R2a | 5 | — | — | — | — Not started |
+| Round | Papers | Date | κ (subset) | Status |
+|-------|--------|------|------------|--------|
+| FT-R1a | 5 | — | — | ⏳ In progress |
+| FT-R2a | 5 | — | — | — Not started |
 
 *Update after each round's IRR run.*
 
@@ -380,3 +359,13 @@ documentation/coding/abstract-screening/
 | `strengths_and_limitations` | **free text** (Strength: ... / Limitation: ...) |
 | `lessons_learned` | **free text** |
 | `validity_notes` | **free text** |
+
+---
+
+## Note for lead researcher — LLM parallel workflow
+
+In addition to the human coding rounds described above, a large-language model (LLM) independently codes the full corpus using the same schema (`llm-criteria/criteria_sysmap_v1.yml`). This runs in the background and is invisible to human coders.
+
+The LLM output serves as a secondary quality signal: after each human round, agreement rates between human codes and LLM codes are computed alongside inter-rater statistics. This does **not** replace human reconciliation — it supplements it. Human agreement on the random subset remains the primary stopping criterion.
+
+LLM criteria are versioned (`criteria_sysmap_v1.yml`, `criteria_v2.yml`, …) and updated after each round's review. Changes are logged in `llm-criteria/CHANGELOG.md`.
