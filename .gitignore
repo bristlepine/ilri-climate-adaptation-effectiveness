@@ -90,9 +90,7 @@ scripts/results/
 # -------------------------------
 # Contracts / HR documents (sensitive, not versioned)
 # -------------------------------
-documentation/coding/systematic-map/ILRI01_*.pdf
-documentation/coding/systematic-map/ILRI01_*.docx
-documentation/coding/systematic-map/template_subcontract.docx
+documentation/coding/systematic-map/contracts/
 
 # -------------------------------
 # Temporary
