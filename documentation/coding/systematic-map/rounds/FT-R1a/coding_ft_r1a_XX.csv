@@ -1,6 +1,6 @@
-doi,filename,publication_year,publication_type,country_region,geographic_scale,producer_type,marginalized_subpopulations,adaptation_focus,domain_type,process_outcome_domains,indicators_measured,methodological_approach,purpose_of_assessment,data_sources,temporal_coverage,cost_data_reported,strengths_and_limitations,lessons_learned,validity_notes,coder_id,notes
-10.1016/j.agee.2019.04.004,doi_10.1016_j.agee.2019.04.004.pdf,,,,,,,,,,,,,,,,,,,,
-10.1016/j.crm.2017.06.001,doi_10.1016_j.crm.2017.06.001.pdf,,,,,,,,,,,,,,,,,,,,
-10.1016/j.crm.2017.03.001,doi_10.1016_j.crm.2017.03.001.pdf,,,,,,,,,,,,,,,,,,,,
-10.1007/s10584-016-1792-0,doi_10.1007_s10584-016-1792-0.pdf,,,,,,,,,,,,,,,,,,,,
-10.1080/17565529.2017.1411240,doi_10.1080_17565529.2017.1411240.pdf,,,,,,,,,,,,,,,,,,,,
+doi,filename,publication_year,publication_type,country_region,geographic_scale,producer_type,marginalized_subpopulations,adaptation_focus,process_outcome_domains,indicators_measured,methodological_approach,purpose_of_assessment,data_sources,temporal_coverage,cost_data_reported,strengths_and_limitations,lessons_learned,coder_id,notes
+10.1016/j.agee.2019.04.004,doi_10.1016_j.agee.2019.04.004.pdf,,,,,,,,,,,,,,,,,,
+10.1016/j.crm.2017.06.001,doi_10.1016_j.crm.2017.06.001.pdf,,,,,,,,,,,,,,,,,,
+10.1016/j.crm.2017.03.001,doi_10.1016_j.crm.2017.03.001.pdf,,,,,,,,,,,,,,,,,,
+10.1007/s10584-016-1792-0,doi_10.1007_s10584-016-1792-0.pdf,,,,,,,,,,,,,,,,,,
+10.1080/17565529.2017.1411240,doi_10.1080_17565529.2017.1411240.pdf,,,,,,,,,,,,,,,,,,

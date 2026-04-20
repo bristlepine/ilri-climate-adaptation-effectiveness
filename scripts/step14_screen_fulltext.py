@@ -516,6 +516,16 @@ def load_inputs(out_root: Path) -> pd.DataFrame:
 
     merged["ft_file_path"] = merged["ft_file_path"].apply(safe_str)
 
+    # Validate that recorded file paths actually exist — step13 occasionally records
+    # a corrupt path (e.g. doi_10.pdf) for papers that failed to download (HTTP 403 etc).
+    # Clear any path that doesn't resolve to a real file so step14 treats them correctly.
+    def _validate_path(fp):
+        if not fp:
+            return ""
+        from pathlib import Path as _P
+        return fp if _P(fp).exists() else ""
+    merged["ft_file_path"] = merged["ft_file_path"].apply(_validate_path)
+
     n_with = (merged["ft_file_path"] != "").sum()
     n_without = (merged["ft_file_path"] == "").sum()
     print(f"[step14] Full texts available: {n_with:,}  |  No full text: {n_without:,}")
@@ -859,4 +869,10 @@ def run(config: dict) -> dict:
 
 if __name__ == "__main__":
     here = Path(__file__).resolve().parent
-    run({"out_dir": str(here / "outputs")})
+    try:
+        import config as _cfg
+        _run_cfg = {k: getattr(_cfg, k) for k in dir(_cfg) if not k.startswith("_")}
+    except ImportError:
+        _run_cfg = {}
+    _run_cfg.setdefault("out_dir", str(here / "outputs"))
+    run(_run_cfg)

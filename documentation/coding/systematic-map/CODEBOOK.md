@@ -15,7 +15,7 @@ Everything is on Google Drive — no GitHub or local setup needed.
 
 1. **Get your papers** — open the `FT-R1a pdfs` subfolder in the Drive link above
 2. **Open the coding sheet** — download `coding_ft_r1a_XX.csv`, save a copy as `coding_ft_r1a_INITIALS.csv` (e.g. `coding_ft_r1a_CS.csv`), and upload your completed file back to the same Drive folder
-3. **Code each paper** using the schema below — one row per paper, all 18 fields — save regularly
+3. **Code each paper** using the schema below — one row per paper, all 16 fields — save regularly
 
 **Rules while coding:**
 - Fill in `coder_id` with your initials — same initials every row
@@ -28,17 +28,17 @@ Everything is on Google Drive — no GitHub or local setup needed.
 ```
 doi, filename,
 publication_year, publication_type, country_region, geographic_scale,
-producer_type, marginalized_subpopulations, adaptation_focus, domain_type,
+producer_type, marginalized_subpopulations, adaptation_focus,
 process_outcome_domains, indicators_measured, methodological_approach,
 purpose_of_assessment, data_sources, temporal_coverage, cost_data_reported,
-strengths_and_limitations, lessons_learned, validity_notes,
+strengths_and_limitations, lessons_learned,
 coder_id, notes
 ```
 The first two columns (`doi`, `filename`) are pre-filled. Fill the rest.
 
 ---
 
-## The 18 coding fields
+## The 16 coding fields
 
 Use this as your reference while coding. Valid values must be used exactly as written (except free-text fields, marked ⚠).
 
@@ -109,16 +109,7 @@ The specific climate adaptation action, intervention, or practice the study trac
 
 ---
 
-### 8. `domain_type`
-**Valid values:** `adaptation_process` | `adaptation_outcome` | `both`
-- **Process** — measures *how* farmers adopt, learn, participate (steps toward adaptation)
-- **Outcome** — measures *what happened* (yields, income, wellbeing, resilience)
-- **Both** — tracks both a process and its outcome in the same study
-- Decision rule: adoption rate only → `adaptation_process`; yield impact only → `adaptation_outcome`
-
----
-
-### 9. `process_outcome_domains`
+### 8. `process_outcome_domains`
 Select all that apply, semicolons between multiple values.
 
 | Code | Meaning |
@@ -139,14 +130,14 @@ Select all that apply, semicolons between multiple values.
 
 ---
 
-### 10. `indicators_measured` ⚠ *free text*
+### 9. `indicators_measured` ⚠ *free text*
 The specific indicators or metrics used. Extract actual indicators from methods/results. Include units.
 
 **Examples:** `yield (t/ha), income (USD/season), food security score (HFIAS)` | `adoption rate (%), area under improved variety (ha)`
 
 ---
 
-### 11. `methodological_approach`
+### 10. `methodological_approach`
 Select all that apply, semicolons between multiple values.
 **Valid values:** `qualitative` | `quantitative` | `participatory` | `modeling_with_empirical_validation` | `experimental`
 - `participatory` — only when participation IS the primary design (PRA, photovoice), not when farmers are merely surveyed
@@ -156,7 +147,7 @@ Select all that apply, semicolons between multiple values.
 
 ---
 
-### 12. `purpose_of_assessment`
+### 11. `purpose_of_assessment`
 **Valid values:** `project_learning` | `program_evaluation` | `donor_reporting` | `national_reporting` | `research`
 - `research` — academic study with no programme affiliation
 - `project_learning` — M&E embedded in an ongoing project
@@ -164,13 +155,13 @@ Select all that apply, semicolons between multiple values.
 
 ---
 
-### 13. `data_sources`
+### 12. `data_sources`
 Select all that apply.
 **Valid values:** `surveys` | `administrative_data` | `remote_sensing` | `participatory_methods` | `secondary_data` | `other`
 
 ---
 
-### 14. `temporal_coverage`
+### 13. `temporal_coverage`
 **Valid values:** `cross_sectional` | `seasonal` | `longitudinal` | `repeated_cross_sectional`
 - `cross_sectional` — single point in time or single season
 - `seasonal` — intra-annual, across one or a few seasons
@@ -179,13 +170,13 @@ Select all that apply.
 
 ---
 
-### 15. `cost_data_reported`
+### 14. `cost_data_reported`
 **Valid values:** `yes` | `no`
 Code `yes` only if the paper explicitly reports cost figures or cost-effectiveness ratios. Qualitative mention of "limited resources" = `no`.
 
 ---
 
-### 16. `strengths_and_limitations` ⚠ *free text*
+### 15. `strengths_and_limitations` ⚠ *free text*
 Author-reported strengths and limitations combined (protocol Table 3). Label each component.
 
 **Format:** `Strength: <text>. Limitation: <text>.`
@@ -193,13 +184,8 @@ Look in Discussion, Conclusion, and Limitations sections. Extract verbatim where
 
 ---
 
-### 17. `lessons_learned` ⚠ *free text*
+### 16. `lessons_learned` ⚠ *free text*
 Key lessons or recommendations the authors report. 1–3 sentences. Focus on what they say should be done differently — not findings. Enter `not_reported` if absent.
-
----
-
-### 18. `validity_notes` ⚠ *free text*
-Notes on methodological robustness that affect how much weight this study carries. Flag: small sample (n < 30), single site, self-reported outcomes, short follow-up, no control group, attrition not reported. Enter `none_flagged` if no concerns.
 
 ---
 
@@ -348,7 +334,6 @@ documentation/coding/abstract-screening/
 | `producer_type` | crop, livestock, fisheries_aquaculture, agroforestry, mixed, undefined |
 | `marginalized_subpopulations` | women, youth, people_with_disabilities, landless, indigenous_peoples, ethnic_minorities, migrant_seasonal_workers, other, none_reported |
 | `adaptation_focus` | **free text** |
-| `domain_type` | adaptation_process, adaptation_outcome, both |
 | `process_outcome_domains` | knowledge_awareness_learning, decision_making_planning, uptake_adoption, behavioral_change, participation_coproduction, institutional_governance, access_information_services, yields_productivity, income_assets, livelihoods, wellbeing, risk_reduction, resilience_adaptive_capacity |
 | `indicators_measured` | **free text** |
 | `methodological_approach` | qualitative, quantitative, participatory, modeling_with_empirical_validation, experimental |
@@ -358,7 +343,6 @@ documentation/coding/abstract-screening/
 | `cost_data_reported` | yes, no |
 | `strengths_and_limitations` | **free text** (Strength: ... / Limitation: ...) |
 | `lessons_learned` | **free text** |
-| `validity_notes` | **free text** |
 
 ---
 

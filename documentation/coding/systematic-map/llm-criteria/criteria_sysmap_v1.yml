@@ -88,20 +88,6 @@ fields:
       Do not use vague terms like 'climate change adaptation' alone.
     valid_values: "free text e.g. 'crop management practices' or 'water management and irrigation' or 'climate information and advisory services' or 'livelihood diversification (non-farm)'"
 
-  domain_type:
-    name: "Domain Type"
-    extract: >
-      Whether the study assesses adaptation PROCESSES, OUTCOMES, or BOTH.
-      PROCESS = the study measures whether/how farmers adopt, learn, participate,
-                or engage with adaptation (the steps toward adaptation).
-      OUTCOME = the study measures what happened as a result of adaptation
-                (yields, income, wellbeing, resilience, risk reduction).
-      BOTH = the study tracks both a process (e.g. adoption rate) and an outcome
-             (e.g. yield change from adopting a practice).
-      Decision rule: adoption rate only → adaptation_process. Yield impact only →
-      adaptation_outcome. Both measured in the same study → both.
-    valid_values: "adaptation_process | adaptation_outcome | both"
-
   process_outcome_domains:
     name: "Process and Outcome Domains Assessed"
     extract: >
@@ -205,12 +191,3 @@ fields:
       If no lessons or recommendations are stated, enter 'not_reported'.
     valid_values: "free text"
 
-  validity_notes:
-    name: "Validity-Related Notes"
-    extract: >
-      Notes relevant to internal or external validity that affect how much weight this study
-      carries in the synthesis (protocol §5 — basic methodological robustness indicators).
-      Flag any of: small sample (n < 30), single-site study, self-reported outcomes,
-      short follow-up (< 1 season), no control or comparison group, attrition not reported.
-      If no validity concerns are apparent, enter 'none_flagged'.
-    valid_values: "free text"
