@@ -2,14 +2,15 @@
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import PlotlyChart from "@/components/PlotlyChart";
 import { ExternalLink } from "lucide-react";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const pipelineStats = [
-  { value: '17,021', label: 'Records screened' },
+  { value: '32,200', label: 'Records retrieved (2 databases)' },
+  { value: '21,704', label: 'Unique after deduplication' },
   { value: '0.966', label: 'Sensitivity (R2b)' },
-  { value: 'κ = 0.720', label: 'LLM–human agreement' },
   { value: '6 rounds', label: 'Calibration iterations' },
 ];
 
@@ -206,8 +207,50 @@ export default function MethodologyPage() {
         </div>
       </section>
 
-      {/* Key innovations */}
+      {/* Multi-database search & deduplication */}
       <section className="bg-sand px-6 py-16">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeading
+            label="Database search"
+            title="Multi-database search & deduplication"
+            subtitle="Records retrieved from Scopus and Web of Science, deduplicated by DOI exact match, then title+year exact match, then fuzzy Jaccard similarity ≥ 0.85."
+          />
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            {[
+              { value: '17,021', label: 'Scopus records', color: 'bg-blue-600' },
+              { value: '15,179', label: 'Web of Science records', color: 'bg-green-600' },
+              { value: '10,496', label: 'Duplicates removed', color: 'bg-red-500' },
+              { value: '21,704', label: 'Unique records', color: 'bg-purple-600' },
+              { value: '6,218', label: 'Scopus: included', color: 'bg-teal-500' },
+              { value: '3,570', label: 'Full texts retrieved', color: 'bg-orange-500' },
+            ].map(s => (
+              <div key={s.label} className="rounded-xl bg-white border border-gray-100 p-4 flex items-center gap-3">
+                <div className={`w-2 h-10 rounded-full shrink-0 ${s.color}`} />
+                <div>
+                  <p className="text-xl font-logo font-bold text-charcoal">{s.value}</p>
+                  <p className="text-xs font-tagline text-gray-500 leading-tight">{s.label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+            <PlotlyChart
+              src="/map/data/db_summary.json"
+              fallbackImg="/map/db_summary.png"
+              pngSrc="/map/db_summary.png"
+              csvSrc="/map/data/db_summary.csv"
+              height={500}
+            />
+          </div>
+          <p className="mt-3 text-xs font-tagline text-gray-400">
+            Deduplication: DOI exact match (10,234) · title+year exact match (253) · fuzzy Jaccard ≥ 0.85 (9) = 10,496 duplicates removed.
+            WOS include rate: 24.3% (1,137 / 4,683). 3 records flagged for manual review.
+          </p>
+        </div>
+      </section>
+
+      {/* Key innovations */}
+      <section className="bg-white px-6 py-16">
         <div className="max-w-4xl mx-auto">
           <SectionHeading label="Design principles" title="Three core methodological innovations" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

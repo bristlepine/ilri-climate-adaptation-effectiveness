@@ -1,9 +1,18 @@
 stage,n
-Records identified,17021
-Abstract screening — included,6218
-Abstract screening — excluded,10803
-Full texts retrieved,3570
-Full texts not retrieved (pending retrieval),2648
-Full-text screening — included,2899
-Full-text screening — excluded,625
-Data extraction,184
+Scopus — identified,17021
+WoS — identified,15179
+Cross-database duplicates removed,10496
+Unique records after deduplication,21704
+Scopus — abstract screening,17021
+WoS net-new — abstract screening,4683
+Abstract included — Scopus,6218
+Abstract excluded — Scopus,10803
+Abstract included — WoS,1137
+Abstract excluded — WoS,3546
+Full-text retrieved (Scopus),3570
+Pending: not retrievable (Scopus),2648
+Full-text included (Scopus),2899
+Full-text excluded (Scopus),625
+Data extraction (Scopus),649
+Pending: FT screening (Scopus),46
+Pending: FT retrieval (WoS),1137

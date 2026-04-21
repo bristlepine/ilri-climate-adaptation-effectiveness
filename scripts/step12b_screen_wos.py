@@ -54,8 +54,8 @@ from step12_screen_abstracts import (
     _ollama_fail_fast,
     _load_jsonl_cache,
     _rewrite_jsonl,
-    _call_llm,
-    _parse_response,
+    call_ollama,
+    parse_llm_response,
     _plot_summary,
 )
 
@@ -212,14 +212,17 @@ def screen_wos(
 
                 # ── LLM call ──────────────────────────────────────────────────
                 try:
-                    raw = _call_llm(
+                    raw = call_ollama(
+                        session,
                         title=title,
                         abstract=abstract,
-                        criteria_text=criteria_text,
+                        criteria_prompt=criteria_text,
                         model=model,
-                        session=session,
                     )
-                    decision, reasons, rule_hits = _parse_response(raw, crit_keys)
+                    parsed    = parse_llm_response(raw, crit_keys=crit_keys, full_text=abstract)
+                    decision  = parsed["screen_decision"]
+                    reasons   = parsed["screen_reasons"]
+                    rule_hits = parsed["screen_rule_hits"]
                 except Exception as e:
                     n_error += 1
                     print(f"[step12b] ERROR row {i}: {e}")

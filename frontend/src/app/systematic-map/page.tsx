@@ -36,6 +36,8 @@ export default function SystematicMapPage() {
   const [studiesLoading, setStudiesLoading] = useState(true);
   const [studiesError, setStudiesError] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortCol, setSortCol] = useState<keyof Study>('year');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [geoView, setGeoView] = useState<'map' | 'bar'>('map');
 
   useEffect(() => {
@@ -45,19 +47,32 @@ export default function SystematicMapPage() {
       .catch(() => { setStudiesError(true); setStudiesLoading(false); });
   }, []);
 
-  const filteredStudies = studies.filter(s => {
-    if (!searchTerm.trim()) return true;
-    const q = searchTerm.toLowerCase();
-    return (
-      s.title?.toLowerCase().includes(q) ||
-      s.country?.toLowerCase().includes(q) ||
-      s.producer_type?.toLowerCase().includes(q) ||
-      s.adaptation_focus?.toLowerCase().includes(q) ||
-      s.domain_type?.toLowerCase().includes(q) ||
-      s.methodology?.toLowerCase().includes(q) ||
-      s.year?.includes(q)
-    );
-  });
+  const handleSort = (col: keyof Study) => {
+    if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortCol(col); setSortDir('asc'); }
+  };
+
+  const filteredStudies = studies
+    .filter(s => {
+      if (!searchTerm.trim()) return true;
+      const q = searchTerm.toLowerCase();
+      return (
+        s.title?.toLowerCase().includes(q) ||
+        s.country?.toLowerCase().includes(q) ||
+        s.producer_type?.toLowerCase().includes(q) ||
+        s.adaptation_focus?.toLowerCase().includes(q) ||
+        s.domain_type?.toLowerCase().includes(q) ||
+        s.methodology?.toLowerCase().includes(q) ||
+        s.year?.includes(q)
+      );
+    })
+    .sort((a, b) => {
+      const av = (a[sortCol] || '').toLowerCase();
+      const bv = (b[sortCol] || '').toLowerCase();
+      if (av < bv) return sortDir === 'asc' ? -1 : 1;
+      if (av > bv) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
 
   return (
     <main className="page-wrapper min-h-screen flex flex-col">
@@ -81,7 +96,7 @@ export default function SystematicMapPage() {
       {/* Status Banner */}
       <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3">
         <p className="max-w-5xl mx-auto text-xs font-tagline text-yellow-800">
-          <strong>Preliminary — Scopus corpus only.</strong> Multi-database integration (WoS, CAB Abstracts, AGRIS, Academic Search Premier) and full-text screening in progress. Final version expected May 2026.
+          <strong>In progress — data extraction running.</strong> Scopus (6,218) + WoS (1,137) included after screening. Full-text coding underway; figures update as records are coded. Final version expected May 2026.
         </p>
       </div>
 
@@ -253,12 +268,12 @@ export default function SystematicMapPage() {
                 <table className="w-full text-xs font-tagline border-collapse">
                   <thead className="sticky top-0 bg-gray-100 z-10">
                     <tr>
-                      <th className="text-left px-3 py-2 text-gray-600 font-semibold border-b border-gray-200 w-12">Year</th>
-                      <th className="text-left px-3 py-2 text-gray-600 font-semibold border-b border-gray-200 min-w-[220px]">Title</th>
-                      <th className="text-left px-3 py-2 text-gray-600 font-semibold border-b border-gray-200">Country</th>
-                      <th className="text-left px-3 py-2 text-gray-600 font-semibold border-b border-gray-200">Producer Type</th>
-                      <th className="text-left px-3 py-2 text-gray-600 font-semibold border-b border-gray-200">Domain Type</th>
-                      <th className="text-left px-3 py-2 text-gray-600 font-semibold border-b border-gray-200">Methodology</th>
+                      {([['year','Year','w-12'],['title','Title','min-w-[220px]'],['country','Country',''],['producer_type','Producer Type',''],['domain_type','Domain Type',''],['methodology','Methodology','']] as [keyof Study, string, string][]).map(([col, label, extra]) => (
+                        <th key={col} onClick={() => handleSort(col)}
+                          className={`text-left px-3 py-2 text-gray-600 font-semibold border-b border-gray-200 cursor-pointer select-none hover:bg-gray-200 transition ${extra}`}>
+                          {label}{sortCol === col ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -300,7 +315,7 @@ export default function SystematicMapPage() {
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-logo font-bold text-green mb-2">Evidence Map</h2>
           <p className="font-tagline text-sm text-gray-500 mb-1">Use the <Maximize2 className="inline w-3.5 h-3.5 mx-0.5 text-gray-400" /> button to expand any chart for full interactive exploration. Use the PNG and CSV buttons to download.</p>
-          <p className="font-tagline text-xs text-gray-400 mb-10">Note: chart counts vary (base n = 184) because some fields could not be extracted for all studies.</p>
+          <p className="font-tagline text-xs text-gray-400 mb-10">Note: chart n values reflect LLM-coded studies only and will increase as data extraction progresses. Field counts vary because not all fields are reported in every study.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {staticFigures.map((fig) => (
               <div key={fig.file}

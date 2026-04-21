@@ -38,6 +38,8 @@ import hashlib
 import json
 import os
 import re
+import signal
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -311,21 +313,36 @@ def _run_signature(*, model: str, criteria_path: Optional[Path] = None) -> str:
 # =============================================================================
 
 def _extract_pdf_text(path: Path, max_chars: int) -> Tuple[str, str]:
-    """Returns (text, note). note is empty on success."""
-    try:
-        from pypdf import PdfReader
-        reader = PdfReader(str(path))
-        parts: List[str] = []
-        for page in reader.pages:
-            t = page.extract_text() or ""
-            parts.append(t)
-            if sum(len(p) for p in parts) >= max_chars * 2:
-                break
-        text = " ".join(parts)
-        text = re.sub(r"\s+", " ", text).strip()
-        return text[:max_chars], ""
-    except Exception as e:
-        return "", f"pdf_error:{type(e).__name__}"
+    """Returns (text, note). note is empty on success.
+    Runs in a thread with a 45-second timeout so a hung PDF never blocks the loop.
+    """
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as _FuturesTimeout
+
+    def _read() -> Tuple[str, str]:
+        try:
+            from pypdf import PdfReader
+            reader = PdfReader(str(path))
+            parts: List[str] = []
+            for page in reader.pages:
+                t = page.extract_text() or ""
+                parts.append(t)
+                if sum(len(p) for p in parts) >= max_chars * 2:
+                    break
+            text = " ".join(parts)
+            text = re.sub(r"\s+", " ", text).strip()
+            return text[:max_chars], ""
+        except Exception as e:
+            return "", f"pdf_error:{type(e).__name__}"
+
+    with ThreadPoolExecutor(max_workers=1) as _ex:
+        _fut = _ex.submit(_read)
+        try:
+            return _fut.result(timeout=45)
+        except _FuturesTimeout:
+            print(f"[step15] PDF timeout (45s): {path.name} — treating as needs_manual")
+            return "", "pdf_timeout"
+        except Exception as e:
+            return "", f"pdf_error:{type(e).__name__}"
 
 
 def _extract_html_text(path: Path, max_chars: int) -> Tuple[str, str]:
@@ -458,7 +475,13 @@ def load_inputs(out_root: Path) -> pd.DataFrame:
     counts = codeable["coding_source"].value_counts().to_dict()
     print(f"[step15] Coding source breakdown: {counts}")
 
-    return codeable.reset_index(drop=True)
+    # Only code from full text — abstract-only extraction is not reliable enough
+    # to report and wastes compute. Skip abstract_only and missing_abstract records.
+    before = len(codeable)
+    codeable = codeable[codeable["coding_source"] == SOURCE_FULL_TEXT].reset_index(drop=True)
+    print(f"[step15] Full-text only: {len(codeable):,} records (skipped {before - len(codeable):,} abstract-only / missing)")
+
+    return codeable
 
 
 # =============================================================================
@@ -727,6 +750,7 @@ def extract_all(
     print(f"[step15] Cache warm: {len(cache):,} records")
 
     df = df.copy()
+    _ckpt["df"] = df   # point checkpoint at the COPY being mutated by the loop
     n_total = len(df)
     n_run   = min(int(run_limit), n_total) if run_limit else n_total
 
@@ -772,6 +796,11 @@ def extract_all(
                         f"elapsed={elapsed:,.0f}s ETA={eta:,.0f}s"
                     )
 
+                # Periodic checkpoint — write CSV every N records so step16
+                # can be run at any time without waiting for full completion
+                if (i + 1) % CHECKPOINT_EVERY == 0:
+                    _flush_checkpoint(f"checkpoint at {i+1:,}/{n_run:,}")
+
                 rec: Dict[str, Any] = {
                     "run_signature": sig,
                     "timestamp_utc": _now_utc(),
@@ -793,6 +822,8 @@ def extract_all(
                 # --- Determine text to send ---
                 if src == SOURCE_FULL_TEXT:
                     file_path = safe_str(row.get("ft_file_path", ""))
+                    fname = Path(file_path).name if file_path else "no_file"
+                    print(f"[step15] record {i+1}: reading PDF {fname!r} …")
                     text, note = extract_text(file_path, FULLTEXT_MAX_CHARS)
                     if not text.strip():
                         # File present but extraction failed — downgrade
@@ -834,6 +865,7 @@ def extract_all(
                     continue
 
                 # --- LLM call ---
+                print(f"[step15] record {i+1}: LLM call ({src}) for {title[:60]!r} …")
                 llm_resp = call_ollama(
                     session,
                     title=title,
@@ -864,7 +896,7 @@ def extract_all(
 # Write outputs
 # =============================================================================
 
-def write_outputs(df: pd.DataFrame, out_dir: Path, elapsed: float) -> dict:
+def write_outputs(df: pd.DataFrame, out_dir: Path, elapsed: float, *, skip_figure: bool = False) -> dict:
     # Value columns only (not _confidence/_note) for the main CSV
     value_cols = [f"{f}_value" for f in CODING_SCHEMA]
     id_cols    = [c for c in ["dedupe_key", "doi", "title", "year",
@@ -885,6 +917,8 @@ def write_outputs(df: pd.DataFrame, out_dir: Path, elapsed: float) -> dict:
     print(f"[step15] Coded CSV -> {coded_csv}  ({len(df):,} rows)")
 
     # Needs review CSV
+    if "needs_review" not in df.columns:
+        df["needs_review"] = False
     review_df = df[df["needs_review"].astype(str).str.lower() == "true"]
     review_csv = out_dir / "step15_needs_review.csv"
     review_df[out_cols].to_csv(review_csv, index=False)
@@ -892,20 +926,32 @@ def write_outputs(df: pd.DataFrame, out_dir: Path, elapsed: float) -> dict:
 
     # Meta
     src_counts = df["coding_source"].value_counts(dropna=False).to_dict()
+
+    # rows_llm_coded = records where LLM actually ran and returned data
+    # (publication_year_value non-empty is a reliable proxy)
+    yr_col = "publication_year_value"
+    if yr_col in df.columns:
+        rows_llm_coded = int((df[yr_col].astype(str).str.strip() != "").sum())
+    else:
+        rows_llm_coded = 0
+
     meta = {
-        "rows_total":          len(df),
-        "rows_needs_review":   int(len(review_df)),
+        "rows_total":           len(df),
+        "rows_needs_review":    int(len(review_df)),
+        "rows_llm_coded":       rows_llm_coded,   # actually coded by LLM (accurate progress)
         "coding_source_counts": {str(k): int(v) for k, v in src_counts.items()},
-        "elapsed_seconds":     round(elapsed, 1),
-        "elapsed_hms":         time.strftime("%H:%M:%S", time.gmtime(elapsed)),
-        "timestamp_utc":       _now_utc(),
+        "elapsed_seconds":      round(elapsed, 1),
+        "elapsed_hms":          time.strftime("%H:%M:%S", time.gmtime(elapsed)),
+        "timestamp_utc":        _now_utc(),
     }
     meta_path = out_dir / "step15_coded.meta.json"
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2, ensure_ascii=False)
     print(f"[step15] Meta -> {meta_path}")
 
-    _plot_summary(meta, df, out_dir)
+    if not skip_figure:
+        print(f"[step15] Generating summary figure (this takes ~5s) …")
+        _plot_summary(meta, df, out_dir)
 
     return meta
 
@@ -979,6 +1025,43 @@ def _plot_summary(meta: dict, df: pd.DataFrame, out_dir: Path) -> None:
 
 
 # =============================================================================
+# Checkpoint / signal handling
+# =============================================================================
+
+CHECKPOINT_EVERY = 25   # write CSV every N records processed (cheap — just CSV+JSON, no figure)
+
+# Shared mutable state so the SIGINT handler can flush on Ctrl+C
+_ckpt: Dict[str, Any] = {"df": None, "out_dir": None, "t0": None}
+
+
+def _flush_checkpoint(reason: str = "checkpoint") -> None:
+    """Write step15_coded.csv with whatever has been coded so far."""
+    df      = _ckpt.get("df")
+    out_dir = _ckpt.get("out_dir")
+    t0      = _ckpt.get("t0")
+    if df is None or out_dir is None:
+        return
+    elapsed = time.time() - (t0 or time.time())
+    t_ck = time.time()
+    yr_col = "publication_year_value"
+    n_actually_coded = int((df[yr_col].astype(str).str.strip() != "").sum()) if yr_col in df.columns else 0
+    print(f"\n[step15] {reason} — {n_actually_coded:,} actually coded / {len(df):,} total — saving …")
+    try:
+        write_outputs(df, out_dir, elapsed, skip_figure=True)
+        print(f"[step15] Checkpoint done in {time.time()-t_ck:.1f}s — run `python scripts/step16_map_visualise.py` anytime to update figures\n")
+    except Exception as e:
+        print(f"[step15] Checkpoint write failed: {e}")
+
+
+def _sigint_handler(sig, frame):
+    _flush_checkpoint("Interrupted (Ctrl+C)")
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, _sigint_handler)
+
+
+# =============================================================================
 # Entrypoint
 # =============================================================================
 
@@ -1033,9 +1116,15 @@ def run(config: dict) -> dict:
         print("[step15] No records to code — check step14 outputs.")
         return {"status": "empty"}
 
+    # Register shared state for SIGINT checkpoint handler
+    _ckpt["df"]      = df
+    _ckpt["out_dir"] = out_dir
+    _ckpt["t0"]      = t0
+
     df = extract_all(df, out_dir=out_dir, model=model, run_limit=run_limit,
                      criteria_path=criteria_path)
     elapsed = time.time() - t0
+    print(f"[step15] Extraction loop complete — writing final outputs …")
     meta = write_outputs(df, out_dir, elapsed)
 
     print(f"[step15] Done in {meta['elapsed_hms']}.")

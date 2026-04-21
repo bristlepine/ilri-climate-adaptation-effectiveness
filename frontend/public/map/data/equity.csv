@@ -1,9 +1,7 @@
 equity_dimension,n_studies
-gender,20
-other,4
-land_tenure,2
-wealth_groups,1
-disability,1
-land_tenure | education,1
-"gender, land_tenure",1
-land_tenure | other,1
+women,47
+indigenous_peoples,8
+youth,5
+people_with_disabilities,4
+ethnic_minorities,3
+landless,2

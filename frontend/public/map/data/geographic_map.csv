@@ -1,62 +1,90 @@
 country,n_studies
-Ethiopia,23
-Ghana,14
-India,12
-China,12
-Kenya,10
-Nepal,9
-Bangladesh,9
-Indonesia,8
-Malawi,6
-Iran,5
-Zimbabwe,5
-Pakistan,5
-Vietnam,5
-Uganda,4
-Thailand,3
-not_found,3
-Colombia,3
-Senegal,3
-Botswana,3
-Mali,2
-Benin,2
-South Africa,2
-Brazil,2
-Burkina Faso,2
+Ethiopia,51
+India,46
+Kenya,44
+China,39
+Tanzania,32
+Zimbabwe,26
+Bangladesh,26
+Ghana,25
+Nigeria,23
+Vietnam,21
+Malawi,21
+Uganda,19
+Mexico,17
+Nepal,16
+South Africa,16
+Pakistan,16
+Indonesia,15
+Burkina Faso,11
+Benin,10
+Iran,9
+Thailand,9
+Zambia,8
+Mozambique,7
+Senegal,7
+Niger,7
+Philippines,7
+Brazil,7
+Costa Rica,7
+Botswana,6
+Sri Lanka,6
+Cameroon,6
+Guatemala,6
+Honduras,6
+Mali,6
+Malaysia,5
+Peru,4
+Bolivia,4
+Colombia,4
+Sudan,3
+Afghanistan,3
+Mongolia,3
+Tunisia,3
+Lesotho,2
+Lao PDR,2
+Nicaragua,2
+Swaziland,2
+Côte d'Ivoire,2
+Namibia,2
+Cambodia,2
+Ecuador,2
+Viet Nam,2
+Egypt,2
 Madagascar,2
-"Brazil, Minas Gerais",1
-Offinso North District,1
-Viet Nam,1
-Karamoja subregion,1
-Central America,1
-West African Sudan Savanna,1
-"Yucatán, Mexico",1
-Nicaragua,1
-Morocco's High Atlas Mountains,1
-Gambella Region,1
-Tunisia,1
-Southeast Kenya,1
-"Anantapur district, Andhra Pradesh",1
-Andes,1
-São Tomé and Príncipe,1
-Lebanon,1
-Indonesia (Maros District),1
-Northeast Thailand,1
-Sudano-Sahelian region,1
-Sahel Savannah,1
-India (Maharashtra State),1
-Sri Lanka,1
-"Mexico, Guatemala, Honduras, Costa Rica",1
+Myanmar,1
+Himachal Pradesh,1
+Jamaica,1
+Brazilian Amazon,1
+Papua New Guinea,1
+Rwanda,1
+Africa,1
+Togo,1
+West Timor,1
+Angola,1
+Eswatini,1
+Uttarakhand,1
+Southwestern Nigeria,1
+Arunachal Pradesh,1
+Assam,1
+Odisha,1
+Tajikistan,1
 Côte d’Ivoire,1
-Mexico (Chiapas),1
-Philippines,1
-Brazilian semi-arid region,1
-Nigeria,1
-Tanzania,1
-Peru,1
-Fiji,1
-Bolivia,1
-"Himachal Pradesh, India",1
-India (Haryana and Bihar),1
+Venezuela,1
+Chile,1
+Mauritania,1
+Hindu-Kush Himalayan region,1
+Northeast Farming Region of China,1
+Sahel,1
 Solomon Islands,1
-Mexico,1
+Middle East,1
+Sudano-Sahelian region,1
+Bhutan,1
+Andhra Pradesh,1
+Morocco,1
+El Salvador,1
+St Lucia,1
+Inner Mongolia,1
+Argentina,1
+Uruguay,1
+Northeast Thailand,1

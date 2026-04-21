@@ -1,102 +1,78 @@
 domain,producer_type,n_studies
-Outcome: livelihoods,crop,4
-Outcome: livelihoods,fisheries_aquaculture,1
-"Outcome: livelihoods, wellbeing",agroforestry,1
-"Outcome: livelihoods, wellbeing",livestock,1
-"Outcome: livelihoods, wellbeing",mixed,1
-Outcome: risk_reduction,crop,2
-Outcome: risk_reduction,livestock,1
-Outcome: risk_reduction,mixed,1
-"Outcome: risk_reduction, Outcome: wellbeing",crop,1
-"Outcome: risk_reduction, resilience_adaptive_capacity",mixed,1
-Outcome: yields_productivity,crop,2
-"Outcome: yields_productivity, income_assets",crop,2
-"Outcome: yields_productivity, income_assets, livelihoods",crop,1
-"Outcome: yields_productivity, livelihoods",crop,1
-Process: decision_making_planning,crop,2
-Process: decision_making_planning,fisheries_aquaculture,1
-Process: decision_making_planning,livestock,1
-Process: decision_making_planning,mixed,1
-Process: decision_making_planning | uptake_adoption. Outcome: livelihoods,fisheries_aquaculture,1
-"Process: decision_making_planning, Outcome: livelihoods",crop,1
-"Process: decision_making_planning, Outcome: risk_reduction",crop,1
-"Process: decision_making_planning, Outcome: yields_productivity",crop,1
-"Process: decision_making_planning, institutional_governance. Outcome: risk_reduction",mixed,1
-"Process: decision_making_planning, uptake_adoption. Outcome: livelihoods, wellbeing",mixed,1
-"Process: decision_making_planning, uptake_adoption. Outcome: yields_productivity",crop,1
-Process: decision_making_planning. Outcome: resilience_adaptive_capacity,agroforestry,1
-Process: decision_making_planning. Outcome: resilience_adaptive_capacity,crop,1
-Process: decision_making_planning. Outcome: risk_reduction,crop,2
-"Process: decision_making_planning. Outcome: yields_productivity, income_assets",mixed,1
-"Process: decision_making_planning. Outcome: yields_productivity, livelihoods",crop,1
-Process: knowledge_awareness_learning,agroforestry,2
-Process: knowledge_awareness_learning,crop,11
-Process: knowledge_awareness_learning,livestock,1
-Process: knowledge_awareness_learning,mixed,2
-Process: knowledge_awareness_learning Outcome: risk_reduction,crop,1
-Process: knowledge_awareness_learning | decision_making_planning | behavioral_change. Outcome: resilience_adaptive_capacity,mixed,1
-Process: knowledge_awareness_learning | decision_making_planning | uptake_adoption | behavioral_change. Outcome: risk_reduction | resilience_adaptive_capacity,crop,1
-Process: knowledge_awareness_learning | decision_making_planning | uptake_adoption | participation_coproduction. Outcome: not_found,crop,1
-"Process: knowledge_awareness_learning, Outcome: risk_reduction",livestock,1
-"Process: knowledge_awareness_learning, decision_making_planning, uptake_adoption, behavioral_change, participation_coproduction. Outcome: livelihoods",fisheries_aquaculture,1
-"Process: knowledge_awareness_learning, decision_making_planning, uptake_adoption, behavioral_change. Outcome: risk_reduction, resilience_adaptive_capacity",mixed,1
-"Process: knowledge_awareness_learning, decision_making_planning, uptake_adoption, institutional_governance. Outcome: yields_productivity, income_assets, risk_reduction",crop,1
-"Process: knowledge_awareness_learning, decision_making_planning, uptake_adoption. Outcome: risk_reduction",crop,2
-"Process: knowledge_awareness_learning, decision_making_planning, uptake_adoption. Outcome: yields_productivity, livelihoods",crop,1
-"Process: knowledge_awareness_learning, decision_making_planning. Outcome: not specified in the abstract.",crop,1
-"Process: knowledge_awareness_learning, decision_making_planning. Outcome: risk_reduction",crop,1
-"Process: knowledge_awareness_learning, decision_making_planning. Outcome: uptake_adoption",crop,1
-"Process: knowledge_awareness_learning, decision_making_planning. Outcome: yields_productivity",crop,1
-"Process: knowledge_awareness_learning, decision_making_planning. Outcome: yields_productivity, income_assets, livelihoods",livestock,1
-Process: knowledge_awareness_learning. Outcome: livelihoods,mixed,1
-Process: knowledge_awareness_learning. Outcome: resilience_adaptive_capacity,mixed,1
-Process: knowledge_awareness_learning. Outcome: risk_reduction,crop,1
-Process: knowledge_awareness_learning. Outcome: yields_productivity,crop,1
-Process: livelihood diversification. Outcome: adaptation to flood variability.,mixed,1
-Process: participation_coproduction Outcome: resilience_adaptive_capacity,mixed,1
-"Process: participation_coproduction, institutional_governance. Outcome: livelihoods, wellbeing",crop,1
-Process: uptake_adoption Outcome: food_security,crop,1
-Process: uptake_adoption Outcome: risk_reduction resilience_adaptive_capacity,fisheries_aquaculture,1
-Process: uptake_adoption Outcome: yields_productivity,crop,1
-"Process: uptake_adoption, Outcome: yields_productivity",crop,2
-Process: uptake_adoption. Outcome: risk_reduction | resilience_adaptive_capacity,mixed,1
-"Process: uptake_adoption. Outcome: risk_reduction, resilience_adaptive_capacity",crop,1
-Process: uptake_adoption. Outcome: yields_productivity,crop,1
-behavioral_change,crop,1
-behavioral_change,mixed,1
-decision_making_planning,crop,5
-decision_making_planning,mixed,2
-decision_making_planning | access_information_services | resilience_adaptive_capacity,livestock,1
-decision_making_planning | behavioral_change,mixed,1
-decision_making_planning | resilience_adaptive_capacity,agriculture,1
-decision_making_planning | yields_productivity,crop,2
-"decision_making_planning, access_information_services",crop,2
-"decision_making_planning, access_information_services, resilience_adaptive_capacity",crop | livestock,1
-"decision_making_planning, behavioral_change. Outcome: livelihoods",crop,1
-"decision_making_planning, institutional_governance",crop,1
-"decision_making_planning, participation_coproduction",agriculture,1
-"decision_making_planning, risk_reduction",crop,1
-"decision_making_planning, uptake_adoption",crop,1
-"decision_making_planning, uptake_adoption",mixed,1
-"decision_making_planning, uptake_adoption, access_information_services",crop,1
-"decision_making_planning, uptake_adoption, institutional_governance",crop,1
-"decision_making_planning, uptake_adoption, institutional_governance",mixed,1
-"decision_making_planning, uptake_adoption, livelihoods",livestock,1
-"decision_making_planning, uptake_adoption, yields_productivity, income_assets",fisheries_aquaculture,1
-"decision_making_planning, yields_productivity",crop,1
-decision_making_planning. Outcome: resilience_adaptive_capacity,agroforestry,1
-decision_making_planning. Outcome: yields_productivity,crop,1
-knowledge_awareness_learning,crop,3
-knowledge_awareness_learning,mixed,1
-knowledge_awareness_learning | decision_making_planning | uptake_adoption | behavioral_change,crop,1
-"knowledge_awareness_learning, decision_making_planning, institutional_governance",crop,1
-"knowledge_awareness_learning, decision_making_planning, uptake_adoption, behavioral_change",crop,1
-"knowledge_awareness_learning, decision_making_planning, uptake_adoption, behavioral_change, participation_coproduction, institutional_governance, access_information_services. Outcome: risk_reduction",mixed,1
-"knowledge_awareness_learning, institutional_governance",crop,1
-"knowledge_awareness_learning, uptake_adoption, risk_reduction",crop,1
-"knowledge_awareness_learning, uptake_adoption, yields_productivity",crop,1
-participation_coproduction,crop,2
+access_information_services,agroforestry,15
+access_information_services,crop,105
+access_information_services,fisheries_aquaculture,30
+access_information_services,livestock,51
+access_information_services,mixed,20
+access_information_services,undefined,139
+behavioral_change,agroforestry,23
+behavioral_change,crop,124
+behavioral_change,fisheries_aquaculture,29
+behavioral_change,livestock,65
+behavioral_change,mixed,22
+behavioral_change,undefined,151
+decision_making_planning,agroforestry,19
+decision_making_planning,crop,152
+decision_making_planning,fisheries_aquaculture,36
+decision_making_planning,livestock,66
+decision_making_planning,mixed,28
+decision_making_planning,undefined,184
+income_assets,agroforestry,7
+income_assets,crop,39
+income_assets,fisheries_aquaculture,11
+income_assets,livestock,12
+income_assets,mixed,8
+income_assets,undefined,38
+institutional_governance,agroforestry,12
+institutional_governance,crop,45
+institutional_governance,fisheries_aquaculture,13
+institutional_governance,livestock,37
+institutional_governance,mixed,12
+institutional_governance,undefined,95
+knowledge_awareness_learning,agroforestry,23
+knowledge_awareness_learning,crop,168
+knowledge_awareness_learning,fisheries_aquaculture,20
+knowledge_awareness_learning,livestock,49
+knowledge_awareness_learning,mixed,27
+knowledge_awareness_learning,undefined,164
+livelihoods,agroforestry,6
+livelihoods,crop,30
+livelihoods,fisheries_aquaculture,10
+livelihoods,livestock,10
+livelihoods,mixed,6
+livelihoods,undefined,38
+participation_coproduction,agroforestry,4
+participation_coproduction,crop,7
+participation_coproduction,fisheries_aquaculture,4
+participation_coproduction,livestock,6
+participation_coproduction,mixed,2
+participation_coproduction,undefined,34
+resilience_adaptive_capacity,agroforestry,2
 resilience_adaptive_capacity,crop,1
-uptake_adoption,crop,2
-uptake_adoption,mixed,1
-uptake_adoption | yields_productivity,mixed,1
+resilience_adaptive_capacity,fisheries_aquaculture,1
+resilience_adaptive_capacity,livestock,1
+resilience_adaptive_capacity,undefined,4
+risk_reduction,agroforestry,7
+risk_reduction,crop,12
+risk_reduction,fisheries_aquaculture,7
+risk_reduction,livestock,7
+risk_reduction,mixed,2
+risk_reduction,undefined,41
+uptake_adoption,agroforestry,15
+uptake_adoption,crop,163
+uptake_adoption,fisheries_aquaculture,13
+uptake_adoption,livestock,37
+uptake_adoption,mixed,27
+uptake_adoption,undefined,88
+wellbeing,agroforestry,3
+wellbeing,crop,23
+wellbeing,fisheries_aquaculture,7
+wellbeing,livestock,6
+wellbeing,mixed,1
+wellbeing,undefined,26
+yields_productivity,agroforestry,9
+yields_productivity,crop,64
+yields_productivity,fisheries_aquaculture,11
+yields_productivity,livestock,11
+yields_productivity,mixed,9
+yields_productivity,undefined,38

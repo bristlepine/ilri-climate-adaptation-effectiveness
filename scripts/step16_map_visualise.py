@@ -184,9 +184,13 @@ def _load_coded(out_root: Path) -> pd.DataFrame:
         print(f"[step16] step15 coded CSV not found: {p}")
         return pd.DataFrame()
     df = pd.read_csv(p, engine="python", on_bad_lines="skip")
-    # Only figures on full-text coded records
+    # Only full-text records
     full = df[df.get("coding_source", pd.Series(dtype=str)).astype(str) == "full_text"].copy()
-    print(f"[step16] Full-text coded records available for figures: {len(full):,}")
+    # Only records actually coded by LLM (publication_year_value non-empty)
+    yr_col = "publication_year_value"
+    if yr_col in full.columns:
+        full = full[full[yr_col].astype(str).str.strip().isin(["", "nan", "not_found"]) == False].copy()
+    print(f"[step16] LLM-coded records for figures: {len(full):,} / {len(df):,} total in CSV")
     return full
 
 
@@ -278,8 +282,11 @@ def _roses_flow(out_root: Path, out_dir: Path) -> None:
     excl14          = s14.get("excluded_by_criterion", {})
 
     src15           = s15.get("coding_source_counts", {})
-    n_coded_ft      = src15.get("full_text", 0)
-    n_pending       = sum(v for k, v in src15.items() if k != "full_text")
+    # Use rows_llm_coded (actual LLM output present) if available; fall back to
+    # coding_source_counts.full_text only as a last resort so ROSES stays honest.
+    n_coded_ft      = s15.get("rows_llm_coded") or src15.get("full_text", 0)
+    n_ft_designated = src15.get("full_text", 0)          # total assigned to full-text
+    n_pending       = n_ft_designated - n_coded_ft        # not yet coded
 
     # wider canvas, side boxes pushed further right to avoid overlap
     fig, ax = plt.subplots(figsize=(18, 22))
@@ -697,16 +704,15 @@ def _domain_type_bar(df: pd.DataFrame, out_dir: Path) -> None:
     except ImportError:
         return
 
-    col = "domain_type_value"
+    col = "process_outcome_domains_value"
     if col not in df.columns:
         return
 
-    vals = df[col].dropna().astype(str).str.strip()
-    vals = vals[vals.str.lower().isin(["", "nan", "not_found"]) == False]
-    if vals.empty:
+    items = _split_multi(df[col])
+    if not items:
         return
 
-    counts = vals.value_counts()
+    counts = pd.Series(items).value_counts()
     fig, ax = plt.subplots(figsize=(7, 4))
     colors = [BLUE, GREEN, ORANGE][:len(counts)]
     bars = ax.bar(counts.index, counts.values,
@@ -718,7 +724,7 @@ def _domain_type_bar(df: pd.DataFrame, out_dir: Path) -> None:
                 bar.get_height() + total * 0.01,
                 f"{val:,}\n({pct:.1f}%)", ha="center", va="bottom", fontsize=9)
     ax.set_ylabel("Number of Studies", fontsize=11)
-    ax.set_title(f"Adaptation Domain Type  (n={len(vals):,})", fontsize=12, fontweight="bold")
+    ax.set_title(f"Process/Outcome Domains  (n={len(df):,} studies)", fontsize=12, fontweight="bold")
     ax.set_ylim(0, counts.max() * 1.2)
     ax.spines[["top", "right"]].set_visible(False)
     _save(fig, out_dir / "domain_type_bar.png")
@@ -1086,18 +1092,24 @@ def _egm_interactive(df: pd.DataFrame, out_root: Path, out_dir: Path) -> None:
         y0=proc_labels[0], y1=out_labels[-1],   # process band (top)
         fillcolor="#E3F2FD", opacity=0.3, line_width=0, layer="below",
     )
-    # Separator line between process and outcome
+    # Separator line between process and outcome sections.
+    # categoryarray = list(reversed(d_labels)) puts outcome domains at
+    # the low indices (0 … N_OUTCOME-1) and process domains at the high
+    # indices (N_OUTCOME … N_TOTAL-1).  The gap between the first outcome
+    # domain (index N_OUTCOME-1 = 5) and the last process domain
+    # (index N_OUTCOME = 6) is at exactly 5.5.
+    _n_out = len(OUTCOME_DOMAINS)
     fig.add_shape(type="line",
         xref="paper", yref="y",
         x0=0, x1=1,
-        y0=out_labels[0], y1=out_labels[0],
+        y0=_n_out - 0.5, y1=_n_out - 0.5,
         line=dict(color="#9E9E9E", width=1.5, dash="dot"),
     )
 
     fig.update_layout(
         title=dict(
-            text=f"Evidence Gap Map (n = {n_contributing})",
-            x=0.5, xanchor="center", font=dict(size=15),
+            text=f"<b>Evidence Gap Map</b><br><sup>Bubble size = number of studies · process domains (top) vs outcome domains (bottom) (n={n_contributing:,})</sup>",
+            x=0.5, xanchor="center", font=dict(size=14),
         ),
         height=700,
         xaxis=dict(
@@ -1202,8 +1214,8 @@ def _geographic_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     ))
     fig_map.update_layout(
         title=dict(
-            text="<b>Geographic Distribution of Studies</b>"
-                 "<br><sup>Hover for country-level detail · multi-country studies counted in each</sup>",
+            text=f"<b>Geographic Distribution of Studies</b>"
+                 f"<br><sup>Hover for country-level detail · multi-country studies counted in each (n={len(df):,})</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
         geo=dict(
@@ -1233,7 +1245,7 @@ def _geographic_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     ))
     fig_bar.update_layout(
         title=dict(
-            text="<b>Studies by Country / Region</b>",
+            text=f"<b>Studies by Country / Region</b><br><sup>Multi-country studies counted once per country (n={len(df):,})</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
         height=max(400, len(countries) * 22 + 120),
@@ -1273,7 +1285,7 @@ def _temporal_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     ))
     fig.update_layout(
         title=dict(
-            text=f"<b>Publications Over Time</b><br><sup>Number of included studies per publication year · n={len(years):,}</sup>",
+            text=f"<b>Publications Over Time</b><br><sup>Included studies by publication year (n={len(years):,})</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
         height=380,
@@ -1315,7 +1327,7 @@ def _producer_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     ))
     fig.update_layout(
         title=dict(
-            text=f"<b>Producer Types Studied</b><br><sup>n={len(df):,} studies · multi-select</sup>",
+            text=f"<b>Producer Types Studied</b><br><sup>Multi-select: studies may represent multiple producer types (n={len(df):,})</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
         height=380,
@@ -1358,7 +1370,7 @@ def _methodology_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     ))
     fig.update_layout(
         title=dict(
-            text=f"<b>Methodological Approach</b><br><sup>n={len(vals):,} studies</sup>",
+            text=f"<b>Methodological Approach</b><br><sup>Primary study design, multi-select (n={len(vals):,})</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
         height=380,
@@ -1375,43 +1387,43 @@ def _methodology_interactive(df: pd.DataFrame, out_dir: Path) -> None:
 
 
 def _domain_type_interactive(df: pd.DataFrame, out_dir: Path) -> None:
-    """Interactive domain type bar chart using Plotly."""
+    """Interactive process/outcome domain bar chart using Plotly."""
     try:
         import plotly.graph_objects as go
     except ImportError:
         return
 
-    col = "domain_type_value"
+    col = "process_outcome_domains_value"
     if df.empty or col not in df.columns:
         return
 
-    vals = df[col].dropna().astype(str).str.strip()
-    vals = vals[vals.str.lower().isin(["", "nan", "not_found"]) == False]
-    if vals.empty:
+    items = _split_multi(df[col])
+    if not items:
         return
 
-    counts = vals.value_counts()
-    colors = [BLUE, GREEN, ORANGE][:len(counts)]
+    counts = pd.Series(items).value_counts()
+    bar_colors = [BLUE if i % 2 == 0 else GREEN for i in range(len(counts))]
 
     fig = go.Figure(go.Bar(
         x=counts.index.tolist(),
         y=counts.values.tolist(),
-        marker_color=colors,
+        marker_color=bar_colors,
         hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
     ))
     fig.update_layout(
         title=dict(
-            text=f"<b>Adaptation Domain Type</b><br><sup>n={len(vals):,} studies</sup>",
+            text=f"<b>Process/Outcome Domains</b><br><sup>Multi-select: studies may span multiple domains (n={len(df):,})</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
-        height=380,
+        height=420,
         yaxis_title="Number of Studies",
+        xaxis=dict(tickangle=-35),
         plot_bgcolor="white",
         paper_bgcolor="white",
         font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
-        margin=dict(l=60, r=40, t=100, b=60),
+        margin=dict(l=60, r=40, t=110, b=120),
     )
-    dtype_df = pd.DataFrame({"domain_type": counts.index.tolist(), "n_studies": counts.values.tolist()})
+    dtype_df = pd.DataFrame({"domain": counts.index.tolist(), "n_studies": counts.values.tolist()})
     _save_csv(dtype_df, "domain_type", out_dir)
     _save_plotly(fig, "domain_type", out_dir)
 
@@ -1423,7 +1435,7 @@ def _equity_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     except ImportError:
         return
 
-    col = "equity_inclusion_value"
+    col = "marginalized_subpopulations_value"
     if df.empty or col not in df.columns:
         return
 
@@ -1442,7 +1454,7 @@ def _equity_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     ))
     fig.update_layout(
         title=dict(
-            text="<b>Equity & Inclusion Dimensions Reported</b><br><sup>Multi-select — studies may address multiple dimensions</sup>",
+            text=f"<b>Equity & Inclusion Dimensions Reported</b><br><sup>Multi-select: studies may address multiple dimensions (n={len(df):,})</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
         height=380,
@@ -1499,7 +1511,7 @@ def _domain_heatmap_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     ))
     fig.update_layout(
         title=dict(
-            text="<b>Process/Outcome Domains × Producer Type</b><br><sup>Number of studies per cell</sup>",
+            text=f"<b>Process/Outcome Domains × Producer Type</b><br><sup>Number of studies per cell (n={len(df):,})</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
         height=max(400, ct.shape[0] * 28 + 150),
@@ -1530,18 +1542,33 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     except ImportError:
         return
 
-    s12 = _load_json(_step12_meta(out_root))
-    s13 = _load_json(_step13_meta(out_root))
-    s14 = _load_json(_step14_meta(out_root))
-    s15 = _load_json(_step15_meta(out_root))
+    s12  = _load_json(_step12_meta(out_root))
+    s12b = _load_json(out_root / "step12b" / "step12b_results.meta.json")
+    s2b  = _load_json(out_root / "step2b" / "step2b_summary.json")
+    s13  = _load_json(_step13_meta(out_root))
+    s14  = _load_json(_step14_meta(out_root))
+    s15  = _load_json(_step15_meta(out_root))
 
-    n_identified   = s12.get("rows_total", 0)
+    # Scopus numbers
+    n_scopus       = s12.get("rows_total", 0)
     dec12          = s12.get("decision_counts", {})
-    n_abs_include  = dec12.get("Include", 0)
-    n_abs_exclude  = dec12.get("Exclude", 0)
-    n_missing_abs  = s12.get("missing_abstract_count", 0)
+    n_sc_include   = dec12.get("Include", 0)
+    n_sc_exclude   = dec12.get("Exclude", 0)
     excl12         = s12.get("excluded_by_criterion", {})
 
+    # WoS numbers — original import + dedup from step2b
+    n_wos_original = s2b.get("total_imported", 0)    # 15,179 raw WoS records
+    n_total_dup    = s2b.get("total_duplicates", 0)  # 10,496 cross-DB duplicates removed
+    n_wos_net      = s2b.get("total_net_new", 0)     # 4,683 WoS net-new after dedup
+
+    dec12b         = s12b.get("decision_counts", {})
+    n_wos_include  = dec12b.get("Include", 0)
+    n_wos_exclude  = dec12b.get("Exclude", 0)
+    n_wos_manual   = dec12b.get("Needs_Manual", 0)
+
+    n_identified   = n_scopus + n_wos_net   # 21,704 unique after dedup
+
+    # Full-text retrieval & screening (Scopus only so far)
     status13       = s13.get("status_counts", {})
     n_ft_retrieved = status13.get("retrieved", 0)
     n_ft_not_found = status13.get("needs_manual", 0)
@@ -1552,70 +1579,159 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     excl14         = s14.get("excluded_by_criterion", {})
 
     src15          = s15.get("coding_source_counts", {})
-    n_coded_ft     = src15.get("full_text", 0)
+    n_coded_ft     = s15.get("rows_llm_coded") or src15.get("full_text", 0)
 
-    # Papers retrieved but not yet screened (step14 may not have been re-run after step13 completed)
-    n_ft_screened         = n_ft_include + n_ft_exclude
-    n_ft_pending_screen   = max(0, n_ft_retrieved - n_ft_screened)
+    n_ft_screened       = n_ft_include + n_ft_exclude
+    n_ft_pending_screen = max(0, n_ft_retrieved - n_ft_screened)
+
+    excl12_text  = "; ".join(f"{k}: {v}" for k, v in sorted(excl12.items(),  key=lambda x: -x[1])[:3])
+    excl14_text  = "; ".join(f"{k}: {v}" for k, v in sorted(excl14.items(),  key=lambda x: -x[1])[:3])
+
+    # Helper for percentage labels
+    _pct = lambda n, d: f"{n/d*100:.0f}%" if d > 0 else "—"
+
+    # ── Nodes (17 total, 0-indexed) ───────────────────────────────────────────
+    # 0  Scopus — identified (raw export)
+    # 1  WoS — identified (raw export, 15,179)
+    # 2  Duplicates removed (cross-DB)       [TERMINAL]
+    # 3  Unique records after dedup
+    # 4  Scopus — abstract screening
+    # 5  WoS net-new — abstract screening
+    # 6  Abstract included — Scopus
+    # 7  Abstract excluded — Scopus          [TERMINAL / exclusion]
+    # 8  Abstract included — WoS
+    # 9  Abstract excluded — WoS             [TERMINAL / exclusion]
+    # 10 Full-text retrieved — Scopus
+    # 11 Pending: not retrievable — Scopus   [TERMINAL / pending]
+    # 12 Full-text included — Scopus
+    # 13 Full-text excluded — Scopus         [TERMINAL / exclusion]
+    # 14 Data extraction — Scopus            [TERMINAL / in progress]
+    # 15 Pending: FT screening — Scopus      [TERMINAL / pending]
+    # 16 Pending: FT retrieval — WoS         [TERMINAL / pending]
 
     labels = [
-        f"Records identified<br>n={n_identified:,}",                      # 0
-        f"After abstract screening<br>n={n_abs_include:,}",               # 1
-        f"Excluded at abstract<br>n={n_abs_exclude:,}",                   # 2
-        f"Full texts retrieved<br>n={n_ft_retrieved:,}",                  # 3
-        f"Full texts not retrieved<br>n={n_ft_not_found:,}",              # 4
-        f"Included<br>n={n_ft_include:,}",                                # 5
-        f"Excluded at full-text<br>n={n_ft_exclude:,}",                   # 6
-        f"Data extraction<br>n={n_coded_ft:,}",                           # 7
-        f"Awaiting manual retrieval<br>n={n_ft_not_found:,}",             # 8
-        f"Pending full-text screening<br>n={n_ft_pending_screen:,}",      # 9
+        # Database identification
+        f"Scopus<br>identified<br>(n={n_scopus:,})",                                                     # 0
+        f"WoS<br>identified<br>(n={n_wos_original:,})",                                                  # 1
+        # Deduplication
+        f"Duplicates removed<br>n={n_total_dup:,} ({_pct(n_total_dup, n_wos_original)})",                # 2
+        # Unique pool
+        f"Unique records<br>after dedup<br>(n={n_identified:,})",                                        # 3
+        # Abstract screening entry
+        f"Scopus<br>abstract screening<br>(n={n_scopus:,})",                                             # 4
+        f"WoS net-new<br>abstract screening<br>(n={n_wos_net:,})",                                       # 5
+        # Abstract outcomes — Scopus
+        f"Abstract included — Scopus<br>n={n_sc_include:,} ({_pct(n_sc_include, n_scopus)})",            # 6
+        f"Abstract excluded — Scopus<br>n={n_sc_exclude:,} ({_pct(n_sc_exclude, n_scopus)})",            # 7
+        # Abstract outcomes — WoS
+        f"Abstract included — WoS<br>n={n_wos_include:,} ({_pct(n_wos_include, n_wos_net)})",            # 8
+        f"Abstract excluded — WoS<br>n={n_wos_exclude+n_wos_manual:,} ({_pct(n_wos_exclude+n_wos_manual, n_wos_net)})", # 9
+        # Full-text retrieval
+        f"Full-text retrieved — Scopus<br>n={n_ft_retrieved:,} ({_pct(n_ft_retrieved, n_sc_include)})",  # 10
+        f"Pending: not retrievable — Scopus<br>n={n_ft_not_found:,} ({_pct(n_ft_not_found, n_sc_include)})", # 11
+        # Full-text screening
+        f"Full-text included — Scopus<br>n={n_ft_include:,} ({_pct(n_ft_include, n_ft_retrieved)})",    # 12
+        f"Full-text excluded — Scopus<br>n={n_ft_exclude:,} ({_pct(n_ft_exclude, n_ft_retrieved)})",    # 13
+        # Data extraction
+        f"Data extraction — Scopus<br>n={n_coded_ft:,} ({_pct(n_coded_ft, n_ft_include)})",             # 14
+        f"Pending: FT screening — Scopus<br>n={n_ft_pending_screen:,} ({_pct(n_ft_pending_screen, n_ft_retrieved)})", # 15
+        # WoS pending
+        f"Pending: FT retrieval — WoS<br>n={n_wos_include:,} ({_pct(n_wos_include, n_wos_net)})",       # 16
     ]
 
-    excl12_text = "; ".join(f"{k}: {v}" for k, v in sorted(excl12.items(), key=lambda x: -x[1])[:5])
-    excl14_text = "; ".join(f"{k}: {v}" for k, v in sorted(excl14.items(), key=lambda x: -x[1])[:5])
+    # Color palette:
+    #   Greens  → includes / data flowing forward
+    #   Reds / purples → exclusions
+    #   Sky blues → pending / in-progress
+    C_ENTRY   = "#4e79a7"   # steel blue   — entry / screened nodes
+    C_INC     = "#2d8f4e"   # forest green — abstract/FT included
+    C_INC_LT  = "#5ab56e"   # medium green — FT retrieved
+    C_INC_EXT = "#3cb371"   # sea green    — data extraction
+    C_EXC     = "#c0392b"   # crimson      — abstract/FT excluded
+    C_EXC_LT  = "#9b59b6"   # purple       — full-text excluded
+    C_PEND    = "#6baed6"   # sky blue     — pending
 
-    node_colors = [TEAL, BLUE, ORANGE, BLUE, GREY, GREEN, ORANGE, GREEN, GREY, ORANGE]
+    node_colors = [
+        C_ENTRY,    # 0  Scopus identified
+        C_ENTRY,    # 1  WoS identified
+        C_EXC,      # 2  Duplicates removed — red (removed from flow)
+        C_ENTRY,    # 3  Unique records — neutral
+        C_ENTRY,    # 4  Scopus abstract screening — neutral
+        C_ENTRY,    # 5  WoS net-new abstract screening — neutral
+        C_INC,      # 6  Abstract included — Scopus — green
+        C_EXC,      # 7  Abstract excluded — Scopus — red
+        C_INC,      # 8  Abstract included — WoS — green
+        C_EXC,      # 9  Abstract excluded — WoS — red
+        C_INC_LT,   # 10 FT retrieved — medium green
+        C_PEND,     # 11 Pending: not retrieved — sky blue
+        C_INC,      # 12 FT included — green
+        C_EXC_LT,   # 13 FT excluded — purple
+        C_INC_EXT,  # 14 Data extraction — sea green
+        C_PEND,     # 15 Pending: FT screening (Scopus) — sky blue
+        C_PEND,     # 16 Pending: FT retrieval (WoS) — sky blue
+    ]
 
-    sources = [0, 0, 1, 1, 3, 3, 5, 4, 3]
-    targets = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    sources = [0,  1,  1,  3,  3,  4,  4,  5,  5,  6,  6,  10, 10, 12, 12, 8 ]
+    targets = [3,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16]
     values  = [
-        max(n_abs_include, 1),
-        max(n_abs_exclude, 1),
-        max(n_ft_retrieved, 1),
-        max(n_ft_not_found, 1),
-        max(n_ft_include, 1),
-        max(n_ft_exclude, 1),
-        max(n_coded_ft, 1),
-        max(n_ft_not_found, 1),
-        max(n_ft_pending_screen, 1),
+        max(n_scopus, 1),                       # 0→3  Scopus to unique
+        max(n_total_dup, 1),                    # 1→2  WoS duplicates removed
+        max(n_wos_net, 1),                      # 1→3  WoS net-new to unique
+        max(n_scopus, 1),                       # 3→4  unique → Scopus screening
+        max(n_wos_net, 1),                      # 3→5  unique → WoS screening
+        max(n_sc_include, 1),                   # 4→6
+        max(n_sc_exclude, 1),                   # 4→7
+        max(n_wos_include, 1),                  # 5→8
+        max(n_wos_exclude + n_wos_manual, 1),   # 5→9
+        max(n_ft_retrieved, 1),                 # 6→10
+        max(n_ft_not_found, 1),                 # 6→11
+        max(n_ft_include, 1),                   # 10→12
+        max(n_ft_exclude, 1),                   # 10→13
+        max(n_coded_ft, 1),                     # 12→14
+        max(n_ft_pending_screen, 1),            # 12→15
+        max(n_wos_include, 1),                  # 8→16
     ]
     link_colors = [
-        "rgba(78,121,167,0.3)",
-        "rgba(255,160,72,0.3)",
-        "rgba(78,121,167,0.3)",
-        "rgba(158,158,158,0.25)",
-        "rgba(89,161,79,0.3)",
-        "rgba(255,160,72,0.3)",
-        "rgba(89,161,79,0.3)",
-        "rgba(158,158,158,0.2)",
-        "rgba(255,160,72,0.25)",
+        "rgba(78,121,167,0.28)",   # 0→3  Scopus to unique
+        "rgba(192,57,43,0.22)",    # 1→2  WoS duplicates (red)
+        "rgba(78,121,167,0.22)",   # 1→3  WoS net-new to unique
+        "rgba(78,121,167,0.25)",   # 3→4  unique → Scopus screening
+        "rgba(78,121,167,0.18)",   # 3→5  unique → WoS screening
+        "rgba(45,143,78,0.30)",    # 4→6  abstract included — Scopus (green)
+        "rgba(192,57,43,0.22)",    # 4→7  abstract excluded — Scopus (red)
+        "rgba(45,143,78,0.30)",    # 5→8  abstract included — WoS (green)
+        "rgba(192,57,43,0.18)",    # 5→9  abstract excluded — WoS (red)
+        "rgba(90,181,110,0.30)",   # 6→10 FT retrieved (medium green)
+        "rgba(107,174,214,0.22)",  # 6→11 pending: not retrieved (sky blue)
+        "rgba(45,143,78,0.30)",    # 10→12 FT included (green)
+        "rgba(155,89,182,0.22)",   # 10→13 FT excluded (purple)
+        "rgba(60,179,113,0.32)",   # 12→14 data extraction (sea green)
+        "rgba(107,174,214,0.20)",  # 12→15 pending FT screening (sky blue)
+        "rgba(107,174,214,0.25)",  # 8→16  WoS pending FT retrieval (sky blue)
     ]
     link_labels = [
-        f"Included after abstract screening: {n_abs_include:,}",
-        f"Excluded at abstract: {n_abs_exclude:,}" + (f"<br>{excl12_text}" if excl12_text else ""),
-        f"Full texts retrieved: {n_ft_retrieved:,}",
-        f"Full text not retrievable automatically: {n_ft_not_found:,}",
-        f"Included after full-text screening: {n_ft_include:,}",
-        f"Excluded at full-text: {n_ft_exclude:,}" + (f"<br>{excl14_text}" if excl14_text else ""),
-        f"Data extraction complete: {n_coded_ft:,}",
-        f"Awaiting manual retrieval: {n_ft_not_found:,}",
-        f"Full text retrieved — full-text screening pending: {n_ft_pending_screen:,}",
+        f"Scopus: {n_scopus:,} records identified",
+        f"Cross-database duplicates removed: {n_total_dup:,}",
+        f"WoS net-new (unique to WoS): {n_wos_net:,}",
+        f"Scopus → abstract screening: {n_scopus:,}",
+        f"WoS net-new → abstract screening: {n_wos_net:,}",
+        f"Abstract included — Scopus: {n_sc_include:,}" + (f"<br>Top criteria: {excl12_text}" if excl12_text else ""),
+        f"Abstract excluded — Scopus: {n_sc_exclude:,}",
+        f"Abstract included — WoS: {n_wos_include:,}",
+        f"Abstract excluded — WoS: {n_wos_exclude + n_wos_manual:,}",
+        f"Full-text retrieved (Scopus): {n_ft_retrieved:,}",
+        f"Not retrievable automatically (Scopus): {n_ft_not_found:,}",
+        f"Full-text included (Scopus): {n_ft_include:,}" + (f"<br>Top criteria: {excl14_text}" if excl14_text else ""),
+        f"Full-text excluded (Scopus): {n_ft_exclude:,}",
+        f"Data extraction complete (Scopus): {n_coded_ft:,}",
+        f"Pending FT screening — Scopus: {n_ft_pending_screen:,}",
+        f"Pending FT retrieval — WoS: {n_wos_include:,}",
     ]
 
     fig = go.Figure(go.Sankey(
         arrangement="snap",
         node=dict(
-            pad=20, thickness=25,
+            pad=45, thickness=18,
             line=dict(color="white", width=1),
             label=labels,
             color=node_colors,
@@ -1630,23 +1746,54 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
 
     fig.update_layout(
         title=dict(
-            text="<b>ROSES Flow Diagram</b><br><sup>Record flow across all screening stages · hover nodes and links for detail</sup>",
+            text=(
+                "<b>ROSES Flow Diagram — Scopus + Web of Science</b><br>"
+                "<sup>Record flow across all screening stages · hover nodes and links for detail · "
+                "WoS full-text retrieval pending</sup>"
+            ),
             x=0.5, xanchor="center", font=dict(size=14),
         ),
-        height=520,
+        height=960,
         font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
         paper_bgcolor="white",
-        margin=dict(l=20, r=20, t=90, b=20),
+        margin=dict(l=20, r=20, t=100, b=30),
     )
     _save_plotly(fig, "roses_flow", out_dir)
 
+    # Export the same Sankey as a high-res PNG so the downloaded file
+    # matches the interactive chart exactly.
+    try:
+        png_path = out_dir / "roses_flow.png"
+        fig.write_image(str(png_path), scale=2, width=1400, height=960)
+        print(f"[step16] Saved -> roses_flow.png (Plotly/kaleido)")
+    except Exception as _e:
+        print(f"[step16] kaleido PNG export failed ({_e}) — static matplotlib PNG kept")
+
     roses_df = pd.DataFrame({
-        "stage": ["Records identified", "Abstract screening — included", "Abstract screening — excluded",
-                  "Full texts retrieved", "Full texts not retrieved (pending retrieval)",
-                  "Full-text screening — included", "Full-text screening — excluded", "Data extraction"],
-        "n": [n_identified, n_abs_include, n_abs_exclude,
-              n_ft_retrieved, n_ft_not_found,
-              n_ft_include, n_ft_exclude, n_coded_ft],
+        "stage": [
+            "Scopus — identified", "WoS — identified",
+            "Cross-database duplicates removed",
+            "Unique records after deduplication",
+            "Scopus — abstract screening", "WoS net-new — abstract screening",
+            "Abstract included — Scopus", "Abstract excluded — Scopus",
+            "Abstract included — WoS", "Abstract excluded — WoS",
+            "Full-text retrieved (Scopus)", "Pending: not retrievable (Scopus)",
+            "Full-text included (Scopus)", "Full-text excluded (Scopus)",
+            "Data extraction (Scopus)", "Pending: FT screening (Scopus)",
+            "Pending: FT retrieval (WoS)",
+        ],
+        "n": [
+            n_scopus, n_wos_original,
+            n_total_dup,
+            n_identified,
+            n_scopus, n_wos_net,
+            n_sc_include, n_sc_exclude,
+            n_wos_include, n_wos_exclude + n_wos_manual,
+            n_ft_retrieved, n_ft_not_found,
+            n_ft_include, n_ft_exclude,
+            n_coded_ft, n_ft_pending_screen,
+            n_wos_include,
+        ],
     })
     _save_csv(roses_df, "roses_flow", out_dir)
 
@@ -1654,20 +1801,23 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
 _BLANK = {"nan", "not_reported", "not_found", "none_reported", ""}
 
 def _export_studies_json(df: pd.DataFrame, out_dir: Path) -> None:
-    """Export a simplified studies JSON for the frontend searchable database."""
+    """Export a simplified studies JSON for the frontend searchable database.
+    Only includes records that have been LLM-coded (publication_year_value non-empty).
+    """
     KEEP = [
-        ("doi",                           "doi"),
-        ("title",                         "title"),
-        ("publication_year_value",        "year"),
-        ("publication_type_value",        "pub_type"),
-        ("country_region_value",          "country"),
-        ("geographic_scale_value",        "geo_scale"),
-        ("producer_type_value",           "producer_type"),
-        ("adaptation_focus_value",        "adaptation_focus"),
-        ("domain_type_value",             "domain_type"),
-        ("methodological_approach_value", "methodology"),
-        ("equity_inclusion_value",        "equity"),
+        ("doi",                              "doi"),
+        ("title",                            "title"),
+        ("publication_year_value",           "year"),
+        ("publication_type_value",           "pub_type"),
+        ("country_region_value",             "country"),
+        ("geographic_scale_value",           "geo_scale"),
+        ("producer_type_value",              "producer_type"),
+        ("adaptation_focus_value",           "adaptation_focus"),
+        ("process_outcome_domains_value",    "domain_type"),
+        ("methodological_approach_value",    "methodology"),
+        ("marginalized_subpopulations_value","equity"),
     ]
+
     rows = []
     for _, row in df.iterrows():
         rec = {}
@@ -1693,15 +1843,15 @@ def _export_studies_json(df: pd.DataFrame, out_dir: Path) -> None:
 def _export_studies_csv(df: pd.DataFrame, out_dir: Path) -> None:
     """Export simplified studies CSV for download."""
     KEEP = [
-        ("doi",                           "doi"),
-        ("title",                         "title"),
-        ("publication_year_value",        "year"),
-        ("country_region_value",          "country"),
-        ("producer_type_value",           "producer_type"),
-        ("adaptation_focus_value",        "adaptation_focus"),
-        ("domain_type_value",             "domain_type"),
-        ("methodological_approach_value", "methodology"),
-        ("equity_inclusion_value",        "equity"),
+        ("doi",                              "doi"),
+        ("title",                            "title"),
+        ("publication_year_value",           "year"),
+        ("country_region_value",             "country"),
+        ("producer_type_value",              "producer_type"),
+        ("adaptation_focus_value",           "adaptation_focus"),
+        ("process_outcome_domains_value",    "domain_type"),
+        ("methodological_approach_value",    "methodology"),
+        ("marginalized_subpopulations_value","equity"),
     ]
     out_df = pd.DataFrame()
     for src_col, dst_col in KEEP:
@@ -1760,15 +1910,17 @@ def run(config: dict) -> dict:
 
     figures_saved: List[str] = []
 
-    # ROSES — always produced (reads from meta.json files, not coded data)
+    # ROSES — interactive Sankey first (exports both JSON and PNG via kaleido).
+    # The old matplotlib _roses_flow is called as a fallback only if kaleido fails.
     print("[step16] Producing ROSES flow diagram...")
-    _roses_flow(out_root, out_dir)
-    figures_saved.append("roses_flow.png")
-    _roses_interactive(out_root, out_dir)
+    _roses_interactive(out_root, out_dir)   # writes roses_flow.json + roses_flow.png
     figures_saved.append("roses_flow.json")
+    figures_saved.append("roses_flow.png")
 
-    # Load coded data for all other figures
+    # Load coded data for figures (LLM-coded only) and full CSV for studies table
     df = _load_coded(out_root)
+    p15 = _step15_csv(out_root)
+    df_all = pd.read_csv(p15, engine="python", on_bad_lines="skip") if p15.exists() else pd.DataFrame()
 
     if df.empty:
         print("[step16] No full-text coded records yet — only ROSES diagram produced.")
@@ -1813,13 +1965,15 @@ def run(config: dict) -> dict:
                 print(f"[step16] WARNING: {label} failed — {type(e).__name__}: {e}")
 
         try:
+            # studies.json — coded records only (columns populated)
             _export_studies_json(df, out_dir)
             figures_saved.append("studies.json")
         except Exception as e:
             print(f"[step16] WARNING: studies.json failed — {e}")
 
         try:
-            _export_studies_csv(df, out_dir)
+            # studies.csv — full corpus for download (all records, coded fields where available)
+            _export_studies_csv(df_all if not df_all.empty else df, out_dir)
             figures_saved.append("studies.csv")
         except Exception as e:
             print(f"[step16] WARNING: studies.csv failed — {e}")

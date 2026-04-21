@@ -26,6 +26,13 @@ HOURS_EST        = 0.8    # ~50 papers / 40 hrs (expected)
 CALIB_PAPERS     = 5
 BATCH_PAPERS     = 50
 
+# ── Key dates ─────────────────────────────────────────────────────────────────
+DATE_START       = "21 April 2026"
+DATE_END         = "21 July 2026"
+DATE_CALIB       = "Wednesday, 22 April 2026"
+DATE_BATCH1      = "Friday, 1 May 2026"
+DATE_BATCH2      = "Friday, 8 May 2026"
+
 def fee_range(n_papers):
     lo  = int(n_papers * HOURS_MIN * HOURLY_RATE_PKR)
     hi  = int(n_papers * HOURS_MAX * HOURLY_RATE_PKR)
@@ -132,19 +139,35 @@ def tbl_move(t):
 # Segments text on [...] tokens and highlights them yellow.
 
 _PLACEHOLDER = re.compile(r"(\[[^\]]+\])")
+_DATE_TAG    = re.compile(r"(\{d:[^}]+\})")
+_ENTITY_TAG  = re.compile(r"(\{e:[^}]+\})")
+_ALL_TAGS    = re.compile(r"(\[[^\]]+\]|\{d:[^}]+\}|\{e:[^}]+\})")
 
 def _add_runs(p, text, bold=False, italic=False, highlight=False):
-    """Add text to paragraph, auto-highlighting any [...] tokens in yellow."""
-    parts = _PLACEHOLDER.split(text)
+    """Add text to paragraph.
+    Tokens:
+      [...]       → yellow highlight  (unfilled placeholder)
+      {d:DATE}    → bold + underline  (key date)
+      {e:NAME}    → bold              (entity / party name)
+    """
+    parts = _ALL_TAGS.split(text)
     for part in parts:
         if not part:
             continue
-        run = p.add_run(part)
-        run.bold   = bold
-        run.italic = italic
-        is_ph = bool(_PLACEHOLDER.fullmatch(part))
-        if is_ph or highlight:
-            run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+        if _DATE_TAG.fullmatch(part):
+            run = p.add_run(part[3:-1])   # strip {d: and }
+            run.bold      = True
+            run.underline = True
+        elif _ENTITY_TAG.fullmatch(part):
+            run = p.add_run(part[3:-1])   # strip {e: and }
+            run.bold = True
+        else:
+            run = p.add_run(part)
+            run.bold   = bold
+            run.italic = italic
+            is_ph = bool(_PLACEHOLDER.fullmatch(part))
+            if is_ph or highlight:
+                run.font.highlight_color = WD_COLOR_INDEX.YELLOW
     return p
 
 def _cell_runs(cell, label, value, label_bold=True):
@@ -310,15 +333,20 @@ para(
 # ── 4. Term ───────────────────────────────────────────────────────────────
 h("4.  Term")
 para(
-    "This Agreement commences on 21 April 2026 and has an initial term of three (3) months, "
-    "expiring on 21 July 2026. Either Party may extend by mutual written agreement "
+    f"This Agreement commences on {{d:{DATE_START}}} and has an initial term of three (3) months, "
+    f"expiring on {{d:{DATE_END}}}. Either Party may extend by mutual written agreement "
     "before the expiry date. If no extension is agreed, the Agreement terminates automatically "
     "at the end of the initial term, with payment for all completed and accepted work to that date.")
 
 # ── 5. Timeline and Delivery ──────────────────────────────────────────────
 h("5.  Timeline and Delivery")
 para(
-    "Batch deadlines will be agreed in writing (email) at the start of each batch. "
+    f"The initial schedule is: calibration batch ({CALIB_PAPERS} papers) due {{d:{DATE_CALIB}}}; "
+    f"Batch 1 (~{BATCH_PAPERS} papers) due {{d:{DATE_BATCH1}}}; "
+    f"Batch 2 (~{BATCH_PAPERS} papers) due {{d:{DATE_BATCH2}}}. "
+    "Subsequent batch deadlines will be agreed in writing (email) at the start of each batch. "
+    "All deadlines are contingent on {e:Bristlepine Resilience Consultants LLC} providing the "
+    "papers to the Consultant at least one (1) week before each batch deadline. "
     "The Consultant shall notify Bristlepine promptly if a deadline cannot be met. "
     "Repeated missed deadlines without notice are grounds for termination under Clause 6.")
 
@@ -510,7 +538,7 @@ para(
 h("Role", level=3)
 para(
     "Evidence coder \u2014 data extraction phase. The Consultant reads full-text papers and "
-    "codes each against 18 structured fields in the project codebook, working independently.")
+    "codes each against 16 structured fields in the project codebook (Appendix D), working independently.")
 
 h("Deliverables and Fees", level=3)
 
@@ -525,17 +553,17 @@ for i, hdr in enumerate(["#", "Deliverable", "Deadline", "Est. hours", "Fee (PKR
 exA_data = [
     ("1",
      f"Calibration batch ({CALIB_PAPERS} papers) \u2014 coding_ft_r1a_[initials].csv",
-     "[Date]",
+     f"{{d:{DATE_CALIB}}}",
      f"{ch_lo}\u2013{ch_hi} hrs",
      f"Rs. {c_lo:,}\u2013{c_hi:,}"),
     ("2",
      f"Batch 1 (~{BATCH_PAPERS} papers) \u2014 coding_[round]_[initials].csv",
-     "[Date]",
+     f"{{d:{DATE_BATCH1}}}",
      f"{bh_lo}\u2013{bh_hi} hrs",
      f"Rs. {b_lo:,}\u2013{b_hi:,}"),
     ("3",
      f"Batch 2 (~{BATCH_PAPERS} papers)",
-     "[Date]",
+     f"{{d:{DATE_BATCH2}}}",
      f"{bh_lo}\u2013{bh_hi} hrs",
      f"Rs. {b_lo:,}\u2013{b_hi:,}"),
     ("4+",
@@ -548,13 +576,21 @@ for ri, row in enumerate(exA_data, 1):
     for ci, val in enumerate(row):
         cell = exA.rows[ri].cells[ci]
         p    = cell.paragraphs[0]
-        for part in _PLACEHOLDER.split(val):
+        for part in _ALL_TAGS.split(val):
             if not part:
                 continue
-            run = p.add_run(part)
-            run.font.size = Pt(10)
-            if _PLACEHOLDER.fullmatch(part):
+            if _DATE_TAG.fullmatch(part):
+                run = p.add_run(part[3:-1])
+                run.font.size = Pt(10)
+                run.bold      = True
+                run.underline = True
+            elif _PLACEHOLDER.fullmatch(part):
+                run = p.add_run(part)
+                run.font.size = Pt(10)
                 run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+            else:
+                run = p.add_run(part)
+                run.font.size = Pt(10)
 tbl_move(exA)
 blank()
 
@@ -841,6 +877,28 @@ for ri, (label, val) in enumerate(cSig_data):
             rrun.font.highlight_color = WD_COLOR_INDEX.YELLOW
     cSig.rows[ri].height = Cm(1.0)
 tbl_move(cSig)
+
+# ══════════════════════════════════════════════════════════════════════════
+# APPENDIX D — Coding Reference (Codebook)
+# ══════════════════════════════════════════════════════════════════════════
+page_break()
+
+h("Appendix D \u2014 Coding Reference (Codebook)", level=1)
+para(
+    "The full codebook governing this engagement is attached below. "
+    "It defines valid values, coding rules, and examples for all 16 structured fields. "
+    "Coders must use the codebook as their primary reference throughout all rounds.",
+    italic=True)
+blank()
+para(
+    "Document: CODEBOOK_FT-R1a.pdf \u2014 ILRI / Bristlepine Resilience Consultants, 2025\u20132026",
+    bold=True)
+para(
+    "The codebook is also available in the shared Google Drive folder provided to each coder "
+    "at the start of the engagement. If the codebook is updated between rounds, "
+    "{e:Bristlepine Resilience Consultants LLC} will notify the Consultant in writing and "
+    "provide the revised version before the next batch begins.")
+blank()
 
 # ── Save ──────────────────────────────────────────────────────────────────
 doc.save(OUT)
