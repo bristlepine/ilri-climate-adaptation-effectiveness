@@ -1,0 +1,16 @@
+stage,database,n,note
+Scopus records,Scopus,17021,
+WOS records,Web of Science,15179,
+Total combined,Both,32200,Before deduplication
+Duplicates removed — DOI exact match,Both,10234,
+Duplicates removed — title+year exact,Both,253,
+Duplicates removed — fuzzy Jaccard≥0.85,Both,9,
+Total duplicates removed,Both,10496,
+WOS net-new records,Web of Science,4683,After removing Scopus duplicates
+Unique records after deduplication,Both,21704,Scopus + WOS net-new
+Scopus: included after abstract screening,Scopus,6218,
+Scopus: excluded after abstract screening,Scopus,10803,
+WOS: included after abstract screening,Web of Science,1137,3 Needs_Manual
+WOS: excluded after abstract screening,Web of Science,3543,
+Full texts retrieved (Scopus),Scopus,3570,
+Needs manual retrieval (Scopus),Scopus,2648,

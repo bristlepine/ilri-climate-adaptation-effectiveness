@@ -39,6 +39,7 @@ export default function PlotlyChart({ src, fallbackImg, pngSrc, csvSrc, height =
 
   const mergedConfig = {
     responsive: true, displaylogo: false,
+    scrollZoom: false,
     modeBarButtonsToRemove: ['lasso2d', 'select2d'],
     toImageButtonOptions: { format: 'png', scale: 2 },
     ...(config ?? {}),

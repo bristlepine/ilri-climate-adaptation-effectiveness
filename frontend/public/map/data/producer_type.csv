@@ -1,7 +1,11 @@
 producer_type,n_studies
-undefined,256
-crop,213
-livestock,79
-fisheries_aquaculture,43
-mixed,35
-agroforestry,29
+undefined,839
+crop,696
+livestock,238
+fisheries_aquaculture,127
+mixed,91
+agroforestry,84
+agriculture,1
+crop | livestock,1
+horticulture,1
+agropastoralists,1

@@ -1,28 +1,34 @@
 methodology,n_studies
-quantitative,223
-qualitative; participatory,102
-quantitative; participatory,66
-qualitative; quantitative,65
-qualitative,47
-quantitative; modeling_with_empirical_validation,25
-participatory; qualitative,14
-modeling_with_empirical_validation,12
-quantitative; qualitative,11
-participatory,6
-participatory; modeling_with_empirical_validation,4
-quantitative; participatory_methods,4
-qualitative; quantitative; participatory,4
-participatory; quantitative,3
-qualitative; secondary_data,2
+quantitative,737
+qualitative; participatory,273
+qualitative; quantitative,196
+quantitative; participatory,184
+qualitative,165
+quantitative; modeling_with_empirical_validation,72
+quantitative; qualitative,60
+participatory; qualitative,34
+modeling_with_empirical_validation,29
+quantitative; participatory_methods,15
+participatory,13
+qualitative; quantitative; participatory,7
+participatory; modeling_with_empirical_validation,7
+participatory; quantitative,6
+other,6
+qualitative; secondary_data,4
+experimental,4
+quantitative; remote_sensing,3
+quantitative; experimental,3
 qualitative; quantitative; participatory; modeling_with_empirical_validation,2
-experimental,2
-quantitative; experimental,1
-experimental; qualitative,1
-participatory; experimental,1
-participatory; surveys,1
-qualitative; modeling_with_empirical_validation,1
-quantitative; qualitative; modeling_with_empirical_validation,1
-qualitative; experimental,1
-other,1
-quantitative; remote_sensing,1
+experimental; quantitative,1
+quantitative; qualitative; participatory,1
+quantitative; remote_sensing; participatory_methods,1
+qualitative; surveys,1
 quantitative; secondary_data,1
+participatory; experimental,1
+remote_sensing,1
+qualitative; experimental,1
+quantitative; qualitative; modeling_with_empirical_validation,1
+qualitative; modeling_with_empirical_validation,1
+participatory; surveys,1
+experimental; qualitative,1
+qualitative; quantitative; secondary_data,1

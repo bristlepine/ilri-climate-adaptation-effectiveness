@@ -184,14 +184,20 @@ def _load_coded(out_root: Path) -> pd.DataFrame:
         print(f"[step16] step15 coded CSV not found: {p}")
         return pd.DataFrame()
     df = pd.read_csv(p, engine="python", on_bad_lines="skip")
-    # Only full-text records
-    full = df[df.get("coding_source", pd.Series(dtype=str)).astype(str) == "full_text"].copy()
-    # Only records actually coded by LLM (publication_year_value non-empty)
-    yr_col = "publication_year_value"
-    if yr_col in full.columns:
-        full = full[full[yr_col].astype(str).str.strip().isin(["", "nan", "not_found"]) == False].copy()
-    print(f"[step16] LLM-coded records for figures: {len(full):,} / {len(df):,} total in CSV")
-    return full
+    # Use parse_ok=True as the authoritative indicator that the LLM processed the record.
+    # Records not yet reached by step15 have parse_ok=NaN.
+    if "parse_ok" in df.columns:
+        coded = df[df["parse_ok"].astype(str).str.lower() == "true"].copy()
+    else:
+        # Fallback if parse_ok column absent: non-empty publication_year_value
+        yr_col = "publication_year_value"
+        if yr_col in df.columns:
+            mask = df[yr_col].astype(str).str.strip().isin(["", "nan", "not_found"])
+            coded = df[~mask].copy()
+        else:
+            coded = df.copy()
+    print(f"[step16] LLM-coded records for figures: {len(coded):,} / {len(df):,} total in CSV")
+    return coded
 
 
 _SKIP = {"nan", "", "not_found", "n/a", "none", "unknown", "unclear"}
@@ -1919,8 +1925,6 @@ def run(config: dict) -> dict:
 
     # Load coded data for figures (LLM-coded only) and full CSV for studies table
     df = _load_coded(out_root)
-    p15 = _step15_csv(out_root)
-    df_all = pd.read_csv(p15, engine="python", on_bad_lines="skip") if p15.exists() else pd.DataFrame()
 
     if df.empty:
         print("[step16] No full-text coded records yet — only ROSES diagram produced.")
@@ -1972,8 +1976,8 @@ def run(config: dict) -> dict:
             print(f"[step16] WARNING: studies.json failed — {e}")
 
         try:
-            # studies.csv — full corpus for download (all records, coded fields where available)
-            _export_studies_csv(df_all if not df_all.empty else df, out_dir)
+            # studies.csv — coded records only (same filter as studies.json)
+            _export_studies_csv(df, out_dir)
             figures_saved.append("studies.csv")
         except Exception as e:
             print(f"[step16] WARNING: studies.csv failed — {e}")
