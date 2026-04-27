@@ -91,6 +91,13 @@ scripts/results/
 # Contracts / HR documents (sensitive, not versioned)
 # -------------------------------
 documentation/coding/systematic-map/contracts/
+deliverables/*signed*.pdf
+deliverables/*contract*.pdf
+
+# -------------------------------
+# Google API credentials (never commit)
+# -------------------------------
+deliverables/.credentials/
 
 # -------------------------------
 # Temporary

@@ -517,6 +517,22 @@ def _producer_type_bar(df: pd.DataFrame, out_dir: Path) -> None:
 # 4. METHODOLOGY
 # =============================================================================
 
+_METHOD_LABELS: Dict[str, str] = {
+    "quantitative":                       "Quantitative",
+    "qualitative":                        "Qualitative",
+    "participatory":                      "Participatory",
+    "participatory_methods":              "Participatory",
+    "modeling_with_empirical_validation": "Modelling",
+    "experimental":                       "Experimental / RCT",
+    "secondary_data":                     "Secondary data",
+    "remote_sensing":                     "Remote sensing / GIS",
+    "surveys":                            "Survey / Questionnaire",
+    "longitudinal":                       "Longitudinal / Panel",
+    "mixed-methods":                      "Mixed methods",
+    "other":                              "Other",
+}
+
+
 def _methodology_bar(df: pd.DataFrame, out_dir: Path) -> None:
     if df.empty:
         return
@@ -531,22 +547,34 @@ def _methodology_bar(df: pd.DataFrame, out_dir: Path) -> None:
     if col not in df.columns:
         return
 
-    vals = df[col].dropna().astype(str).str.strip()
-    vals = vals[vals.str.lower().isin(["", "nan", "not_found"]) == False]
-    if vals.empty:
+    # Expand semicolon-separated multi-values, then apply label map
+    items = _split_multi(df[col])
+    if not items:
         return
 
-    counts = vals.value_counts()
-    fig, ax = plt.subplots(figsize=(9, 5))
+    raw_counts = pd.Series(items).value_counts()
+    # Merge synonyms via label map
+    merged: Dict[str, int] = {}
+    for raw, n in raw_counts.items():
+        label = _METHOD_LABELS.get(raw.lower().strip(), raw.replace("_", " ").title())
+        merged[label] = merged.get(label, 0) + n
+    counts = pd.Series(merged).sort_values(ascending=False).head(12)
+
+    fig, ax = plt.subplots(figsize=(10, max(4, len(counts) * 0.52)))
     colors = PALETTE[:len(counts)]
     bars = ax.barh(counts.index[::-1], counts.values[::-1],
                    color=colors[::-1], edgecolor="white", linewidth=0.5)
     for bar, val in zip(bars, counts.values[::-1]):
-        ax.text(bar.get_width() + 0.3, bar.get_y() + bar.get_height()/2,
-                str(val), va="center", fontsize=9)
+        ax.text(bar.get_width() + counts.max() * 0.01,
+                bar.get_y() + bar.get_height() / 2,
+                str(val), va="center", fontsize=9, color=DKGREY)
     ax.set_xlabel("Number of Studies", fontsize=11)
-    ax.set_title(f"Methodological Approach  (n={len(vals):,})", fontsize=12, fontweight="bold")
+    ax.set_title(f"Methodological Approach  (n={len(items):,} method tags, multi-select)",
+                 fontsize=12, fontweight="bold")
     ax.spines[["top", "right"]].set_visible(False)
+    ax.tick_params(axis="y", labelsize=10)
+    ax.margins(x=0.14)
+    fig.tight_layout()
     _save(fig, out_dir / "methodology_bar.png")
 
 
@@ -630,19 +658,30 @@ def _geographic_bar(df: pd.DataFrame, out_dir: Path) -> None:
     if not items:
         return
 
+    TOP_N = 25
+    MIN_COUNT = 2
     counts = pd.Series(items).value_counts()
-    fig_h = max(6, len(counts) * 0.35)
+    # Keep top N with at least MIN_COUNT studies
+    counts = counts[counts >= MIN_COUNT].head(TOP_N)
+    if counts.empty:
+        return
+
+    fig_h = max(5, len(counts) * 0.38)
     fig, ax = plt.subplots(figsize=(10, fig_h))
-    colors = [BLUE if i < 10 else GREY for i in range(len(counts))]
+    colors = [BLUE if i < 10 else TEAL for i in range(len(counts))]
     bars = ax.barh(counts.index[::-1], counts.values[::-1],
                    color=colors[::-1], edgecolor="white", linewidth=0.5)
     for bar, val in zip(bars, counts.values[::-1]):
-        ax.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height()/2,
-                str(val), va="center", fontsize=8)
+        ax.text(bar.get_width() + 0.3, bar.get_y() + bar.get_height() / 2,
+                str(val), va="center", fontsize=9, color=DKGREY)
     ax.set_xlabel("Number of Studies", fontsize=11)
-    ax.set_title(f"Countries / Regions by Study Count  (n={len(df):,})",
-                 fontsize=12, fontweight="bold")
+    ax.set_title(
+        f"Top Countries by Study Count  (n={len(df):,} coded records, top {len(counts)} shown)",
+        fontsize=12, fontweight="bold",
+    )
     ax.spines[["top", "right"]].set_visible(False)
+    ax.tick_params(axis="y", labelsize=10)
+    ax.margins(x=0.12)
     _save(fig, out_dir / "geographic_bar.png")
 
 
@@ -684,15 +723,29 @@ def _geographic_map(df: pd.DataFrame, out_dir: Path) -> None:
     merged = world.merge(counts, left_on=name_col, right_on="country", how="left")
     merged["count"] = merged["count"].fillna(0)
 
-    fig, ax = plt.subplots(figsize=(15, 8))
-    world.plot(ax=ax, color="#EEEEEE", edgecolor="#CCCCCC", linewidth=0.3)
+    # Zoom to cover Africa, Asia, and all of the Americas
+    XLIM = (-125, 155)
+    YLIM = (-57, 60)
+
+    fig, ax = plt.subplots(figsize=(14, 7))
+    # Base layer: all countries in light grey
+    world.plot(ax=ax, color="#EEEEEE", edgecolor="none")
+    # Fill layer: countries with studies (no edge — borders drawn on top)
     merged[merged["count"] > 0].plot(
         column="count", ax=ax, cmap="YlOrRd",
         legend=True,
-        legend_kwds={"label": "Number of Studies", "shrink": 0.5},
+        legend_kwds={"label": "Number of Studies", "shrink": 0.45, "pad": 0.01},
     )
-    ax.set_title("Geographic Distribution of Studies", fontsize=13, fontweight="bold")
+    # Border layer: draw all country borders on top of fill
+    world.plot(ax=ax, color="none", edgecolor="#AAAAAA", linewidth=0.4)
+    ax.set_xlim(*XLIM)
+    ax.set_ylim(*YLIM)
+    ax.set_title(
+        f"Geographic Distribution of Studies  (n={len(df):,} coded records)",
+        fontsize=13, fontweight="bold",
+    )
     ax.axis("off")
+    fig.tight_layout()
     _save(fig, out_dir / "geographic_map.png")
 
 
@@ -719,20 +772,34 @@ def _domain_type_bar(df: pd.DataFrame, out_dir: Path) -> None:
         return
 
     counts = pd.Series(items).value_counts()
-    fig, ax = plt.subplots(figsize=(7, 4))
+    # Shorten raw coded values to readable labels
+    DOMAIN_TYPE_LABELS = {
+        "process":          "Process domain",
+        "outcome":          "Outcome domain",
+        "both":             "Both",
+        "process_outcome":  "Both",
+    }
+    labels = [DOMAIN_TYPE_LABELS.get(k.lower().strip(), k.replace("_", " ").title())
+              for k in counts.index]
+
+    fig, ax = plt.subplots(figsize=(7, 5))
     colors = [BLUE, GREEN, ORANGE][:len(counts)]
-    bars = ax.bar(counts.index, counts.values,
+    bars = ax.bar(labels, counts.values,
                   color=colors, edgecolor="white", linewidth=0.5, width=0.5)
     total = counts.sum()
     for bar, val in zip(bars, counts.values):
         pct = val / total * 100 if total else 0
-        ax.text(bar.get_x() + bar.get_width()/2,
-                bar.get_height() + total * 0.01,
-                f"{val:,}\n({pct:.1f}%)", ha="center", va="bottom", fontsize=9)
+        ax.text(bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + counts.max() * 0.02,
+                f"{val:,}  ({pct:.1f}%)", ha="center", va="bottom", fontsize=10)
     ax.set_ylabel("Number of Studies", fontsize=11)
-    ax.set_title(f"Process/Outcome Domains  (n={len(df):,} studies)", fontsize=12, fontweight="bold")
-    ax.set_ylim(0, counts.max() * 1.2)
+    ax.set_title(f"Process vs. Outcome Domains  (n={len(df):,} coded records)",
+                 fontsize=12, fontweight="bold")
+    # Extra headroom so annotations don't clip
+    ax.set_ylim(0, counts.max() * 1.28)
+    ax.tick_params(axis="x", labelsize=11)
     ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
     _save(fig, out_dir / "domain_type_bar.png")
 
 
@@ -750,27 +817,37 @@ def _equity_bar(df: pd.DataFrame, out_dir: Path) -> None:
     except ImportError:
         return
 
-    col = "equity_inclusion_value"
-    if col not in df.columns:
+    # Column was renamed in the codebook; try both names
+    col = next((c for c in ("marginalized_subpopulations_value", "equity_inclusion_value")
+                if c in df.columns), None)
+    if col is None:
         return
 
     items = [i for i in _split_multi(df[col])
-             if i.lower() not in ("none_reported", "nan", "")]
+             if i.lower() not in ("none_reported", "nan", "", "other")]
     if not items:
         return
 
-    counts = pd.Series(items).value_counts()
-    fig, ax = plt.subplots(figsize=(8, 4))
-    bars = ax.bar(counts.index, counts.values,
-                  color=PURPLE, edgecolor="white", linewidth=0.5, width=0.5)
+    import textwrap as _tw
+    counts = pd.Series(items).value_counts().head(12)
+    wrapped = ["\n".join(_tw.wrap(k.replace("_", " ").title(), width=16))
+               for k in counts.index]
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    bars = ax.bar(range(len(counts)), counts.values,
+                  color=PURPLE, edgecolor="white", linewidth=0.5, width=0.6)
     for bar, val in zip(bars, counts.values):
-        ax.text(bar.get_x() + bar.get_width()/2,
-                bar.get_height() + 0.3,
-                str(val), ha="center", va="bottom", fontsize=9)
+        ax.text(bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + counts.max() * 0.02,
+                str(val), ha="center", va="bottom", fontsize=10)
+    ax.set_xticks(range(len(counts)))
+    ax.set_xticklabels(wrapped, fontsize=9, ha="center")
     ax.set_ylabel("Number of Studies", fontsize=11)
-    ax.set_title("Equity & Inclusion Dimensions Reported  (multi-select)",
+    ax.set_title("Marginalised Subpopulations Reported  (multi-select, top 12)",
                  fontsize=12, fontweight="bold")
+    ax.set_ylim(0, counts.max() * 1.2)
     ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
     _save(fig, out_dir / "equity_bar.png")
 
 
@@ -1159,6 +1236,14 @@ def _egm_interactive(df: pd.DataFrame, out_root: Path, out_dir: Path) -> None:
     )
 
     _save_plotly(fig, "evidence_gap_map", out_dir)
+
+    # Export as high-res PNG (requires kaleido)
+    try:
+        png_path = out_dir / "evidence_gap_map.png"
+        fig.write_image(str(png_path), scale=2, width=1100, height=780)
+        print(f"[step16] Saved -> evidence_gap_map.png (Plotly/kaleido)")
+    except Exception as _e:
+        print(f"[step16] kaleido PNG export failed for EGM ({_e})")
 
     # CSV export
     egm_rows = []
@@ -1562,22 +1647,23 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     n_sc_exclude   = dec12.get("Exclude", 0)
     excl12         = s12.get("excluded_by_criterion", {})
 
-    # WoS numbers — original import + dedup from step2b
-    n_wos_original = s2b.get("total_imported", 0)    # 15,179 raw WoS records
-    n_total_dup    = s2b.get("total_duplicates", 0)  # 10,496 cross-DB duplicates removed
-    n_wos_net      = s2b.get("total_net_new", 0)     # 4,683 WoS net-new after dedup
+    # Other databases — all non-Scopus sources combined (WoS, CAB, ASP, AGRIS, …)
+    by_db_imported  = s2b.get("by_database_imported", {})
+    by_db_net_new   = s2b.get("by_database_net_new", {})
+    n_total_dup     = s2b.get("total_duplicates", 0)
+    n_other_net     = s2b.get("total_net_new", 0)
 
-    dec12b         = s12b.get("decision_counts", {})
-    n_wos_include  = dec12b.get("Include", 0)
-    n_wos_exclude  = dec12b.get("Exclude", 0)
-    n_wos_manual   = dec12b.get("Needs_Manual", 0)
+    dec12b          = s12b.get("decision_counts", {})
+    n_other_include = dec12b.get("Include", 0)
+    n_other_exclude = dec12b.get("Exclude", 0)
+    n_other_manual  = dec12b.get("Needs_Manual", 0)
 
-    n_identified   = n_scopus + n_wos_net   # 21,704 unique after dedup
-
-    # Full-text retrieval & screening (Scopus only so far)
-    status13       = s13.get("status_counts", {})
-    n_ft_retrieved = status13.get("retrieved", 0)
-    n_ft_not_found = status13.get("needs_manual", 0)
+    # Full-text retrieval — use per-database breakdown so Scopus-specific numbers
+    # are correct. Scopus records are keyed as "unknown" in step13 by_database.
+    by_db13        = s13.get("by_database", {})
+    scopus13       = by_db13.get("unknown", s13.get("status_counts", {}))
+    n_ft_retrieved = scopus13.get("retrieved", 0)   # Scopus-only FT retrieved
+    n_ft_not_found = scopus13.get("needs_manual", 0) # Scopus-only not found
 
     dec14          = s14.get("decision_counts", {})
     n_ft_include   = dec14.get("Include", 0)
@@ -1587,8 +1673,13 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     src15          = s15.get("coding_source_counts", {})
     n_coded_ft     = s15.get("rows_llm_coded") or src15.get("full_text", 0)
 
+    # n_ft_retrieved is Scopus-only; use all-database total as denominator
+    # for subsequent nodes (step14/15 processed all databases jointly).
+    status13_all      = s13.get("status_counts", {})
+    n_ft_retrieved_all = status13_all.get("retrieved", n_ft_retrieved)
+
     n_ft_screened       = n_ft_include + n_ft_exclude
-    n_ft_pending_screen = max(0, n_ft_retrieved - n_ft_screened)
+    n_ft_pending_screen = max(0, n_ft_retrieved_all - n_ft_screened)
 
     excl12_text  = "; ".join(f"{k}: {v}" for k, v in sorted(excl12.items(),  key=lambda x: -x[1])[:3])
     excl14_text  = "; ".join(f"{k}: {v}" for k, v in sorted(excl14.items(),  key=lambda x: -x[1])[:3])
@@ -1596,54 +1687,79 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     # Helper for percentage labels
     _pct = lambda n, d: f"{n/d*100:.0f}%" if d > 0 else "—"
 
-    # ── Nodes (17 total, 0-indexed) ───────────────────────────────────────────
-    # 0  Scopus — identified (raw export)
-    # 1  WoS — identified (raw export, 15,179)
-    # 2  Duplicates removed (cross-DB)       [TERMINAL]
-    # 3  Unique records after dedup
-    # 4  Scopus — abstract screening
-    # 5  WoS net-new — abstract screening
-    # 6  Abstract included — Scopus
-    # 7  Abstract excluded — Scopus          [TERMINAL / exclusion]
-    # 8  Abstract included — WoS
-    # 9  Abstract excluded — WoS             [TERMINAL / exclusion]
-    # 10 Full-text retrieved — Scopus
-    # 11 Pending: not retrievable — Scopus   [TERMINAL / pending]
-    # 12 Full-text included — Scopus
-    # 13 Full-text excluded — Scopus         [TERMINAL / exclusion]
-    # 14 Data extraction — Scopus            [TERMINAL / in progress]
-    # 15 Pending: FT screening — Scopus      [TERMINAL / pending]
-    # 16 Pending: FT retrieval — WoS         [TERMINAL / pending]
+    # Per-database imported/net-new counts (ordered: WoS, CAB, ASP, AGRIS, others)
+    _DB_ORDER = ["Web of Science", "CAB Abstracts", "Academic Search Premier", "AGRIS"]
+    _db_imp = {db: by_db_imported.get(db, 0) for db in _DB_ORDER}
+    _db_net = {db: by_db_net_new.get(db, 0)  for db in _DB_ORDER}
+    # Include any extra databases not in the hard-coded order
+    for db in by_db_imported:
+        if db not in _db_imp:
+            _db_imp[db] = by_db_imported[db]
+            _db_net[db] = by_db_net_new.get(db, 0)
+    _dbs = [db for db in _db_imp if _db_imp[db] > 0]
 
-    labels = [
-        # Database identification
-        f"Scopus<br>identified<br>(n={n_scopus:,})",                                                     # 0
-        f"WoS<br>identified<br>(n={n_wos_original:,})",                                                  # 1
-        # Deduplication
-        f"Duplicates removed<br>n={n_total_dup:,} ({_pct(n_total_dup, n_wos_original)})",                # 2
-        # Unique pool
-        f"Unique records<br>after dedup<br>(n={n_identified:,})",                                        # 3
-        # Abstract screening entry
-        f"Scopus<br>abstract screening<br>(n={n_scopus:,})",                                             # 4
-        f"WoS net-new<br>abstract screening<br>(n={n_wos_net:,})",                                       # 5
-        # Abstract outcomes — Scopus
-        f"Abstract included — Scopus<br>n={n_sc_include:,} ({_pct(n_sc_include, n_scopus)})",            # 6
-        f"Abstract excluded — Scopus<br>n={n_sc_exclude:,} ({_pct(n_sc_exclude, n_scopus)})",            # 7
-        # Abstract outcomes — WoS
-        f"Abstract included — WoS<br>n={n_wos_include:,} ({_pct(n_wos_include, n_wos_net)})",            # 8
-        f"Abstract excluded — WoS<br>n={n_wos_exclude+n_wos_manual:,} ({_pct(n_wos_exclude+n_wos_manual, n_wos_net)})", # 9
-        # Full-text retrieval
-        f"Full-text retrieved — Scopus<br>n={n_ft_retrieved:,} ({_pct(n_ft_retrieved, n_sc_include)})",  # 10
-        f"Pending: not retrievable — Scopus<br>n={n_ft_not_found:,} ({_pct(n_ft_not_found, n_sc_include)})", # 11
-        # Full-text screening
-        f"Full-text included — Scopus<br>n={n_ft_include:,} ({_pct(n_ft_include, n_ft_retrieved)})",    # 12
-        f"Full-text excluded — Scopus<br>n={n_ft_exclude:,} ({_pct(n_ft_exclude, n_ft_retrieved)})",    # 13
-        # Data extraction
-        f"Data extraction — Scopus<br>n={n_coded_ft:,} ({_pct(n_coded_ft, n_ft_include)})",             # 14
-        f"Pending: FT screening — Scopus<br>n={n_ft_pending_screen:,} ({_pct(n_ft_pending_screen, n_ft_retrieved)})", # 15
-        # WoS pending
-        f"Pending: FT retrieval — WoS<br>n={n_wos_include:,} ({_pct(n_wos_include, n_wos_net)})",       # 16
-    ]
+    # Short display names
+    _DB_SHORT = {
+        "Web of Science": "WoS",
+        "CAB Abstracts":  "CAB",
+        "Academic Search Premier": "ASP",
+        "AGRIS": "AGRIS",
+    }
+
+    # ── Nodes — dynamic count based on databases present ─────────────────────
+    # Fixed nodes:
+    #   0          Scopus identified
+    #   1…N        One node per other database (N = len(_dbs))
+    #   N+1        Cross-DB duplicates removed [TERMINAL]
+    #   N+2        Other databases net-new abstract screening
+    #   N+3        Scopus abstract screening
+    #   N+4        Abstract included — Scopus
+    #   N+5        Abstract excluded — Scopus [TERMINAL]
+    #   N+6        Abstract included — Other DBs
+    #   N+7        Abstract excluded — Other DBs [TERMINAL]
+    #   N+8        Full-text retrieved — Scopus
+    #   N+9        Pending: not retrievable — Scopus [TERMINAL]
+    #   N+10       Full-text included — Scopus
+    #   N+11       Full-text excluded — Scopus [TERMINAL]
+    #   N+12       Data extraction — Scopus [TERMINAL]
+    #   N+13       Pending: FT screening — Scopus [TERMINAL]
+    #   N+14       Pending: FT retrieval — Other DBs [TERMINAL]
+
+    N = len(_dbs)
+    I_DUP      = N + 1
+    I_ONNET    = N + 2   # other DBs net-new screening
+    I_SCSCR    = N + 3   # Scopus abstract screening
+    I_SCINC    = N + 4
+    I_SCEXC    = N + 5
+    I_OINC     = N + 6
+    I_OEXC     = N + 7
+    I_FTRET    = N + 8
+    I_FTNRET   = N + 9
+    I_FTINC    = N + 10
+    I_FTEXC    = N + 11
+    I_EXTRACT  = N + 12
+    I_FTPEND   = N + 13
+    I_OPEND    = N + 14
+
+    labels = (
+        [f"Scopus<br>identified<br>n={n_scopus:,}"]                                                                       # 0
+        + [f"{_DB_SHORT.get(db, db)}<br>identified<br>n={_db_imp[db]:,}" for db in _dbs]                                  # 1…N
+        + [
+        f"Duplicates removed<br>n={n_total_dup:,}",                                                                      # N+1
+        f"Other databases net-new<br>abstract screening<br>n={n_other_net:,}",                                            # N+2
+        f"Scopus<br>abstract screening<br>n={n_scopus:,}",                                                               # N+3
+        f"Abstract included — Scopus<br>n={n_sc_include:,} ({_pct(n_sc_include, n_scopus)})",                            # N+4
+        f"Abstract excluded — Scopus<br>n={n_sc_exclude:,} ({_pct(n_sc_exclude, n_scopus)})",                            # N+5
+        f"Abstract included — Other DBs<br>n={n_other_include:,} ({_pct(n_other_include, n_other_net)})",                # N+6
+        f"Abstract excluded — Other DBs<br>n={n_other_exclude+n_other_manual:,} ({_pct(n_other_exclude+n_other_manual, n_other_net)})", # N+7
+        f"Full-text retrieved — Scopus<br>n={n_ft_retrieved:,} ({_pct(n_ft_retrieved, n_sc_include)})",                  # N+8
+        f"Pending: not retrievable — Scopus<br>n={n_ft_not_found:,} ({_pct(n_ft_not_found, n_sc_include)})",             # N+9
+        f"Full-text included<br>n={n_ft_include:,} ({_pct(n_ft_include, n_ft_retrieved_all)})",                         # N+10
+        f"Full-text excluded<br>n={n_ft_exclude:,} ({_pct(n_ft_exclude, n_ft_retrieved_all)})",                         # N+11
+        f"Data extraction<br>n={n_coded_ft:,} ({_pct(n_coded_ft, n_ft_include)})",                                      # N+12
+        f"Pending: FT screening<br>n={n_ft_pending_screen:,} ({_pct(n_ft_pending_screen, n_ft_retrieved_all)})",        # N+13
+        f"Pending: FT retrieval — Other DBs<br>n={n_other_include:,} ({_pct(n_other_include, n_other_net)})",            # N+14
+    ])
 
     # Color palette:
     #   Greens  → includes / data flowing forward
@@ -1657,87 +1773,92 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     C_EXC_LT  = "#9b59b6"   # purple       — full-text excluded
     C_PEND    = "#6baed6"   # sky blue     — pending
 
-    node_colors = [
-        C_ENTRY,    # 0  Scopus identified
-        C_ENTRY,    # 1  WoS identified
-        C_EXC,      # 2  Duplicates removed — red (removed from flow)
-        C_ENTRY,    # 3  Unique records — neutral
-        C_ENTRY,    # 4  Scopus abstract screening — neutral
-        C_ENTRY,    # 5  WoS net-new abstract screening — neutral
-        C_INC,      # 6  Abstract included — Scopus — green
-        C_EXC,      # 7  Abstract excluded — Scopus — red
-        C_INC,      # 8  Abstract included — WoS — green
-        C_EXC,      # 9  Abstract excluded — WoS — red
-        C_INC_LT,   # 10 FT retrieved — medium green
-        C_PEND,     # 11 Pending: not retrieved — sky blue
-        C_INC,      # 12 FT included — green
-        C_EXC_LT,   # 13 FT excluded — purple
-        C_INC_EXT,  # 14 Data extraction — sea green
-        C_PEND,     # 15 Pending: FT screening (Scopus) — sky blue
-        C_PEND,     # 16 Pending: FT retrieval (WoS) — sky blue
-    ]
+    node_colors = (
+        [C_ENTRY]                    # 0  Scopus
+        + [C_ENTRY] * N              # 1…N  other databases
+        + [
+            C_EXC,      # N+1  Duplicates removed
+            C_ENTRY,    # N+2  Other DBs net-new screening
+            C_ENTRY,    # N+3  Scopus abstract screening
+            C_INC,      # N+4  Abstract included — Scopus
+            C_EXC,      # N+5  Abstract excluded — Scopus
+            C_INC,      # N+6  Abstract included — Other DBs
+            C_EXC,      # N+7  Abstract excluded — Other DBs
+            C_INC_LT,   # N+8  FT retrieved
+            C_PEND,     # N+9  Pending: not retrieved
+            C_INC,      # N+10 FT included
+            C_EXC_LT,   # N+11 FT excluded
+            C_INC_EXT,  # N+12 Data extraction
+            C_PEND,     # N+13 Pending: FT screening
+            C_PEND,     # N+14 Pending: FT retrieval (other DBs)
+        ]
+    )
 
-    sources = [0,  1,  1,  3,  3,  4,  4,  5,  5,  6,  6,  10, 10, 12, 12, 8 ]
-    targets = [3,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16]
-    values  = [
-        max(n_scopus, 1),                       # 0→3  Scopus to unique
-        max(n_total_dup, 1),                    # 1→2  WoS duplicates removed
-        max(n_wos_net, 1),                      # 1→3  WoS net-new to unique
-        max(n_scopus, 1),                       # 3→4  unique → Scopus screening
-        max(n_wos_net, 1),                      # 3→5  unique → WoS screening
-        max(n_sc_include, 1),                   # 4→6
-        max(n_sc_exclude, 1),                   # 4→7
-        max(n_wos_include, 1),                  # 5→8
-        max(n_wos_exclude + n_wos_manual, 1),   # 5→9
-        max(n_ft_retrieved, 1),                 # 6→10
-        max(n_ft_not_found, 1),                 # 6→11
-        max(n_ft_include, 1),                   # 10→12
-        max(n_ft_exclude, 1),                   # 10→13
-        max(n_coded_ft, 1),                     # 12→14
-        max(n_ft_pending_screen, 1),            # 12→15
-        max(n_wos_include, 1),                  # 8→16
-    ]
-    link_colors = [
-        "rgba(78,121,167,0.28)",   # 0→3  Scopus to unique
-        "rgba(192,57,43,0.22)",    # 1→2  WoS duplicates (red)
-        "rgba(78,121,167,0.22)",   # 1→3  WoS net-new to unique
-        "rgba(78,121,167,0.25)",   # 3→4  unique → Scopus screening
-        "rgba(78,121,167,0.18)",   # 3→5  unique → WoS screening
-        "rgba(45,143,78,0.30)",    # 4→6  abstract included — Scopus (green)
-        "rgba(192,57,43,0.22)",    # 4→7  abstract excluded — Scopus (red)
-        "rgba(45,143,78,0.30)",    # 5→8  abstract included — WoS (green)
-        "rgba(192,57,43,0.18)",    # 5→9  abstract excluded — WoS (red)
-        "rgba(90,181,110,0.30)",   # 6→10 FT retrieved (medium green)
-        "rgba(107,174,214,0.22)",  # 6→11 pending: not retrieved (sky blue)
-        "rgba(45,143,78,0.30)",    # 10→12 FT included (green)
-        "rgba(155,89,182,0.22)",   # 10→13 FT excluded (purple)
-        "rgba(60,179,113,0.32)",   # 12→14 data extraction (sea green)
-        "rgba(107,174,214,0.20)",  # 12→15 pending FT screening (sky blue)
-        "rgba(107,174,214,0.25)",  # 8→16  WoS pending FT retrieval (sky blue)
-    ]
+    # Each other DB: db_node → duplicates [terminal] + net-new screening
+    sources = [0, I_SCSCR]  # Scopus → Scopus screening (direct, no dedup node needed)
+    targets = [I_SCSCR, I_SCINC]
+    values  = [max(n_scopus, 1), max(n_sc_include, 1)]
+    link_colors = ["rgba(78,121,167,0.28)", "rgba(45,143,78,0.30)"]
     link_labels = [
         f"Scopus: {n_scopus:,} records identified",
-        f"Cross-database duplicates removed: {n_total_dup:,}",
-        f"WoS net-new (unique to WoS): {n_wos_net:,}",
-        f"Scopus → abstract screening: {n_scopus:,}",
-        f"WoS net-new → abstract screening: {n_wos_net:,}",
         f"Abstract included — Scopus: {n_sc_include:,}" + (f"<br>Top criteria: {excl12_text}" if excl12_text else ""),
+    ]
+
+    for j, db in enumerate(_dbs):
+        db_node = j + 1
+        dup_count = max(_db_imp[db] - _db_net[db], 1)
+        net_count = max(_db_net[db], 1)
+        short     = _DB_SHORT.get(db, db)
+        sources  += [db_node, db_node]
+        targets  += [I_DUP,   I_ONNET]
+        values   += [dup_count, net_count]
+        link_colors += ["rgba(192,57,43,0.18)", "rgba(78,121,167,0.20)"]
+        link_labels += [
+            f"{short} duplicates removed: {dup_count:,}",
+            f"{short} net-new → screening: {net_count:,}",
+        ]
+
+    # Rest of the pipeline
+    sources += [I_SCSCR,    I_ONNET,                          I_SCINC,           I_SCINC,       I_FTRET,           I_FTRET,    I_FTINC,           I_FTINC,    I_OINC ]
+    targets += [I_SCEXC,    I_OINC,                           I_FTRET,           I_FTNRET,      I_FTINC,           I_FTEXC,    I_EXTRACT,         I_FTPEND,   I_OPEND]
+    values  += [
+        max(n_sc_exclude, 1),
+        max(n_other_include, 1),
+        max(n_ft_retrieved, 1),
+        max(n_ft_not_found, 1),
+        max(n_ft_include, 1),
+        max(n_ft_exclude, 1),
+        max(n_coded_ft, 1),
+        max(n_ft_pending_screen, 1),
+        max(n_other_include, 1),
+    ]
+    link_colors += [
+        "rgba(192,57,43,0.22)",    # Scopus abstract excluded
+        "rgba(45,143,78,0.30)",    # Other DBs abstract included
+        "rgba(90,181,110,0.30)",   # FT retrieved
+        "rgba(107,174,214,0.22)",  # Pending: not retrieved
+        "rgba(45,143,78,0.30)",    # FT included
+        "rgba(155,89,182,0.22)",   # FT excluded
+        "rgba(60,179,113,0.32)",   # Data extraction
+        "rgba(107,174,214,0.20)",  # Pending FT screening
+        "rgba(107,174,214,0.25)",  # Other DBs pending FT retrieval
+    ]
+    link_labels += [
         f"Abstract excluded — Scopus: {n_sc_exclude:,}",
-        f"Abstract included — WoS: {n_wos_include:,}",
-        f"Abstract excluded — WoS: {n_wos_exclude + n_wos_manual:,}",
+        f"Abstract included — Other databases: {n_other_include:,}",
         f"Full-text retrieved (Scopus): {n_ft_retrieved:,}",
         f"Not retrievable automatically (Scopus): {n_ft_not_found:,}",
         f"Full-text included (Scopus): {n_ft_include:,}" + (f"<br>Top criteria: {excl14_text}" if excl14_text else ""),
         f"Full-text excluded (Scopus): {n_ft_exclude:,}",
         f"Data extraction complete (Scopus): {n_coded_ft:,}",
         f"Pending FT screening — Scopus: {n_ft_pending_screen:,}",
-        f"Pending FT retrieval — WoS: {n_wos_include:,}",
+        f"Pending FT retrieval — Other databases: {n_other_include:,}",
     ]
 
     fig = go.Figure(go.Sankey(
         arrangement="snap",
         node=dict(
-            pad=45, thickness=18,
+            pad=60, thickness=22,
             line=dict(color="white", width=1),
             label=labels,
             color=node_colors,
@@ -1753,53 +1874,52 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     fig.update_layout(
         title=dict(
             text=(
-                "<b>ROSES Flow Diagram — Scopus + Web of Science</b><br>"
+                "<b>ROSES Flow Diagram — Scopus + WoS + CAB + ASP + AGRIS</b><br>"
                 "<sup>Record flow across all screening stages · hover nodes and links for detail · "
-                "WoS full-text retrieval pending</sup>"
+                "other-database full-text retrieval pending</sup>"
             ),
             x=0.5, xanchor="center", font=dict(size=14),
         ),
-        height=960,
-        font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+        height=540,
+        font=dict(family="Lato, Arial, sans-serif", size=12, color=DKGREY),
         paper_bgcolor="white",
-        margin=dict(l=20, r=20, t=100, b=30),
+        margin=dict(l=30, r=30, t=90, b=30),
     )
     _save_plotly(fig, "roses_flow", out_dir)
 
-    # Export the same Sankey as a high-res PNG so the downloaded file
-    # matches the interactive chart exactly.
+    # Export PNG: landscape canvas (wide > tall) so the Sankey sits on a
+    # landscape page in the document (720 PT wide × 400 PT tall at 1.5× scale).
     try:
         png_path = out_dir / "roses_flow.png"
-        fig.write_image(str(png_path), scale=2, width=1400, height=960)
+        fig.write_image(str(png_path), scale=2, width=960, height=540)
         print(f"[step16] Saved -> roses_flow.png (Plotly/kaleido)")
     except Exception as _e:
         print(f"[step16] kaleido PNG export failed ({_e}) — static matplotlib PNG kept")
 
+    _db_rows = [(f"{_DB_SHORT.get(db, db)} — identified", _db_imp[db]) for db in _dbs]
     roses_df = pd.DataFrame({
-        "stage": [
-            "Scopus — identified", "WoS — identified",
-            "Cross-database duplicates removed",
-            "Unique records after deduplication",
-            "Scopus — abstract screening", "WoS net-new — abstract screening",
-            "Abstract included — Scopus", "Abstract excluded — Scopus",
-            "Abstract included — WoS", "Abstract excluded — WoS",
-            "Full-text retrieved (Scopus)", "Pending: not retrievable (Scopus)",
-            "Full-text included (Scopus)", "Full-text excluded (Scopus)",
-            "Data extraction (Scopus)", "Pending: FT screening (Scopus)",
-            "Pending: FT retrieval (WoS)",
-        ],
-        "n": [
-            n_scopus, n_wos_original,
-            n_total_dup,
-            n_identified,
-            n_scopus, n_wos_net,
-            n_sc_include, n_sc_exclude,
-            n_wos_include, n_wos_exclude + n_wos_manual,
-            n_ft_retrieved, n_ft_not_found,
-            n_ft_include, n_ft_exclude,
-            n_coded_ft, n_ft_pending_screen,
-            n_wos_include,
-        ],
+        "stage": (
+            ["Scopus — identified"]
+            + [r[0] for r in _db_rows]
+            + ["Cross-database duplicates removed", "Other databases net-new — abstract screening",
+               "Abstract included — Scopus", "Abstract excluded — Scopus",
+               "Abstract included — Other databases", "Abstract excluded — Other databases",
+               "Full-text retrieved (Scopus)", "Pending: not retrievable (Scopus)",
+               "Full-text included (Scopus)", "Full-text excluded (Scopus)",
+               "Data extraction (Scopus)", "Pending: FT screening (Scopus)",
+               "Pending: FT retrieval (Other databases)"]
+        ),
+        "n": (
+            [n_scopus]
+            + [r[1] for r in _db_rows]
+            + [n_total_dup, n_other_net,
+               n_sc_include, n_sc_exclude,
+               n_other_include, n_other_exclude + n_other_manual,
+               n_ft_retrieved, n_ft_not_found,
+               n_ft_include, n_ft_exclude,
+               n_coded_ft, n_ft_pending_screen,
+               n_other_include]
+        ),
     })
     _save_csv(roses_df, "roses_flow", out_dir)
 
@@ -1875,7 +1995,127 @@ def _export_studies_csv(df: pd.DataFrame, out_dir: Path) -> None:
     print(f"[step16] Studies CSV -> interactive/studies.csv ({len(out_df)} records)")
 
 
-def _sync_frontend(out_dir: Path) -> None:
+def _generate_db_summary(out_root: Path, data_dir: Path) -> None:
+    """Generate frontend/public/map/data/db_summary.json from pipeline metadata."""
+    import json as _json
+
+    s2b  = _load_json(out_root / "step2b"  / "step2b_summary.json")
+    s12  = _load_json(_step12_meta(out_root))
+    s12b = _load_json(out_root / "step12b" / "step12b_results.meta.json")
+    s13  = _load_json(_step13_meta(out_root))
+    s14  = _load_json(_step14_meta(out_root))
+    s15  = _load_json(_step15_meta(out_root))
+
+    by_imp = s2b.get("by_database_imported", {})
+    by_net = s2b.get("by_database_net_new",  {})
+    n_dup  = s2b.get("total_duplicates", 0)
+    n_uniq = s2b.get("total_net_new", 0) + s12.get("rows_total", 0)
+
+    dec12  = s12.get("decision_counts",  {})
+    dec12b = s12b.get("decision_counts", {})
+    n_sc_inc   = dec12.get("Include",  0)
+    n_sc_exc   = dec12.get("Exclude",  0)
+    n_oth_inc  = dec12b.get("Include", 0)
+    n_oth_exc  = dec12b.get("Exclude", 0) + dec12b.get("Needs_Manual", 0)
+    n_abs_inc  = n_sc_inc + n_oth_inc
+    n_abs_exc  = n_sc_exc + n_oth_exc
+
+    by_db13     = s13.get("by_database", {})
+    n_ft_ret    = s13.get("status_counts", {}).get("retrieved", 0)
+    n_ft_not    = n_abs_inc - n_ft_ret
+
+    dec14       = s14.get("decision_counts", {})
+    n_ft_inc    = dec14.get("Include", 0)
+    n_ft_exc    = n_ft_ret - n_ft_inc
+
+    _DB_ORDER = ["Web of Science", "CAB Abstracts", "Academic Search Premier", "AGRIS"]
+    node_labels = ["Scopus<br>n={:,}".format(s12.get("rows_total", 0))]
+    node_colors = ["#1f77b4"]
+    db_colors   = ["#2ca02c", "#e377c2", "#ff7f0e", "#9467bd"]
+    for db, col in zip(_DB_ORDER, db_colors):
+        n = by_imp.get(db, 0)
+        if n:
+            node_labels.append(f"{db}<br>n={n:,}")
+            node_colors.append(col)
+
+    n_db_nodes = len(node_labels)
+    IDX_DUP    = n_db_nodes
+    IDX_UNIQ   = n_db_nodes + 1
+    IDX_ABSINC = n_db_nodes + 2
+    IDX_ABSEXC = n_db_nodes + 3
+    IDX_FTRET  = n_db_nodes + 4
+    IDX_FTNOT  = n_db_nodes + 5
+    IDX_CODED  = n_db_nodes + 6
+    IDX_FTEXC  = n_db_nodes + 7
+
+    node_labels += [
+        f"Duplicates removed<br>n={n_dup:,}",
+        f"Unique records<br>n={n_uniq:,}",
+        f"Abstract included<br>n={n_abs_inc:,}",
+        f"Abstract excluded<br>n={n_abs_exc:,}",
+        f"Full texts retrieved<br>n={n_ft_ret:,}",
+        f"Not retrievable<br>n={n_ft_not:,}",
+        f"Included for coding<br>n={n_ft_inc:,}",
+        f"Full texts excluded<br>n={n_ft_exc:,}",
+    ]
+    node_colors += ["#d62728", "#17becf", "#2ca02c", "#aec7e8",
+                    "#ff7f0e", "#c7c7c7", "#1f77b4", "#ffbb78"]
+
+    sources, targets, values, link_colors = [], [], [], []
+
+    def add(s, t, v, c):
+        if v > 0:
+            sources.append(s); targets.append(t); values.append(v); link_colors.append(c)
+
+    # Scopus → unique (no dups)
+    add(0, IDX_UNIQ, s12.get("rows_total", 0), "rgba(31,119,180,0.30)")
+    # Other DBs → duplicates / net-new
+    for i, (db, col) in enumerate(zip(_DB_ORDER, db_colors)):
+        idx = i + 1
+        if idx >= n_db_nodes:
+            break
+        rgba = col.replace("#", "")
+        r, g, b = int(rgba[0:2],16), int(rgba[2:4],16), int(rgba[4:6],16)
+        add(idx, IDX_DUP,  by_imp.get(db,0) - by_net.get(db,0), f"rgba({r},{g},{b},0.20)")
+        add(idx, IDX_UNIQ, by_net.get(db, 0),                    f"rgba({r},{g},{b},0.30)")
+
+    add(IDX_UNIQ, IDX_ABSINC, n_abs_inc, "rgba(44,160,44,0.30)")
+    add(IDX_UNIQ, IDX_ABSEXC, n_abs_exc, "rgba(174,199,232,0.20)")
+    add(IDX_ABSINC, IDX_FTRET, n_ft_ret, "rgba(255,127,14,0.30)")
+    add(IDX_ABSINC, IDX_FTNOT, n_ft_not, "rgba(199,199,199,0.20)")
+    add(IDX_FTRET,  IDX_CODED, n_ft_inc, "rgba(31,119,180,0.35)")
+    add(IDX_FTRET,  IDX_FTEXC, n_ft_exc, "rgba(255,187,120,0.25)")
+
+    summary = (
+        f"{n_uniq + n_dup:,} records identified · {n_dup:,} duplicates removed · "
+        f"{n_uniq:,} unique · {n_abs_inc:,} abstract included · "
+        f"{n_ft_ret:,} full texts retrieved · {n_ft_inc:,} coded"
+    )
+
+    doc = {"data": [{"type": "sankey", "arrangement": "snap",
+        "node": {"label": node_labels, "color": node_colors,
+                 "pad": 20, "thickness": 20,
+                 "line": {"color": "white", "width": 1},
+                 "hovertemplate": "%{label}<extra></extra>"},
+        "link": {"source": sources, "target": targets, "value": values,
+                 "color": link_colors,
+                 "hovertemplate": "%{value:,} records<extra></extra>"}}],
+    "layout": {"title": {"text": "<b>Multi-Database Search & Deduplication</b><br>"
+                                  "<sup>Five databases · hover nodes and links for counts</sup>",
+                          "x": 0.5, "xanchor": "center", "font": {"size": 14}},
+               "font": {"family": "Lato, Arial, sans-serif", "size": 11, "color": "#424242"},
+               "paper_bgcolor": "white", "height": 520,
+               "margin": {"l": 20, "r": 20, "t": 90, "b": 30},
+               "annotations": [{"x": 0.5, "y": -0.04, "xref": "paper", "yref": "paper",
+                                 "text": summary, "showarrow": False,
+                                 "font": {"size": 9, "color": "#888888"}, "align": "center"}]}}
+
+    out_path = data_dir / "db_summary.json"
+    out_path.write_text(_json.dumps(doc))
+    print(f"[step16] db_summary.json → {out_path}")
+
+
+def _sync_frontend(out_dir: Path, out_root: Path) -> None:
     """Sync step16 outputs to the Next.js frontend public directory."""
     import shutil
 
@@ -1900,6 +2140,10 @@ def _sync_frontend(out_dir: Path) -> None:
             if f.suffix == ".json":
                 n_json += 1
     n_csv = len(list(data_dir.glob("*.csv"))) if data_dir.exists() else 0
+
+    # db_summary.json — generated from pipeline metadata
+    _generate_db_summary(out_root, data_dir)
+
     print(f"[step16] Synced to frontend: {n_png} PNGs + {n_json} JSONs + {n_csv} CSVs -> {_FRONTEND_MAP}")
 
 
@@ -1932,7 +2176,6 @@ def run(config: dict) -> dict:
     else:
         print("[step16] Producing evidence map figures (static)...")
         for fn, label in [
-            (_dashboard,         "dashboard.png"),
             (_temporal_trends,   "temporal_trends.png"),
             (_producer_type_bar, "producer_type_bar.png"),
             (_methodology_bar,   "methodology_bar.png"),
@@ -1984,7 +2227,7 @@ def run(config: dict) -> dict:
 
     # Sync to frontend
     try:
-        _sync_frontend(out_dir)
+        _sync_frontend(out_dir, out_root)
     except Exception as e:
         print(f"[step16] WARNING: frontend sync failed — {e}")
 

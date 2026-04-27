@@ -16,7 +16,8 @@ Downloads available PDFs/HTML to outputs/step13/fulltext/.
 Records that cannot be retrieved automatically are flagged as "needs_manual".
 
 Inputs:
-  - outputs/step12/step12_results.csv
+  - outputs/step12/step12_results.csv   (Scopus, required)
+  - outputs/step12b/step12b_results.csv (net-new databases, optional — merged automatically)
 
 Outputs (under outputs/step13/):
   - fulltext/           downloaded files (PDF or HTML)
@@ -146,6 +147,37 @@ def step12_csv_path(out_root: Path) -> Path:
     if p.exists() and p.stat().st_size > 0:
         return p
     raise SystemExit(f"Step 12 results not found at {p}. Run step12 first.")
+
+
+def _load_included_records(out_root: Path) -> Tuple[pd.DataFrame, Path]:
+    """
+    Load Include records from step12 (Scopus) and step12b (net-new databases),
+    merge them, and return a single DataFrame with a source_db column.
+
+    Returns (df, primary_input_csv) where primary_input_csv is used for logging.
+    """
+    step12_csv = step12_csv_path(out_root)   # raises if missing
+    df12 = pd.read_csv(step12_csv, engine="python", on_bad_lines="skip")
+    df12["source_db"] = "Scopus"
+
+    step12b_csv = out_root / "step12b" / "step12b_results.csv"
+    if step12b_csv.exists() and step12b_csv.stat().st_size > 0:
+        df12b = pd.read_csv(step12b_csv, engine="python", on_bad_lines="skip")
+        if "source_db" not in df12b.columns:
+            df12b["source_db"] = "net-new"
+        combined = pd.concat([df12, df12b], ignore_index=True)
+        print(f"[step13] Loaded step12 ({len(df12):,}) + step12b ({len(df12b):,}) = {len(combined):,} records")
+    else:
+        combined = df12
+        print(f"[step13] Loaded step12 only ({len(df12):,} records) — step12b not found")
+
+    # Deduplicate by dedupe_key (keep first occurrence — step12 Scopus takes priority)
+    before = len(combined)
+    combined = combined.drop_duplicates(subset=["dedupe_key"], keep="first")
+    if len(combined) < before:
+        print(f"[step13] Removed {before - len(combined):,} duplicate dedupe_keys across databases")
+
+    return combined, step12_csv
 
 
 def step13_dirs(out_root: Path) -> Tuple[Path, Path, Path, Path]:
@@ -599,12 +631,13 @@ def retrieve_fulltexts(
 
         for i in range(n_run):
             row = inc_df.iloc[i]
-            dk   = safe_str(row.get("dedupe_key", ""))
-            doi  = normalize_doi(row.get("doi", ""))
-            sid  = safe_str(row.get("scopus_id", ""))
-            title = safe_str(row.get("title", ""))
-            year  = safe_str(row.get("year", ""))
-            pub   = safe_str(row.get("publicationName", ""))
+            dk       = safe_str(row.get("dedupe_key", ""))
+            doi      = normalize_doi(row.get("doi", ""))
+            sid      = safe_str(row.get("scopus_id", ""))
+            title    = safe_str(row.get("title", ""))
+            year     = safe_str(row.get("year", ""))
+            pub      = safe_str(row.get("publicationName", ""))
+            source_db = safe_str(row.get("source_db", "Scopus"))
 
             # Use DOI for filename, fall back to dedupe_key
             fname_base = f"doi_{doi.replace('/', '_')}" if doi else f"key_{dk[:80]}"
@@ -631,6 +664,7 @@ def retrieve_fulltexts(
                 "title": title,
                 "year": year,
                 "pub": pub,
+                "source_db": source_db,
                 "missing_abstract": is_missing_abstract,
                 "timestamp_utc": _now_utc(),
                 "status": "pending",
@@ -826,7 +860,7 @@ def write_outputs(
 
     # Ensure consistent column order
     cols = ["dedupe_key", "doi", "scopus_id", "title", "year", "pub",
-            "missing_abstract", "status", "source", "file_path", "file_size_kb", "url", "note", "timestamp_utc"]
+            "source_db", "missing_abstract", "status", "source", "file_path", "file_size_kb", "url", "note", "timestamp_utc"]
     for c in cols:
         if c not in df_out.columns:
             df_out[c] = ""
@@ -851,6 +885,17 @@ def write_outputs(
     ma = df_out[df_out["missing_abstract"] == True]
     ma_status = ma["status"].value_counts(dropna=False).to_dict() if not ma.empty else {}
 
+    # Per-database breakdown
+    by_db: Dict[str, Dict[str, int]] = {}
+    if "source_db" in df_out.columns:
+        for db, grp in df_out.groupby("source_db", dropna=False):
+            db_key = str(db) if db == db else "unknown"  # handle NaN
+            by_db[db_key] = {
+                "total": int(len(grp)),
+                "retrieved": int((grp["status"] == "retrieved").sum()),
+                "needs_manual": int((grp["status"] == "needs_manual").sum()),
+            }
+
     summary = {
         "input_csv": str(input_csv),
         "manifest_csv": str(manifest_csv),
@@ -862,6 +907,7 @@ def write_outputs(
         "source_breakdown": {k: int(v) for k, v in source_counts.items()},
         "missing_abstract_count": int(len(ma)),
         "missing_abstract_status": {k: int(v) for k, v in ma_status.items()},
+        "by_database": by_db,
         "elapsed_seconds": float(elapsed_seconds) if elapsed_seconds else None,
         "elapsed_hms": time.strftime("%H:%M:%S", time.gmtime(elapsed_seconds)) if elapsed_seconds else None,
         "timestamp_utc": _now_utc(),
@@ -952,16 +998,15 @@ def run(config: dict) -> dict:
     if not email:
         print("[step13] WARNING: CONTACT_EMAIL not set — Unpaywall requests may be rate-limited")
 
-    input_csv = step12_csv_path(out_root)
+    df, input_csv = _load_included_records(out_root)
     print(f"[step13] Input  : {input_csv}")
     print(f"[step13] Output : {out_root / 'step13'}")
     print(f"[step13] Email  : {email or '(not set)'}")
     print(f"[step13] Elsevier key: {'set' if api_key else 'NOT SET'}")
     print(f"[step13] Inst token : {'set' if inst_token else 'NOT SET'}")
 
-    df = pd.read_csv(input_csv, engine="python", on_bad_lines="skip")
     if df.empty:
-        raise SystemExit(f"Step 12 CSV is empty: {input_csv}")
+        raise SystemExit(f"No records loaded from step12/step12b.")
 
     results = retrieve_fulltexts(
         df,

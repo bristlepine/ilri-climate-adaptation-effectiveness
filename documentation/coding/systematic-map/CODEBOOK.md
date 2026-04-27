@@ -51,12 +51,14 @@ Year the study was published. Use the most recent version date if both preprint 
 ---
 
 ### 2. `publication_type`
-**Valid values:** `journal_article` | `report` | `working_paper` | `thesis` | `other`
-- `journal_article` — peer-reviewed journal (including open-access)
-- `report` — project/programme report, evaluation report, policy brief
-- `working_paper` — pre-publication working paper or discussion paper
-- `thesis` — PhD or master's dissertation
-- `other` — book chapter, conference paper, dataset paper
+
+| Value | Meaning |
+|-------|---------|
+| `journal_article` | Peer-reviewed journal (including open-access) |
+| `report` | Project/programme report, evaluation report, policy brief |
+| `working_paper` | Pre-publication working paper or discussion paper |
+| `thesis` | PhD or master's dissertation |
+| `other` | Book chapter, conference paper, dataset paper |
 
 ---
 
@@ -69,36 +71,45 @@ Country or countries where the study was conducted. Use region label only if no 
 ---
 
 ### 4. `geographic_scale`
-**Valid values:** `local` | `sub-national` | `national` | `multi-country` | `regional`
-- `local` — village, community, single site
-- `sub-national` — district, province, region within a country
-- `national` — one country
-- `multi-country` — two or more specific named countries
-- `regional` — broad region without country-level focus
+
+| Value | Meaning |
+|-------|---------|
+| `local` | Village, community, single site |
+| `sub-national` | District, province, region within a country |
+| `national` | One country |
+| `multi-country` | Two or more specific named countries |
+| `regional` | Broad region without country-level focus |
 
 ---
 
 ### 5. `producer_type`
 Select all that apply, semicolons between multiple values.
-**Valid values:** `crop` | `livestock` | `fisheries_aquaculture` | `agroforestry` | `mixed` | `undefined`
-- `mixed` — explicitly mixed crop-livestock
-- `undefined` — generic "smallholder farmers" with no further system specified
+
+| Value | Meaning |
+|-------|---------|
+| `crop` | Crop farming systems |
+| `livestock` | Livestock farming systems |
+| `fisheries_aquaculture` | Fisheries or aquaculture systems |
+| `agroforestry` | Agroforestry systems |
+| `mixed` | Explicitly mixed crop-livestock |
+| `undefined` | Generic "smallholder farmers" with no further system specified |
 
 ---
 
 ### 6. `marginalized_subpopulations`
 Code only what is explicitly stated — do not infer. Select all that apply.
-**Valid values:** `women` | `youth` | `people_with_disabilities` | `landless` | `indigenous_peoples` | `ethnic_minorities` | `migrant_seasonal_workers` | `other` | `none_reported`
 
-- `women` — women explicitly targeted or gender-disaggregated analysis
-- `youth` — young farmers or age-disaggregated outcomes
-- `people_with_disabilities` — persons with disabilities explicitly named
-- `landless` — landless households or tenure-insecure groups
-- `indigenous_peoples` — Indigenous communities named
-- `ethnic_minorities` — ethnic minority groups named
-- `migrant_seasonal_workers` — migrant or seasonal agricultural workers
-- `other` — any other marginalised group explicitly named (e.g. persons with disabilities, caste-based groups, religious minorities); add a brief note in the `notes` field
-- `none_reported` — no marginalised groups mentioned
+| Value | Meaning |
+|-------|---------|
+| `women` | Women explicitly targeted or gender-disaggregated analysis |
+| `youth` | Young farmers or age-disaggregated outcomes |
+| `people_with_disabilities` | Persons with disabilities explicitly named |
+| `landless` | Landless households or tenure-insecure groups |
+| `indigenous_peoples` | Indigenous communities named |
+| `ethnic_minorities` | Ethnic minority groups named |
+| `migrant_seasonal_workers` | Migrant or seasonal agricultural workers |
+| `other` | Any other marginalised group explicitly named (e.g. caste-based groups, religious minorities) — add a brief note in the `notes` field |
+| `none_reported` | No marginalised groups mentioned |
 
 ---
 
@@ -138,41 +149,61 @@ The specific indicators or metrics used. Extract actual indicators from methods/
 ---
 
 ### 10. `methodological_approach`
-Select all that apply, semicolons between multiple values.
-**Valid values:** `qualitative` | `quantitative` | `participatory` | `modeling_with_empirical_validation` | `experimental`
-- `participatory` — only when participation IS the primary design (PRA, photovoice), not when farmers are merely surveyed
-- `modeling_with_empirical_validation` — crop/climate/agent-based models validated with field data
-- `experimental` — Randomised Controlled Trials (RCTs), natural experiments, quasi-experimental approaches; purely lab or field experiments without social application should not be included
-- For explicitly mixed-methods studies: select both `qualitative` and `quantitative`
+Select all that apply, semicolons between multiple values. For explicitly mixed-methods studies: select both `qualitative` and `quantitative`.
+
+| Value | Meaning |
+|-------|---------|
+| `qualitative` | Qualitative research design (interviews, focus groups, ethnography) |
+| `quantitative` | Quantitative research design (surveys, statistical analysis) |
+| `participatory` | Only when participation IS the primary design (PRA, photovoice) — not when farmers are merely surveyed |
+| `modeling_with_empirical_validation` | Crop/climate/agent-based models validated with field data |
+| `experimental` | RCTs, natural experiments, quasi-experimental approaches — purely lab/field experiments without social application excluded |
 
 ---
 
 ### 11. `purpose_of_assessment`
-**Valid values:** `project_learning` | `program_evaluation` | `donor_reporting` | `national_reporting` | `research`
-- `research` — academic study with no programme affiliation
-- `project_learning` — M&E embedded in an ongoing project
-- `national_reporting` — contributing to NAPs, NDCs, national monitoring frameworks
+
+| Value | Meaning |
+|-------|---------|
+| `research` | Academic study with no programme affiliation |
+| `project_learning` | M&E embedded in an ongoing project |
+| `program_evaluation` | Formal evaluation of a completed programme |
+| `donor_reporting` | Report produced for a donor/funder |
+| `national_reporting` | Contributing to NAPs, NDCs, national monitoring frameworks |
 
 ---
 
 ### 12. `data_sources`
 Select all that apply.
-**Valid values:** `surveys` | `administrative_data` | `remote_sensing` | `participatory_methods` | `secondary_data` | `other`
+
+| Value | Meaning |
+|-------|---------|
+| `surveys` | Primary household or farm surveys |
+| `administrative_data` | Government or programme records |
+| `remote_sensing` | Satellite or aerial imagery |
+| `participatory_methods` | PRA, focus groups, photovoice as a data source |
+| `secondary_data` | Existing datasets, literature, or other secondary sources |
+| `other` | Any data source not listed above |
 
 ---
 
 ### 13. `temporal_coverage`
-**Valid values:** `cross_sectional` | `seasonal` | `longitudinal` | `repeated_cross_sectional`
-- `cross_sectional` — single point in time or single season
-- `seasonal` — intra-annual, across one or a few seasons
-- `longitudinal` — multi-year, panel data, repeated measures with the same individuals
-- `repeated_cross_sectional` — multi-year, repeated measures with different individuals/units each time
+
+| Value | Meaning |
+|-------|---------|
+| `cross_sectional` | Single point in time or single season |
+| `seasonal` | Intra-annual, across one or a few seasons |
+| `longitudinal` | Multi-year, panel data, repeated measures with the same individuals |
+| `repeated_cross_sectional` | Multi-year, repeated measures with different individuals/units each time |
 
 ---
 
 ### 14. `cost_data_reported`
-**Valid values:** `yes` | `no`
-Code `yes` only if the paper explicitly reports cost figures or cost-effectiveness ratios. Qualitative mention of "limited resources" = `no`.
+
+| Value | Meaning |
+|-------|---------|
+| `yes` | Paper explicitly reports cost figures or cost-effectiveness ratios |
+| `no` | No cost data reported — qualitative mention of "limited resources" counts as `no` |
 
 ---
 

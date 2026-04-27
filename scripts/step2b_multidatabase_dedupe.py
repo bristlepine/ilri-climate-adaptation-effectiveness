@@ -37,7 +37,9 @@ Usage:
 
 from __future__ import annotations
 
+import hashlib
 import json
+import pickle
 import re
 import string
 import time
@@ -197,9 +199,42 @@ DATABASE_DIRS = {
     "asp":   "Academic Search Premier",
 }
 
-def load_all_imports(data_root: Path) -> pd.DataFrame:
+
+# =============================================================================
+# File-level parse cache
+# =============================================================================
+
+def _file_hash(path: Path) -> str:
+    """MD5 of file contents — used as cache key."""
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+def _cache_dir(out_root: Path) -> Path:
+    d = out_root / "step2b" / ".parse_cache"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+def _load_cached(cache_dir: Path, file_hash: str) -> Optional[List[Dict]]:
+    p = cache_dir / f"{file_hash}.pkl"
+    if p.exists():
+        with open(p, "rb") as f:
+            return pickle.load(f)
+    return None
+
+def _save_cached(cache_dir: Path, file_hash: str, records: List[Dict]) -> None:
+    p = cache_dir / f"{file_hash}.pkl"
+    with open(p, "wb") as f:
+        pickle.dump(records, f)
+
+
+def load_all_imports(data_root: Path, out_root: Optional[Path] = None) -> pd.DataFrame:
     multi_root = data_root / "multidatabase"
     all_records: List[Dict] = []
+
+    cdir = _cache_dir(out_root) if out_root else None
 
     for subdir, db_label in DATABASE_DIRS.items():
         db_dir = multi_root / subdir
@@ -207,20 +242,32 @@ def load_all_imports(data_root: Path) -> pd.DataFrame:
             print(f"[step2b] {db_label}: folder not found ({db_dir}) — skipping")
             continue
         files = list(db_dir.glob("*.ris")) + list(db_dir.glob("*.txt")) + list(db_dir.glob("*.csv"))
+        # Exclude search string txt files
+        files = [f for f in files if not f.name.startswith("search_string")]
         if not files:
             print(f"[step2b] {db_label}: no files found in {db_dir} — skipping")
             continue
         n_before = len(all_records)
+        n_cached = 0
         for f in files:
-            if f.suffix.lower() == ".csv":
-                recs = parse_csv_file(f)
+            fhash = _file_hash(f) if cdir else None
+            recs = _load_cached(cdir, fhash) if (cdir and fhash) else None
+            if recs is not None:
+                n_cached += 1
             else:
-                recs = parse_ris_file(f)
+                if f.suffix.lower() == ".csv":
+                    recs = parse_csv_file(f)
+                else:
+                    recs = parse_ris_file(f)
+                if cdir and fhash:
+                    _save_cached(cdir, fhash, recs)
             for r in recs:
                 r["source_db"] = db_label
                 r["source_file"] = f.name
             all_records.extend(recs)
-        print(f"[step2b] {db_label}: {len(all_records) - n_before:,} records from {len(files)} file(s)")
+        n_added = len(all_records) - n_before
+        cache_note = f" ({n_cached}/{len(files)} from cache)" if cdir else ""
+        print(f"[step2b] {db_label}: {n_added:,} records from {len(files)} file(s){cache_note}")
 
     if not all_records:
         print("[step2b] No import records found. Place RIS/CSV exports in scripts/data/multidatabase/<db>/")
@@ -371,7 +418,7 @@ def run(config: dict) -> dict:
     print(f"[step2b] Scopus corpus: {len(scopus_df):,} records | {len(doi_set):,} with DOIs")
 
     print(f"[step2b] Loading multi-database imports...")
-    imports = load_all_imports(data_root)
+    imports = load_all_imports(data_root, out_root)
     if imports.empty:
         return {"error": "no imports found"}
 

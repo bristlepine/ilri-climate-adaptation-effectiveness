@@ -11,8 +11,8 @@ stringent screen using the actual paper content.
 Decision logic (same binary as step 12 — no MAYBE):
   - Any criterion "no"              -> Exclude
   - All "yes" or any "unclear"      -> Include
-  - No full text available          -> Include (conservative; flagged for manual review)
-  - PDF extraction fails            -> Include (conservative; flagged)
+  - No full text available          -> Skipped (saved to step14_no_fulltext.csv; rerun after manual retrieval)
+  - PDF extraction fails            -> Needs_Manual (flagged for manual review)
 
 Text extraction:
   - PDF  : pypdf (fast, no native deps)
@@ -28,7 +28,8 @@ Outputs (under outputs/step14/):
   - step14_results.csv
   - step14_results.meta.json
   - step14_results_details.jsonl    (JSONL cache; resume-safe)
-  - step14_no_fulltext.csv          (records with no retrieved full text)
+  - step14_no_fulltext.csv          (records skipped — no full text retrieved; rerun after manual retrieval)
+  - step14_extraction_failed.csv    (records where file path existed but text extraction failed)
   - step14_summary.png              (summary figure)
 
 Run:
@@ -471,15 +472,25 @@ def _rewrite_jsonl(path: Path, cache: Dict[str, dict]) -> None:
 
 def load_inputs(out_root: Path) -> pd.DataFrame:
     """
-    Load step12 Include records and join with step13 manifest to get file paths.
+    Load step12 + step12b Include records and join with step13 manifest to get file paths.
     Returns a DataFrame with one row per included record, with file_path column.
     """
     step12 = pd.read_csv(_step12_csv(out_root), engine="python", on_bad_lines="skip")
     step13 = pd.read_csv(_step13_manifest(out_root), engine="python", on_bad_lines="skip")
 
+    # Merge step12b includes if available
+    step12b_csv = out_root / "step12b" / "step12b_results.csv"
+    if step12b_csv.exists() and step12b_csv.stat().st_size > 0:
+        step12b = pd.read_csv(step12b_csv, engine="python", on_bad_lines="skip")
+        # Align column name: step12b uses s12b_decision, step12 uses screen_decision
+        if "s12b_decision" in step12b.columns and "screen_decision" not in step12b.columns:
+            step12b = step12b.rename(columns={"s12b_decision": "screen_decision"})
+        step12 = pd.concat([step12, step12b], ignore_index=True)
+        print(f"[step14] Loaded step12 + step12b: {len(step12):,} records combined")
+
     # Filter to Include only
     inc = step12[step12["screen_decision"].str.strip().str.lower() == "include"].copy()
-    print(f"[step14] Step12 included records: {len(inc):,}")
+    print(f"[step14] Total included records: {len(inc):,}")
 
     # Normalise join keys
     for df in [inc, step13]:
@@ -528,9 +539,18 @@ def load_inputs(out_root: Path) -> pd.DataFrame:
 
     n_with = (merged["ft_file_path"] != "").sum()
     n_without = (merged["ft_file_path"] == "").sum()
-    print(f"[step14] Full texts available: {n_with:,}  |  No full text: {n_without:,}")
+    print(f"[step14] Full texts available: {n_with:,}  |  Skipped (no full text): {n_without:,}")
 
-    return merged.reset_index(drop=True)
+    # Save skipped records for later — do not screen them now
+    no_ft = merged[merged["ft_file_path"] == ""]
+    no_ft_path = out_root / "step14" / "step14_no_fulltext.csv"
+    no_ft_path.parent.mkdir(parents=True, exist_ok=True)
+    cols = [c for c in ["dedupe_key", "doi", "title", "year", "ft_file_path"] if c in no_ft.columns]
+    no_ft[cols].to_csv(no_ft_path, index=False)
+    print(f"[step14] Skipped list -> {no_ft_path}")
+
+    # Only return records that have a full text to screen
+    return merged[merged["ft_file_path"] != ""].reset_index(drop=True)
 
 
 # =============================================================================
@@ -602,10 +622,10 @@ def screen_fulltext(
                     "file_path": file_path,
                 }
 
-                # No full text -> Needs_Manual (cannot make a decision without text)
+                # Safety net: no file path (should not reach here — filtered in load_inputs)
                 if not file_path:
                     rec["s14_decision"] = "Needs_Manual"
-                    rec["s14_reasons"] = "No full text retrieved — manual screening required"
+                    rec["s14_reasons"] = "No full text retrieved — skipped"
                     rec["s14_rule_hits"] = ""
                     rec["s14_fulltext_chars"] = 0
                     rec["s14_fulltext_note"] = "no_file"
@@ -703,7 +723,7 @@ def write_outputs(
 ) -> Dict[str, Any]:
     out_csv   = out_dir / "step14_results.csv"
     out_meta  = out_dir / "step14_results.meta.json"
-    no_ft_csv = out_dir / "step14_no_fulltext.csv"
+    no_ft_csv = out_dir / "step14_extraction_failed.csv"
 
     decision_cols = ["s14_decision", "s14_reasons", "s14_fulltext_chars", "s14_fulltext_note"]
     other_cols = [c for c in df.columns if c not in decision_cols and not c.startswith("s14_rule_hits") and not c.startswith("_")]
@@ -711,9 +731,10 @@ def write_outputs(
     col_order = [c for c in decision_cols + other_cols + rule_cols if c in df.columns]
     df[col_order].to_csv(out_csv, index=False)
 
-    # No-full-text sidecar
-    no_ft = df[df["s14_fulltext_note"].str.contains("no_file|extraction failed", na=False, case=False)]
-    no_ft[["dedupe_key", "doi", "title", "year", "s14_decision", "s14_reasons", "ft_file_path"]].to_csv(no_ft_csv, index=False)
+    # Extraction-failed sidecar (records that had a file path but text extraction failed)
+    no_ft = df[df["s14_fulltext_note"].str.contains("extraction failed", na=False, case=False)]
+    cols = [c for c in ["dedupe_key", "doi", "title", "year", "s14_decision", "s14_reasons", "ft_file_path"] if c in df.columns]
+    no_ft[cols].to_csv(no_ft_csv, index=False)
 
     # Counts
     decisions = df["s14_decision"].fillna("").str.strip()
@@ -727,17 +748,17 @@ def write_outputs(
                 excl_by_crit[m.group(1)] += 1
 
     n_screened_with_text = int((df["s14_fulltext_chars"] > 0).sum())
-    n_no_text = int((df["s14_fulltext_note"].str.contains("no_file|extraction failed", na=False, case=False)).sum())
+    n_extraction_failed = int((df["s14_fulltext_note"].str.contains("extraction failed", na=False, case=False)).sum())
 
     meta: Dict[str, Any] = {
         "step12_csv": str(_step12_csv(out_root)),
         "step13_manifest": str(_step13_manifest(out_root)),
         "criteria_yml": str(criteria_yml),
         "output_csv": str(out_csv),
-        "no_fulltext_csv": str(no_ft_csv),
+        "extraction_failed_csv": str(no_ft_csv),
         "rows_total": int(len(df)),
         "rows_screened_with_fulltext": n_screened_with_text,
-        "rows_no_fulltext": n_no_text,
+        "rows_extraction_failed": n_extraction_failed,
         "decision_counts": {k: int(v) for k, v in counts.items()},
         "excluded_by_criterion": dict(sorted(excl_by_crit.items(), key=lambda kv: (-kv[1], kv[0]))),
         "timestamp_utc": _now_utc(),
@@ -788,7 +809,7 @@ def _plot_summary(meta: Dict[str, Any], out_dir: Path) -> None:
     n_man   = dec.get("Needs_Manual", 0)
     total   = meta.get("rows_total", n_inc + n_exc + n_man)
 
-    labels = ["Include\n(screened)", "Needs Manual\n(no full text)", "Exclude"]
+    labels = ["Include\n(screened)", "Needs Manual\n(extraction failed)", "Exclude"]
     values = [n_inc, n_man, n_exc]
     colors = [BLUE, ORANGE, RED]
     bars = ax1.bar(labels, values, color=colors, edgecolor="white", linewidth=0.8, width=0.5)
@@ -800,7 +821,7 @@ def _plot_summary(meta: Dict[str, Any], out_dir: Path) -> None:
     ax1.set_ylabel("Records")
     ax1.set_ylim(0, max(values) * 1.18 if values else 1)
     ax1.spines[["top", "right"]].set_visible(False)
-    ax1.text(0.98, 0.98, "Needs_Manual = no full text or\nextraction failed; requires manual review",
+    ax1.text(0.98, 0.98, "Needs_Manual = text extraction failed;\nmanual review required",
              transform=ax1.transAxes, fontsize=8, color=ORANGE, ha="right", va="top", style="italic")
 
     ax2 = axes[1]

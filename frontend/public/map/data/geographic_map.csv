@@ -1,167 +1,205 @@
 country,n_studies
-Ethiopia,175
-Ghana,144
-Kenya,133
-India,129
-China,106
-Bangladesh,104
-Nigeria,95
-Pakistan,78
-Zimbabwe,70
-Tanzania,69
-Vietnam,65
-South Africa,58
-Malawi,57
-Nepal,55
-Uganda,50
-Indonesia,47
-Iran,41
-Mexico,27
-Sri Lanka,23
-Senegal,23
-Benin,22
-Burkina Faso,22
-Brazil,21
-Mali,19
-Zambia,19
-Philippines,17
-Thailand,17
-Peru,16
-Cameroon,15
-Niger,15
-Colombia,14
-Honduras,12
-Mozambique,12
-Cambodia,11
+Ethiopia,272
+Ghana,208
+Kenya,208
+India,191
+Bangladesh,151
+Nigeria,138
+China,130
+South Africa,100
+Indonesia,94
+Vietnam,90
+Tanzania,87
+Pakistan,86
+Iran,83
+Malawi,81
+Zimbabwe,75
+Uganda,66
+Nepal,62
+Mexico,49
+Senegal,38
+Philippines,37
+Zambia,36
+Burkina Faso,34
+Mali,29
+Brazil,29
+Benin,27
+Morocco,25
+Cameroon,22
+Cambodia,21
+Peru,21
+Thailand,21
+Niger,20
+Sri Lanka,19
+Colombia,19
+Rwanda,17
+Mozambique,15
+Honduras,13
+Madagascar,12
+Namibia,12
 Botswana,11
-Guatemala,11
-Morocco,10
-Malaysia,10
-Costa Rica,9
-Tunisia,8
-Nicaragua,8
-Madagascar,7
-Bolivia,7
-Namibia,7
-Mongolia,6
-Afghanistan,6
-Ecuador,6
+Mongolia,10
+Guatemala,9
+Myanmar,9
+Afghanistan,9
+Chile,9
+Fiji,9
+Nicaragua,9
+Bolivia,9
+Tunisia,9
+Costa Rica,8
+Ecuador,8
+Malaysia,7
+Viet Nam,7
+Solomon Islands,6
+Egypt,6
 Bhutan,5
-Rwanda,5
-Viet Nam,5
-Jamaica,5
-Solomon Islands,5
-Myanmar,4
-Africa,4
+Lesotho,5
+Odisha,5
+El Salvador,4
+Inner Mongolia,4
+Argentina,4
+Bihar,4
 Central America,4
-Sudan,4
-Chile,4
-Egypt,4
-Arunachal Pradesh,3
-Argentina,3
+Uzbekistan,4
+Togo,4
+Guinea-Bissau,4
+Burundi,3
+Gujarat,3
 Uttarakhand,3
+Telangana,3
+Vanuatu,3
 Papua New Guinea,3
-Assam,3
-Inner Mongolia,3
-El Salvador,3
-Togo,3
-Lao PDR,3
+West Bengal,3
 Haiti,3
-Lesotho,3
-Fiji,3
-Timor-Leste,2
-Asia,2
-Palau,2
-Guinea-Bissau,2
-Maldives,2
-Trinidad and Tobago,2
-The Gambia,2
-Seychelles,2
+Somalia,3
+Mauritania,3
+Sudan,3
+Türkiye,3
+Africa,3
+Tibetan Plateau,2
+South Sudan,2
 Dominican Republic,2
-Odisha,2
-Bihar,2
-Burundi,2
-Angola,2
-Himachal Pradesh,2
+The Gambia,2
+Nagaland,2
+Chad,2
+Seychelles,2
+Zanzibar,2
+Somaliland,2
+Punjab,2
+Himalayan region,2
+Côte d’Ivoire,2
+Algeria,2
+France,2
+Gambia,2
+Democratic Republic of Congo,2
+Guinea,2
+Albania,2
+Belize,2
 Swaziland,2
 Côte d'Ivoire,2
 Sahel,2
+Maldives,2
+Lao PDR,2
+Arunachal Pradesh,2
+Timor-Leste,2
+Qinghai-Tibet Plateau,2
 Uruguay,2
-Côte d’Ivoire,2
-West Timor,1
-Cabo Verde,1
+Lebanon,2
+Brazilian Amazon,2
+Jamaica,2
+Eswatini,2
+Spain,1
+Mediterranean,1
+Northeast Farming Region of China,1
+Sierra Leone,1
+Karnataka,1
+Upper Guinea,1
+Kerala,1
+Democratic Republic of the Congo,1
+Sudano-Sahelian region,1
+Northern Himalayan region,1
+Andhra Pradesh,1
+Tamil Nadu,1
+Kyrgyzstan,1
+Gombe,1
+Bauchi,1
+Venezuela,1
+Hindu-Kush Himalayan region,1
+China's Inner Mongolia Autonomous Region,1
+South Kivu,1
+Kerman Province,1
+South Sulawesi,1
+Cote d'Ivoire,1
+West Bank of Palestine,1
+"Andhra Pradesh, India",1
+Assam,1
+"Zanzibar, Tanzania",1
+Niger River Basin,1
+Benguela Current Large Marine Ecosystem,1
+Tonga,1
+Niue,1
+Manipur,1
+West African Sahel,1
+East and Southern Africa,1
+Baja California Sur,1
+West and Central Africa,1
+Burkina-Faso,1
+Fiji Islands,1
+Sardinia,1
+United States,1
+Liberia,1
+Tajikistan,1
+Turkey,1
+Sundarbans region,1
+Andaman Islands,1
+Laos,1
+Balochistan,1
+Angola,1
+Jammu and Kashmir,1
+Sao Tome and Principe,1
+Comoros,1
+Marshall Islands,1
 Tuvalu,1
 FSM,1
 PNG,1
 Kiribati,1
 Antigua and Barbuda,1
 Bahamas,1
-Northern India,1
+Cabo Verde,1
+Minas Gerais,1
 Andean Region,1
-Comoros,1
-northwestern China,1
+Canada,1
+Northern India,1
+Puerto Rico,1
 Qinghai – Tibetan Plateau,1
-Maharashtra,1
 Osun State,1
-Madhya Pradesh,1
-Marshall Islands,1
-Mauritius,1
-Sao Tome and Principe,1
 Sahel region,1
-Haryana,1
-Albania,1
-Indian Sundarbans,1
+Lower Mekong Region,1
+"Limpopo Province, South Africa",1
+South Africa's Northern Cape Province,1
+Mauritius,1
+Barbados,1
+Cuba,1
+Northern Ghana,1
+Galápagos,1
 Jordan,1
-Uzbekistan,1
-West Bengal,1
-Mauritania,1
-Zanzibar,1
+MENA Region,1
+Republic of Marshall Islands,1
+Asia,1
+Republic of Moldova,1
+Global South,1
+Haryana,1
+eastern India,1
+Micronesia,1
+Dominica,1
+Guam,1
 Kinnaur and Lahaul-Spiti Districts of Himachal Pradesh,1
 Nauru,1
 Samoa,1
+Palau,1
+Trinidad and Tobago,1
 St. Vincent and the Grenadines,1
 St. Lucia,1
 Grenada,1
-Dominica,1
-Cuba,1
-Barbados,1
-Kyrgyzstan,1
-Northeast Farming Region of China,1
-Belize,1
-Republic of Marshall Islands,1
-eastern India,1
-Darfur,1
-Telangana,1
-Vanuatu,1
-Yemen,1
-Sudano-Sahelian region,1
-Andhra Pradesh,1
-St Lucia,1
-Hindu-Kush Himalayan region,1
-Venezuela,1
-Qinghai-Tibet Plateau,1
-Northeast Thailand,1
-Tajikistan,1
-Brazilian Amazon,1
-Eswatini,1
-Southwestern Nigeria,1
-São Tomé and Príncipe,1
-Northern Ghana,1
-Micronesia,1
-Guam,1
-South Sudan,1
-South Africa's Northern Cape Province,1
-Turkey,1
-China's Inner Mongolia Autonomous Region,1
-Sundarbans,1
-Galápagos,1
-"Limpopo Province, South Africa",1
-Hindu Kush Himalaya,1
-Northeastern India,1
-Lower Mekong Region,1
-Middle East,1
-Lebanon,1
-Puerto Rico,1
-Canada,1
-Minas Gerais,1
-Global South,1
+Central Kalimantan,1

@@ -233,18 +233,8 @@ export default function MethodologyPage() {
               </div>
             ))}
           </div>
-          <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
-            <PlotlyChart
-              src="/map/data/db_summary.json"
-              fallbackImg="/map/db_summary.png"
-              pngSrc="/map/db_summary.png"
-              csvSrc="/map/data/db_summary.csv"
-              height={500}
-            />
-          </div>
           <p className="mt-3 text-xs font-tagline text-gray-400">
-            Deduplication: DOI exact match (10,234) · title+year exact match (253) · fuzzy Jaccard ≥ 0.85 (9) = 10,496 duplicates removed.
-            WOS include rate: 24.3% (1,137 / 4,683). 3 records flagged for manual review.
+            See the <a href="/systematic-map" className="underline hover:text-green">ROSES flow diagram</a> on the systematic map page for the full record-flow visualisation across all databases and screening stages.
           </p>
         </div>
       </section>
