@@ -1,0 +1,12 @@
+field,type,CGS_vs_LLM,AZ_vs_LLM,CGS_vs_AZ
+publication_year,categorical,5/5 (100%),5/5 (100%),5/5 (100%)
+publication_type,categorical,5/5 (100%),5/5 (100%),5/5 (100%)
+geographic_scale,categorical,5/5 (100%),4/5 (80%),4/5 (80%)
+producer_type,categorical,1/5 (20%),5/5 (100%),1/5 (20%)
+temporal_coverage,categorical,4/5 (80%),3/5 (60%),3/5 (60%)
+cost_data_reported,categorical,5/5 (100%),5/5 (100%),5/5 (100%)
+purpose_of_assessment,categorical,4/5 (80%),5/5 (100%),4/5 (80%)
+marginalized_subpopulations,multivalue,2/5 (40%),2/5 (40%),2/5 (40%)
+methodological_approach,multivalue,5/5 (100%),4/5 (80%),4/5 (80%)
+process_outcome_domains,multivalue,0/5 (0%),0/5 (0%),0/5 (0%)
+data_sources,multivalue,1/5 (20%),4/5 (80%),1/5 (20%)

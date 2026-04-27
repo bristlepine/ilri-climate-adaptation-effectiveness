@@ -4,7 +4,7 @@ One line per version. Each entry links to the round that triggered the change an
 
 | Version | Used in rounds | Date | Summary of changes |
 |---------|---------------|------|--------------------|
-| v1 | FT-R1a | 2026-04-14 | Initial criteria — all 19 fields, based on protocol Table 3 (D3) |
+| v1 | FT-R1a, FT-R1b | 2026-04-14 | Initial criteria — 16 fields per updated codebook (domain_type and validity_notes removed). Tightened field definitions for geographic_scale (study population scope, not data collection site), producer_type (undefined decision rule), marginalized_subpopulations (none_reported mutually exclusive), process_outcome_domains (dedicated indicators only), methodological_approach (participatory as primary design only), data_sources (controlled vocab; interviews → participatory_methods) |
 
 ---
 
