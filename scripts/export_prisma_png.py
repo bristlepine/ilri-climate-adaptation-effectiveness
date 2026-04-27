@@ -49,27 +49,37 @@ def text(x, y, content, size=11, weight="normal", fill="#555", anchor="middle", 
     return f'<text x="{x}" y="{y}" text-anchor="{anchor}" font-size="{size}" font-weight="{weight}" fill="{fill}" font-family="{family}"{ls}>{content}</text>'
 
 
-def center_box(y, h, label, n, sub=None, highlight=False):
+def center_box(y, h, label, n, pct=None, sub=None, highlight=False):
     bg    = "#f0f7f2" if highlight else BOX_BG
     sw    = 2 if highlight else 1.5
     n_col = GREEN if highlight else "#111"
+    pct_col = "#4a8c62" if highlight else "#888"
     out   = [rect(CX, y, CW, h, fill=bg, stroke=GREEN, sw=sw)]
     if sub:
-        out.append(text(CM, y + h * 0.28, label, size=10))
+        out.append(text(CM, y + h * 0.22, label, size=10))
+        out.append(text(CM, y + h * 0.45, n, size=14, weight="700", fill=n_col))
+        out.append(text(CM, y + h * 0.70, sub, size=8.5, fill="#888"))
+    elif pct:
+        out.append(text(CM, y + h * 0.26, label, size=10))
         out.append(text(CM, y + h * 0.52, n, size=14, weight="700", fill=n_col))
-        out.append(text(CM, y + h * 0.78, sub, size=8.5, fill="#888"))
+        out.append(text(CM, y + h * 0.78, pct, size=9, fill=pct_col))
     else:
         out.append(text(CM, y + h * 0.35, label, size=10))
         out.append(text(CM, y + h * 0.65, n, size=14, weight="700", fill=n_col))
     return "\n".join(out)
 
 
-def exclusion_box(y, label, n):
-    return "\n".join([
-        rect(EX, y, EW, BH, fill=EXC_BG, stroke=EXC_BDR, sw=1),
-        text(EX + EW // 2, y + BH * 0.36, label, size=10, fill=EXC_TEXT),
-        text(EX + EW // 2, y + BH * 0.68, n, size=13, weight="700", fill=EXC_TEXT),
-    ])
+def exclusion_box(y, label, n, pct=None):
+    mx  = EX + EW // 2
+    out = [rect(EX, y, EW, BH, fill=EXC_BG, stroke=EXC_BDR, sw=1)]
+    if pct:
+        out.append(text(mx, y + BH * 0.26, label, size=10, fill=EXC_TEXT))
+        out.append(text(mx, y + BH * 0.54, n,     size=13, weight="700", fill=EXC_TEXT))
+        out.append(text(mx, y + BH * 0.82, pct,   size=9,  fill="#e57373"))
+    else:
+        out.append(text(mx, y + BH * 0.36, label, size=10, fill=EXC_TEXT))
+        out.append(text(mx, y + BH * 0.68, n,     size=13, weight="700", fill=EXC_TEXT))
+    return "\n".join(out)
 
 
 def phase_label(label, y1, y2):

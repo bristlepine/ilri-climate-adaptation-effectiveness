@@ -43,48 +43,60 @@ function Arrowhead({ id, color }: { id: string; color: string }) {
 }
 
 function CenterBox({
-  y, h = BH, label, n, sub, highlight = false,
+  y, h = BH, label, n, pct, sub, highlight = false,
 }: {
-  y: number; h?: number; label: string; n: string; sub?: string; highlight?: boolean;
+  y: number; h?: number; label: string; n: string; pct?: string; sub?: string; highlight?: boolean;
 }) {
+  const hasSub  = !!sub;
+  const hasPct  = !!pct && !hasSub;
+  const yLabel  = y + h * (hasSub ? 0.22 : hasPct ? 0.26 : 0.35);
+  const yN      = y + h * (hasSub ? 0.45 : hasPct ? 0.52 : 0.65);
+  const yExtra  = y + h * (hasSub ? 0.70 : 0.78);
   return (
     <g>
       <rect x={CX} y={y} width={CW} height={h} rx={5}
         fill={highlight ? '#f0f7f2' : BOX_BG}
         stroke={GREEN} strokeWidth={highlight ? 2 : 1.5}
       />
-      <text x={CM} y={y + (sub ? h * 0.28 : h * 0.35)} textAnchor="middle"
+      <text x={CM} y={yLabel} textAnchor="middle"
         fontSize={10} fill="#555" fontFamily="Arial, sans-serif">
         {label}
       </text>
-      <text x={CM} y={y + (sub ? h * 0.52 : h * 0.65)} textAnchor="middle"
+      <text x={CM} y={yN} textAnchor="middle"
         fontSize={14} fontWeight="700" fill={highlight ? GREEN : '#111'}
         fontFamily="Arial, sans-serif">
         {n}
       </text>
-      {sub && (
-        <text x={CM} y={y + h * 0.78} textAnchor="middle"
-          fontSize={8.5} fill="#888" fontFamily="Arial, sans-serif">
-          {sub}
+      {(hasPct || hasSub) && (
+        <text x={CM} y={yExtra} textAnchor="middle"
+          fontSize={9} fill={highlight ? '#4a8c62' : '#888'} fontFamily="Arial, sans-serif">
+          {pct ?? sub}
         </text>
       )}
     </g>
   );
 }
 
-function ExclusionBox({ y, label, n }: { y: number; label: string; n: string }) {
+function ExclusionBox({ y, label, n, pct }: { y: number; label: string; n: string; pct?: string }) {
+  const mx = EX + EW / 2;
   return (
     <g>
       <rect x={EX} y={y} width={EW} height={BH} rx={4}
         fill={EXC_BG} stroke={EXC_BDR} strokeWidth={1} />
-      <text x={EX + EW / 2} y={y + BH * 0.36} textAnchor="middle"
+      <text x={mx} y={y + BH * (pct ? 0.26 : 0.36)} textAnchor="middle"
         fontSize={10} fill={EXC_TEXT} fontFamily="Arial, sans-serif">
         {label}
       </text>
-      <text x={EX + EW / 2} y={y + BH * 0.68} textAnchor="middle"
+      <text x={mx} y={y + BH * (pct ? 0.54 : 0.68)} textAnchor="middle"
         fontSize={13} fontWeight="700" fill={EXC_TEXT} fontFamily="Arial, sans-serif">
         {n}
       </text>
+      {pct && (
+        <text x={mx} y={y + BH * 0.82} textAnchor="middle"
+          fontSize={9} fill="#e57373" fontFamily="Arial, sans-serif">
+          {pct}
+        </text>
+      )}
     </g>
   );
 }
@@ -160,8 +172,8 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       <DownArrow y={Y1 + BH1} />
 
       {/* Box 2 — After deduplication */}
-      <CenterBox y={Y2} label="Records after deduplication" n="n = 25,208" />
-      <ExclusionBox y={Y2} label="Duplicates removed" n="n = 13,905" />
+      <CenterBox y={Y2} label="Records after deduplication" n="n = 25,208" pct="64% of all identified" />
+      <ExclusionBox y={Y2} label="Duplicates removed" n="n = 13,905" pct="36% of all identified" />
       <RightArrow sourceY={Y2} />
 
       {/* Arrow 2 → 3 */}
@@ -169,23 +181,23 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
 
       {/* Box 3 — Screened */}
       <CenterBox y={Y3} label="Records screened (title & abstract)" n="n = 25,208" />
-      <ExclusionBox y={Y3} label="Records excluded" n="n = 16,653" />
+      <ExclusionBox y={Y3} label="Records excluded" n="n = 16,653" pct="66% of screened" />
       <RightArrow sourceY={Y3} />
 
       {/* Arrow 3 → 4 */}
       <DownArrow y={Y3 + BH} />
 
       {/* Box 4 — Full texts sought */}
-      <CenterBox y={Y4} label="Full texts sought for retrieval" n="n = 8,555" />
-      <ExclusionBox y={Y4} label="Not retrieved" n="n = 5,079" />
+      <CenterBox y={Y4} label="Full texts sought for retrieval" n="n = 8,555" pct="34% of screened" />
+      <ExclusionBox y={Y4} label="Not retrieved" n="n = 5,079" pct="59% of full texts sought" />
       <RightArrow sourceY={Y4} />
 
       {/* Arrow 4 → 5 */}
       <DownArrow y={Y4 + BH} />
 
       {/* Box 5 — Full texts assessed */}
-      <CenterBox y={Y5} label="Full texts assessed for eligibility" n="n = 3,476" />
-      <ExclusionBox y={Y5} label="Full texts excluded" n="n = 726" />
+      <CenterBox y={Y5} label="Full texts assessed for eligibility" n="n = 3,476" pct="41% of full texts sought" />
+      <ExclusionBox y={Y5} label="Full texts excluded" n="n = 726" pct="21% of assessed" />
       <RightArrow sourceY={Y5} />
 
       {/* Arrow 5 → 6 */}
@@ -194,7 +206,7 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       {/* Box 6 — Included */}
       <CenterBox y={Y6} h={BH + 8}
         label="Studies included in data extraction"
-        n="n = 2,750" highlight
+        n="n = 2,750" pct="79% of assessed" highlight
       />
     </svg>
   );

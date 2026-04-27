@@ -1710,6 +1710,8 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     n_abs_inc        = n_sc_include + n_other_include          # 8,555
     n_abs_exc        = n_sc_exclude + n_other_exclude + n_other_manual  # 16,653
     n_ft_not_ret_all = max(0, n_abs_inc - n_ft_retrieved_all)  # 5,079
+    n_total_id       = n_scopus + sum(_db_imp[db] for db in _dbs)  # 39,113
+    n_screened       = n_abs_inc + n_abs_exc                   # 25,208
 
     # ── Nodes ────────────────────────────────────────────────────────────────
     # All databases feed into a shared dedup pool, then a single pipeline:
@@ -1737,18 +1739,18 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     I_PEND  = N + 9
 
     labels = (
-        [f"Scopus<br>identified<br>n={n_scopus:,}"]
-        + [f"{_DB_SHORT.get(db, db)}<br>identified<br>n={_db_imp[db]:,}" for db in _dbs]
+        [f"Scopus<br>identified<br>n={n_scopus:,} ({_pct(n_scopus, n_total_id)})"]
+        + [f"{_DB_SHORT.get(db, db)}<br>identified<br>n={_db_imp[db]:,} ({_pct(_db_imp[db], n_total_id)})" for db in _dbs]
         + [
-            f"Duplicates removed<br>n={n_total_dup:,}",
-            f"Abstract screening<br>n={n_abs_inc + n_abs_exc:,}",
-            f"Abstract included<br>n={n_abs_inc:,} ({_pct(n_abs_inc, n_abs_inc + n_abs_exc)})",
-            f"Abstract excluded<br>n={n_abs_exc:,} ({_pct(n_abs_exc, n_abs_inc + n_abs_exc)})",
+            f"Duplicates removed<br>n={n_total_dup:,} ({_pct(n_total_dup, n_total_id)})",
+            f"Abstract screening<br>n={n_screened:,} ({_pct(n_screened, n_total_id)})",
+            f"Abstract included<br>n={n_abs_inc:,} ({_pct(n_abs_inc, n_screened)})",
+            f"Abstract excluded<br>n={n_abs_exc:,} ({_pct(n_abs_exc, n_screened)})",
             f"Full texts retrieved<br>n={n_ft_retrieved_all:,} ({_pct(n_ft_retrieved_all, n_abs_inc)})",
             f"Not retrievable<br>n={n_ft_not_ret_all:,} ({_pct(n_ft_not_ret_all, n_abs_inc)})",
             f"Included for coding<br>n={n_ft_include:,} ({_pct(n_ft_include, n_ft_retrieved_all)})",
             f"Full texts excluded<br>n={n_ft_exclude:,} ({_pct(n_ft_exclude, n_ft_retrieved_all)})",
-            f"Pending: FT screening<br>n={n_ft_pending_screen:,}",
+            f"Pending: FT screening<br>n={n_ft_pending_screen:,} ({_pct(n_ft_pending_screen, n_ft_retrieved_all)})",
         ]
     )
 
