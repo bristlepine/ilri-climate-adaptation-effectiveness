@@ -53,10 +53,9 @@ export const deliverables: Deliverable[] = [
       'Final protocol for the scoping review and systematic map, published on Zenodo with a citable DOI. Includes finalised eligibility criteria, search strings, and methodology appendix.',
     due: 'Jan 2026',
     status: 'submitted',
-    zenodo: undefined,
+    zenodo: 'https://doi.org/10.5281/zenodo.19811629',
     github: 'https://github.com/bristlepine/ilri-climate-adaptation-effectiveness',
     cgspace: undefined,
-    note: 'Zenodo DOI to be added.',
   },
   {
     id: 'D4',
@@ -64,12 +63,11 @@ export const deliverables: Deliverable[] = [
     subtitle: '(Interim)',
     type: 'Report + Searchable Database',
     description:
-      'First draft of the scoping review and systematic map based on Scopus corpus (~17,000 records). Includes a preliminary searchable database of included evidence and evidence gap map. Labelled preliminary pending multi-database integration.',
+      'First draft of the systematic map across five databases (39,113 records; 2,750 coded). Includes a preliminary searchable database and evidence gap map. LLM-assisted extraction; human validation in Deliverable 5.',
     due: 'Apr 2026',
-    status: 'in-progress',
-    zenodo: undefined,
-    github: undefined,
-    note: 'Scopus-based only; multi-database integration (WoS, CAB, AGRIS, ASP) pending.',
+    status: 'submitted',
+    zenodo: 'https://doi.org/10.5281/zenodo.19811622',
+    github: 'https://github.com/bristlepine/ilri-climate-adaptation-effectiveness',
   },
   {
     id: 'D5',
