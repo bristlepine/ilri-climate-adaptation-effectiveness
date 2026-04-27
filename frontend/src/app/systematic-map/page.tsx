@@ -3,6 +3,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PlotlyChart from "@/components/PlotlyChart";
+import PrismaFlow from "@/components/PrismaFlow";
 import { useState, useEffect } from "react";
 import { Download, Maximize2, X } from "lucide-react";
 
@@ -39,6 +40,7 @@ export default function SystematicMapPage() {
   const [sortCol, setSortCol] = useState<keyof Study>('year');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [geoView, setGeoView] = useState<'map' | 'bar'>('map');
+  const [flowView, setFlowView] = useState<'sankey' | 'prisma'>('sankey');
 
   useEffect(() => {
     fetch('/map/data/studies.json')
@@ -103,26 +105,51 @@ export default function SystematicMapPage() {
       {/* ROSES Flow Diagram */}
       <section className="bg-white px-6 py-16">
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-start justify-between mb-6 gap-4">
+          <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
             <div>
               <h2 className="text-2xl font-logo font-bold text-green">ROSES Flow Diagram</h2>
               <p className="font-tagline text-sm text-gray-500 mt-1">Record flow across all screening stages, following ROSES reporting standards.</p>
             </div>
-            <button
-              onClick={() => setExpandedFig({ src: '/map/data/roses_flow.json', pngSrc: '/map/roses_flow.png', csvSrc: '/map/data/roses_flow.csv', title: 'ROSES Flow Diagram' })}
-              className="shrink-0 flex items-center gap-1.5 text-xs font-tagline font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-green hover:text-green transition bg-white"
-            >
-              <Maximize2 className="w-3.5 h-3.5" /> Fullscreen
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              {/* View toggle */}
+              <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
+                <button
+                  onClick={() => setFlowView('sankey')}
+                  className={`px-3 py-1.5 transition ${flowView === 'sankey' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'}`}
+                >
+                  Sankey
+                </button>
+                <button
+                  onClick={() => setFlowView('prisma')}
+                  className={`px-3 py-1.5 transition border-l border-gray-200 ${flowView === 'prisma' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'}`}
+                >
+                  PRISMA
+                </button>
+              </div>
+              {flowView === 'sankey' && (
+                <button
+                  onClick={() => setExpandedFig({ src: '/map/data/roses_flow.json', pngSrc: '/map/roses_flow.png', csvSrc: '/map/data/roses_flow.csv', title: 'ROSES Flow Diagram' })}
+                  className="flex items-center gap-1.5 text-xs font-tagline font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-green hover:text-green transition bg-white"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" /> Fullscreen
+                </button>
+              )}
+            </div>
           </div>
           <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
-            <PlotlyChart
-              src="/map/data/roses_flow.json"
-              fallbackImg="/map/roses_flow.png"
-              pngSrc="/map/roses_flow.png"
-              csvSrc="/map/data/roses_flow.csv"
-              height={540}
-            />
+            {flowView === 'sankey' ? (
+              <PlotlyChart
+                src="/map/data/roses_flow.json"
+                fallbackImg="/map/roses_flow.png"
+                pngSrc="/map/roses_flow.png"
+                csvSrc="/map/data/roses_flow.csv"
+                height={540}
+              />
+            ) : (
+              <div className="p-6">
+                <PrismaFlow />
+              </div>
+            )}
           </div>
         </div>
       </section>
