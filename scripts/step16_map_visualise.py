@@ -1706,159 +1706,118 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
         "AGRIS": "AGRIS",
     }
 
-    # ── Nodes — dynamic count based on databases present ─────────────────────
-    # Fixed nodes:
+    # ── Derived all-database totals ──────────────────────────────────────────
+    n_abs_inc        = n_sc_include + n_other_include          # 8,555
+    n_abs_exc        = n_sc_exclude + n_other_exclude + n_other_manual  # 16,653
+    n_ft_not_ret_all = max(0, n_abs_inc - n_ft_retrieved_all)  # 5,079
+
+    # ── Nodes ────────────────────────────────────────────────────────────────
+    # All databases feed into a shared dedup pool, then a single pipeline:
     #   0          Scopus identified
     #   1…N        One node per other database (N = len(_dbs))
-    #   N+1        Cross-DB duplicates removed [TERMINAL]
-    #   N+2        Other databases net-new abstract screening
-    #   N+3        Scopus abstract screening
-    #   N+4        Abstract included — Scopus
-    #   N+5        Abstract excluded — Scopus [TERMINAL]
-    #   N+6        Abstract included — Other DBs
-    #   N+7        Abstract excluded — Other DBs [TERMINAL]
-    #   N+8        Full-text retrieved — Scopus
-    #   N+9        Pending: not retrievable — Scopus [TERMINAL]
-    #   N+10       Full-text included — Scopus
-    #   N+11       Full-text excluded — Scopus [TERMINAL]
-    #   N+12       Data extraction — Scopus [TERMINAL]
-    #   N+13       Pending: FT screening — Scopus [TERMINAL]
-    #   N+14       Pending: FT retrieval — Other DBs [TERMINAL]
+    #   N+1        Duplicates removed [TERMINAL]
+    #   N+2        Abstract screening (unique records pool)
+    #   N+3        Abstract included
+    #   N+4        Abstract excluded [TERMINAL]
+    #   N+5        Full texts retrieved
+    #   N+6        Not retrievable [TERMINAL]
+    #   N+7        Included for coding
+    #   N+8        Full texts excluded [TERMINAL]
+    #   N+9        Pending: FT screening [TERMINAL]  (only if > 0)
 
-    N = len(_dbs)
-    I_DUP      = N + 1
-    I_ONNET    = N + 2   # other DBs net-new screening
-    I_SCSCR    = N + 3   # Scopus abstract screening
-    I_SCINC    = N + 4
-    I_SCEXC    = N + 5
-    I_OINC     = N + 6
-    I_OEXC     = N + 7
-    I_FTRET    = N + 8
-    I_FTNRET   = N + 9
-    I_FTINC    = N + 10
-    I_FTEXC    = N + 11
-    I_EXTRACT  = N + 12
-    I_FTPEND   = N + 13
-    I_OPEND    = N + 14
+    N       = len(_dbs)
+    I_DUP   = N + 1
+    I_SCR   = N + 2   # abstract screening / unique records
+    I_INC   = N + 3
+    I_EXC   = N + 4
+    I_FTRET = N + 5
+    I_FTNR  = N + 6
+    I_CODED = N + 7
+    I_FTEXC = N + 8
+    I_PEND  = N + 9
 
     labels = (
-        [f"Scopus<br>identified<br>n={n_scopus:,}"]                                                                       # 0
-        + [f"{_DB_SHORT.get(db, db)}<br>identified<br>n={_db_imp[db]:,}" for db in _dbs]                                  # 1…N
+        [f"Scopus<br>identified<br>n={n_scopus:,}"]
+        + [f"{_DB_SHORT.get(db, db)}<br>identified<br>n={_db_imp[db]:,}" for db in _dbs]
         + [
-        f"Duplicates removed<br>n={n_total_dup:,}",                                                                      # N+1
-        f"Other databases net-new<br>abstract screening<br>n={n_other_net:,}",                                            # N+2
-        f"Scopus<br>abstract screening<br>n={n_scopus:,}",                                                               # N+3
-        f"Abstract included — Scopus<br>n={n_sc_include:,} ({_pct(n_sc_include, n_scopus)})",                            # N+4
-        f"Abstract excluded — Scopus<br>n={n_sc_exclude:,} ({_pct(n_sc_exclude, n_scopus)})",                            # N+5
-        f"Abstract included — Other DBs<br>n={n_other_include:,} ({_pct(n_other_include, n_other_net)})",                # N+6
-        f"Abstract excluded — Other DBs<br>n={n_other_exclude+n_other_manual:,} ({_pct(n_other_exclude+n_other_manual, n_other_net)})", # N+7
-        f"Full-text retrieved — Scopus<br>n={n_ft_retrieved:,} ({_pct(n_ft_retrieved, n_sc_include)})",                  # N+8
-        f"Pending: not retrievable — Scopus<br>n={n_ft_not_found:,} ({_pct(n_ft_not_found, n_sc_include)})",             # N+9
-        f"Full-text included<br>n={n_ft_include:,} ({_pct(n_ft_include, n_ft_retrieved_all)})",                         # N+10
-        f"Full-text excluded<br>n={n_ft_exclude:,} ({_pct(n_ft_exclude, n_ft_retrieved_all)})",                         # N+11
-        f"Data extraction<br>n={n_coded_ft:,} ({_pct(n_coded_ft, n_ft_include)})",                                      # N+12
-        f"Pending: FT screening<br>n={n_ft_pending_screen:,} ({_pct(n_ft_pending_screen, n_ft_retrieved_all)})",        # N+13
-        f"Pending: FT retrieval — Other DBs<br>n={n_other_include:,} ({_pct(n_other_include, n_other_net)})",            # N+14
-    ])
-
-    # Color palette:
-    #   Greens  → includes / data flowing forward
-    #   Reds / purples → exclusions
-    #   Sky blues → pending / in-progress
-    C_ENTRY   = "#4e79a7"   # steel blue   — entry / screened nodes
-    C_INC     = "#2d8f4e"   # forest green — abstract/FT included
-    C_INC_LT  = "#5ab56e"   # medium green — FT retrieved
-    C_INC_EXT = "#3cb371"   # sea green    — data extraction
-    C_EXC     = "#c0392b"   # crimson      — abstract/FT excluded
-    C_EXC_LT  = "#9b59b6"   # purple       — full-text excluded
-    C_PEND    = "#6baed6"   # sky blue     — pending
-
-    node_colors = (
-        [C_ENTRY]                    # 0  Scopus
-        + [C_ENTRY] * N              # 1…N  other databases
-        + [
-            C_EXC,      # N+1  Duplicates removed
-            C_ENTRY,    # N+2  Other DBs net-new screening
-            C_ENTRY,    # N+3  Scopus abstract screening
-            C_INC,      # N+4  Abstract included — Scopus
-            C_EXC,      # N+5  Abstract excluded — Scopus
-            C_INC,      # N+6  Abstract included — Other DBs
-            C_EXC,      # N+7  Abstract excluded — Other DBs
-            C_INC_LT,   # N+8  FT retrieved
-            C_PEND,     # N+9  Pending: not retrieved
-            C_INC,      # N+10 FT included
-            C_EXC_LT,   # N+11 FT excluded
-            C_INC_EXT,  # N+12 Data extraction
-            C_PEND,     # N+13 Pending: FT screening
-            C_PEND,     # N+14 Pending: FT retrieval (other DBs)
+            f"Duplicates removed<br>n={n_total_dup:,}",
+            f"Abstract screening<br>n={n_abs_inc + n_abs_exc:,}",
+            f"Abstract included<br>n={n_abs_inc:,} ({_pct(n_abs_inc, n_abs_inc + n_abs_exc)})",
+            f"Abstract excluded<br>n={n_abs_exc:,} ({_pct(n_abs_exc, n_abs_inc + n_abs_exc)})",
+            f"Full texts retrieved<br>n={n_ft_retrieved_all:,} ({_pct(n_ft_retrieved_all, n_abs_inc)})",
+            f"Not retrievable<br>n={n_ft_not_ret_all:,} ({_pct(n_ft_not_ret_all, n_abs_inc)})",
+            f"Included for coding<br>n={n_ft_include:,} ({_pct(n_ft_include, n_ft_retrieved_all)})",
+            f"Full texts excluded<br>n={n_ft_exclude:,} ({_pct(n_ft_exclude, n_ft_retrieved_all)})",
+            f"Pending: FT screening<br>n={n_ft_pending_screen:,}",
         ]
     )
 
-    # Each other DB: db_node → duplicates [terminal] + net-new screening
-    sources = [0, I_SCSCR]  # Scopus → Scopus screening (direct, no dedup node needed)
-    targets = [I_SCSCR, I_SCINC]
-    values  = [max(n_scopus, 1), max(n_sc_include, 1)]
-    link_colors = ["rgba(78,121,167,0.28)", "rgba(45,143,78,0.30)"]
-    link_labels = [
-        f"Scopus: {n_scopus:,} records identified",
-        f"Abstract included — Scopus: {n_sc_include:,}" + (f"<br>Top criteria: {excl12_text}" if excl12_text else ""),
-    ]
+    C_ENTRY   = "#4e79a7"   # steel blue  — identified / screening nodes
+    C_EXC     = "#c0392b"   # crimson     — duplicates / abstract excluded
+    C_INC     = "#2d8f4e"   # forest green — abstract/FT included
+    C_INC_LT  = "#5ab56e"   # medium green — FT retrieved
+    C_EXC_LT  = "#9b59b6"   # purple      — FT excluded
+    C_INC_EXT = "#3cb371"   # sea green   — coded
+    C_PEND    = "#6baed6"   # sky blue    — pending
 
-    for j, db in enumerate(_dbs):
-        db_node = j + 1
-        dup_count = max(_db_imp[db] - _db_net[db], 1)
-        net_count = max(_db_net[db], 1)
-        short     = _DB_SHORT.get(db, db)
-        sources  += [db_node, db_node]
-        targets  += [I_DUP,   I_ONNET]
-        values   += [dup_count, net_count]
-        link_colors += ["rgba(192,57,43,0.18)", "rgba(78,121,167,0.20)"]
-        link_labels += [
-            f"{short} duplicates removed: {dup_count:,}",
-            f"{short} net-new → screening: {net_count:,}",
+    node_colors = (
+        [C_ENTRY]         # 0   Scopus
+        + [C_ENTRY] * N   # 1…N other databases
+        + [
+            C_EXC,        # N+1 Duplicates removed
+            C_ENTRY,      # N+2 Abstract screening
+            C_INC,        # N+3 Abstract included
+            C_EXC,        # N+4 Abstract excluded
+            C_INC_LT,     # N+5 FT retrieved
+            C_PEND,       # N+6 Not retrievable
+            C_INC_EXT,    # N+7 Included for coding
+            C_EXC_LT,     # N+8 FT excluded
+            C_PEND,       # N+9 Pending FT screening
         ]
+    )
 
-    # Rest of the pipeline
-    sources += [I_SCSCR,    I_ONNET,                          I_SCINC,           I_SCINC,       I_FTRET,           I_FTRET,    I_FTINC,           I_FTINC,    I_OINC ]
-    targets += [I_SCEXC,    I_OINC,                           I_FTRET,           I_FTNRET,      I_FTINC,           I_FTEXC,    I_EXTRACT,         I_FTPEND,   I_OPEND]
-    values  += [
-        max(n_sc_exclude, 1),
-        max(n_other_include, 1),
-        max(n_ft_retrieved, 1),
-        max(n_ft_not_found, 1),
-        max(n_ft_include, 1),
-        max(n_ft_exclude, 1),
-        max(n_coded_ft, 1),
-        max(n_ft_pending_screen, 1),
-        max(n_other_include, 1),
-    ]
-    link_colors += [
-        "rgba(192,57,43,0.22)",    # Scopus abstract excluded
-        "rgba(45,143,78,0.30)",    # Other DBs abstract included
-        "rgba(90,181,110,0.30)",   # FT retrieved
-        "rgba(107,174,214,0.22)",  # Pending: not retrieved
-        "rgba(45,143,78,0.30)",    # FT included
-        "rgba(155,89,182,0.22)",   # FT excluded
-        "rgba(60,179,113,0.32)",   # Data extraction
-        "rgba(107,174,214,0.20)",  # Pending FT screening
-        "rgba(107,174,214,0.25)",  # Other DBs pending FT retrieval
-    ]
-    link_labels += [
-        f"Abstract excluded — Scopus: {n_sc_exclude:,}",
-        f"Abstract included — Other databases: {n_other_include:,}",
-        f"Full-text retrieved (Scopus): {n_ft_retrieved:,}",
-        f"Not retrievable automatically (Scopus): {n_ft_not_found:,}",
-        f"Full-text included (Scopus): {n_ft_include:,}" + (f"<br>Top criteria: {excl14_text}" if excl14_text else ""),
-        f"Full-text excluded (Scopus): {n_ft_exclude:,}",
-        f"Data extraction complete (Scopus): {n_coded_ft:,}",
-        f"Pending FT screening — Scopus: {n_ft_pending_screen:,}",
-        f"Pending FT retrieval — Other databases: {n_other_include:,}",
-    ]
+    sources, targets, values, link_colors, link_labels = [], [], [], [], []
+
+    def add(s, t, v, c, lbl=""):
+        if v > 0:
+            sources.append(s); targets.append(t); values.append(v)
+            link_colors.append(c); link_labels.append(lbl)
+
+    # Scopus: all records are unique (it is the reference set — no cross-DB dups)
+    add(0, I_SCR, n_scopus, "rgba(78,121,167,0.25)",
+        f"Scopus: {n_scopus:,} identified (reference set, no cross-DB duplicates)")
+
+    # Other databases: each splits into duplicates vs net-new
+    for j, db in enumerate(_dbs):
+        idx   = j + 1
+        n_dup = _db_imp[db] - _db_net[db]
+        n_net = _db_net[db]
+        short = _DB_SHORT.get(db, db)
+        add(idx, I_DUP, n_dup, "rgba(192,57,43,0.18)",
+            f"{short}: {n_dup:,} duplicates removed")
+        add(idx, I_SCR, n_net, "rgba(78,121,167,0.20)",
+            f"{short}: {n_net:,} net-new unique records")
+
+    # Shared screening pipeline
+    add(I_SCR,   I_INC,   n_abs_inc,        "rgba(45,143,78,0.30)",
+        f"Abstract included: {n_abs_inc:,}" + (f"<br>Top criteria: {excl12_text}" if excl12_text else ""))
+    add(I_SCR,   I_EXC,   n_abs_exc,        "rgba(192,57,43,0.18)",
+        f"Abstract excluded: {n_abs_exc:,}")
+    add(I_INC,   I_FTRET, n_ft_retrieved_all, "rgba(90,181,110,0.30)",
+        f"Full texts retrieved: {n_ft_retrieved_all:,}")
+    add(I_INC,   I_FTNR,  n_ft_not_ret_all, "rgba(107,174,214,0.22)",
+        f"Not retrievable: {n_ft_not_ret_all:,}")
+    add(I_FTRET, I_CODED, n_ft_include,     "rgba(45,143,78,0.32)",
+        f"Included for coding: {n_ft_include:,}" + (f"<br>Top criteria: {excl14_text}" if excl14_text else ""))
+    add(I_FTRET, I_FTEXC, n_ft_exclude,     "rgba(155,89,182,0.22)",
+        f"Full texts excluded: {n_ft_exclude:,}")
+    add(I_FTRET, I_PEND,  n_ft_pending_screen, "rgba(107,174,214,0.20)",
+        f"Pending FT screening: {n_ft_pending_screen:,}")
 
     fig = go.Figure(go.Sankey(
         arrangement="snap",
         node=dict(
-            pad=60, thickness=22,
+            pad=55, thickness=22,
             line=dict(color="white", width=1),
             label=labels,
             color=node_colors,
@@ -1875,8 +1834,7 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
         title=dict(
             text=(
                 "<b>ROSES Flow Diagram — Scopus + WoS + CAB + ASP + AGRIS</b><br>"
-                "<sup>Record flow across all screening stages · hover nodes and links for detail · "
-                "other-database full-text retrieval pending</sup>"
+                "<sup>Record flow across all screening stages · hover nodes and links for detail</sup>"
             ),
             x=0.5, xanchor="center", font=dict(size=14),
         ),
@@ -1887,8 +1845,6 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     )
     _save_plotly(fig, "roses_flow", out_dir)
 
-    # Export PNG: landscape canvas (wide > tall) so the Sankey sits on a
-    # landscape page in the document (720 PT wide × 400 PT tall at 1.5× scale).
     try:
         png_path = out_dir / "roses_flow.png"
         fig.write_image(str(png_path), scale=2, width=960, height=540)
@@ -1901,24 +1857,20 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
         "stage": (
             ["Scopus — identified"]
             + [r[0] for r in _db_rows]
-            + ["Cross-database duplicates removed", "Other databases net-new — abstract screening",
-               "Abstract included — Scopus", "Abstract excluded — Scopus",
-               "Abstract included — Other databases", "Abstract excluded — Other databases",
-               "Full-text retrieved (Scopus)", "Pending: not retrievable (Scopus)",
-               "Full-text included (Scopus)", "Full-text excluded (Scopus)",
-               "Data extraction (Scopus)", "Pending: FT screening (Scopus)",
-               "Pending: FT retrieval (Other databases)"]
+            + ["Duplicates removed", "Abstract screening (unique records)",
+               "Abstract included", "Abstract excluded",
+               "Full texts retrieved", "Not retrievable",
+               "Included for coding", "Full texts excluded",
+               "Pending: FT screening"]
         ),
         "n": (
             [n_scopus]
             + [r[1] for r in _db_rows]
-            + [n_total_dup, n_other_net,
-               n_sc_include, n_sc_exclude,
-               n_other_include, n_other_exclude + n_other_manual,
-               n_ft_retrieved, n_ft_not_found,
+            + [n_total_dup, n_abs_inc + n_abs_exc,
+               n_abs_inc, n_abs_exc,
+               n_ft_retrieved_all, n_ft_not_ret_all,
                n_ft_include, n_ft_exclude,
-               n_coded_ft, n_ft_pending_screen,
-               n_other_include]
+               n_ft_pending_screen]
         ),
     })
     _save_csv(roses_df, "roses_flow", out_dir)

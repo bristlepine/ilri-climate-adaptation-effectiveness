@@ -4,16 +4,12 @@ WoS — identified,15179
 CAB — identified,5723
 ASP — identified,1187
 AGRIS — identified,3
-Cross-database duplicates removed,13905
-Other databases net-new — abstract screening,8187
-Abstract included — Scopus,6218
-Abstract excluded — Scopus,10803
-Abstract included — Other databases,2337
-Abstract excluded — Other databases,5850
-Full-text retrieved (Scopus),2644
-Pending: not retrievable (Scopus),3574
-Full-text included (Scopus),2750
-Full-text excluded (Scopus),673
-Data extraction (Scopus),2750
-Pending: FT screening (Scopus),53
-Pending: FT retrieval (Other databases),2337
+Duplicates removed,13905
+Abstract screening (unique records),25208
+Abstract included,8555
+Abstract excluded,16653
+Full texts retrieved,3476
+Not retrievable,5079
+Included for coding,2750
+Full texts excluded,673
+Pending: FT screening,53
