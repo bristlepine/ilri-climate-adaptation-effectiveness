@@ -20,21 +20,21 @@ quantitative; remote_sensing,4
 quantitative; longitudinal,4
 quantitative; secondary_data,3
 experimental; quantitative,3
-participatory; surveys,2
 qualitative; modeling_with_empirical_validation,2
-participatory; experimental,1
-qualitative; quantitative; participatory; modeling_with_empirical_validation,1
-qualitative; experimental,1
-remote_sensing,1
-quantitative; qualitative; participatory,1
-qualitative; quantitative; secondary_data,1
-surveys; participatory_methods,1
-qualitative; quantitative; remote_sensing,1
+participatory; surveys,2
 mixed-methods,1
-experimental; qualitative,1
-not_reported,1
-surveys,1
-quantitative; participatory; modeling_with_empirical_validation,1
-qualitative; quantitative; participatory; remote_sensing,1
 qualitative; surveys,1
+qualitative; quantitative; participatory; remote_sensing,1
+quantitative; participatory; modeling_with_empirical_validation,1
+surveys,1
+not_reported,1
+experimental; qualitative,1
+qualitative; quantitative; participatory; modeling_with_empirical_validation,1
+qualitative; quantitative; remote_sensing,1
+surveys; participatory_methods,1
+qualitative; quantitative; secondary_data,1
+quantitative; qualitative; participatory,1
+participatory; experimental,1
+remote_sensing,1
+qualitative; experimental,1
 qualitative; secondary_data,1
