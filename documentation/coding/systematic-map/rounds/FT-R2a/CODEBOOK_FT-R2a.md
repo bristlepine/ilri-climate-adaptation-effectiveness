@@ -222,6 +222,8 @@ Select all that apply; separate with semicolons.
 | `mixed` | Explicitly mixed crop-livestock |
 | `undefined` | Generic "smallholder farmers" with no production system specified |
 
+**Where to look:** Abstract and Introduction (authors state target population and agricultural focus early); Methods / Study Area / Site Description (most reliable — authors describe the agricultural baseline of communities surveyed).
+
 ---
 
 ### 6. `marginalized_subpopulations`
@@ -240,6 +242,8 @@ Code only what is **explicitly stated** in the paper — do not infer. Select al
 | `other` | Any other marginalised group explicitly named — add a note in `notes` |
 | `none_reported` | No marginalised groups mentioned |
 
+**Where to look:** Abstract and Introduction (often stated immediately if the study targets a vulnerable subgroup); Methods / Sampling (look for purposive sampling criteria, e.g. "deliberately selected based on gender or youth status").
+
 ---
 
 ### 7. `adaptation_focus` *(free text)*
@@ -256,11 +260,15 @@ The specific climate adaptation action, intervention, or practice the study trac
 - `financial strategies`
 - `social and community networking`
 
+**Where to look:** Abstract and Introduction (primary interventions highlighted early); Methods / Study Design (specific strategies tested or surveyed); Results tables (adoption rates and regression variables list exact practices tracked); Discussion and Conclusion (if the study is a modeling or vulnerability assessment, the adaptation focus may be proposed here rather than tested); Appendix / Survey Instrument (if included, shows exact adaptation options asked about).
+
 ---
 
 ### 8. `process_outcome_domains`
 
 What the study measures. Select all that apply; separate with semicolons.
+
+**Rule:** Code only domains that are **explicitly measured** — not domains that could be inferred. If the paper measures yield but not income, code `yields_productivity` only.
 
 | Value | Meaning |
 |-------|---------|
@@ -277,6 +285,8 @@ What the study measures. Select all that apply; separate with semicolons.
 | `wellbeing` | Health, nutrition, subjective wellbeing |
 | `risk_reduction` | Reduced exposure or sensitivity to climate shocks |
 | `resilience_adaptive_capacity` | Adaptive capacity indices, resilience scores, vulnerability indices |
+
+**Where to look:** Methods / Variable Descriptions / Summary Statistics tables (specific indicators listed); Results (qualitative and quantitative changes reported here); Discussion and Conclusion (how the intervention affected social processes, learning, or institutional dynamics).
 
 ---
 
@@ -315,6 +325,8 @@ Select all that apply; separate with semicolons.
 | `donor_reporting` | Report produced for a donor or funder |
 | `national_reporting` | Contributing to NAPs, NDCs, or national monitoring frameworks |
 
+**Where to look:** Abstract (high-level summary of why the study was conducted); Introduction (research questions or objectives are typically stated explicitly at the end of the introduction); Conclusion (authors restate core purpose when summarising findings).
+
 ---
 
 ### 12. `data_sources`
@@ -341,6 +353,8 @@ Select all that apply; separate with semicolons.
 | `longitudinal` | Multi-year, panel data, repeated measures with the same individuals |
 | `repeated_cross_sectional` | Multi-year, repeated measures with different individuals each time |
 
+**Where to look:** Methods / Data Collection / Study Design (most definitive — authors detail when and how often data were collected); Data and Variables / Climate Modeling sections (for studies using secondary data or historical records, these define the time period analysed).
+
 ---
 
 ### 14. `cost_data_reported`
@@ -363,6 +377,8 @@ Author-reported strengths and limitations. Look in the Discussion, Conclusion, a
 ### 16. `lessons_learned` *(free text)*
 
 Key lessons or recommendations the authors report. 1–3 sentences. Focus on what they say should be done differently — not the findings themselves. Enter `not_reported` if absent.
+
+**Where to look:** Discussion (primary area where authors interpret results and extract practical insights); Conclusion / Implications / Recommendations subsections; Abstract (final sentences often distill the most critical lesson).
 
 ---
 
