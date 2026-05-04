@@ -25,8 +25,8 @@ Central reference for all Drive folder and file links used in the coding rounds.
 
 | Round | File | Drive link |
 |-------|------|------------|
-| FT-R1a | CODEBOOK_FT-R1a.pdf | [Open](https://drive.google.com/file/d/1vbQmpKjVgTXIfOPa5m5sCNNLNHXSCzL8/view) |
-| FT-R2a | CODEBOOK_FT-R2a.pdf | [Open](https://drive.google.com/file/d/1vL8MckvMhtm6oEWyTH9BKgh0PR_0v1oA/view) |
+| FT-R1a | CODEBOOK_FT-R1a.pdf | [Open](https://drive.google.com/file/d/1TpgxfGQzfzjtSUaOpCx9_DLe6i3CPXhM/view) |
+| FT-R2a | CODEBOOK_FT-R2a.pdf | [Open](https://drive.google.com/file/d/1nKGvdUYgopLEuOsvm1LZoyc-VNj0Y9ka/view) |
 
 ---
 

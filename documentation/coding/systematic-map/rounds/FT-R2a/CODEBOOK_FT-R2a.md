@@ -222,7 +222,7 @@ Select all that apply; separate with semicolons.
 | `mixed` | Explicitly mixed crop-livestock |
 | `undefined` | Generic "smallholder farmers" with no production system specified |
 
-**Where to look:** Abstract and Introduction (authors state target population and agricultural focus early); Methods / Study Area / Site Description (most reliable — authors describe the agricultural baseline of communities surveyed).
+**Where to look:** Look in the Abstract and Introduction: Authors usually state their target population and main agricultural focus right away. If not, check the Methods / Study Area / Site Description sections: This is the most reliable place to look, as authors must describe the economic and agricultural baselines of the communities they are surveying.
 
 ---
 
@@ -242,7 +242,7 @@ Code only what is **explicitly stated** in the paper — do not infer. Select al
 | `other` | Any other marginalised group explicitly named — add a note in `notes` |
 | `none_reported` | No marginalised groups mentioned |
 
-**Where to look:** Abstract and Introduction (often stated immediately if the study targets a vulnerable subgroup); Methods / Sampling (look for purposive sampling criteria, e.g. "deliberately selected based on gender or youth status").
+**Where to look:** Look in the Abstract and Introduction: Authors often state right away if their study specifically targets or evaluates a vulnerable subgroup. If not stated, check the Methods / Sampling / Study Area sections: This section details exactly who was surveyed and how they were chosen. Look for descriptions of "purposive sampling" criteria, such as deliberately selecting participants based on "gender (if known) and/or youth".
 
 ---
 
@@ -260,7 +260,7 @@ The specific climate adaptation action, intervention, or practice the study trac
 - `financial strategies`
 - `social and community networking`
 
-**Where to look:** Abstract and Introduction (primary interventions highlighted early); Methods / Study Design (specific strategies tested or surveyed); Results tables (adoption rates and regression variables list exact practices tracked); Discussion and Conclusion (if the study is a modeling or vulnerability assessment, the adaptation focus may be proposed here rather than tested); Appendix / Survey Instrument (if included, shows exact adaptation options asked about).
+**Where to look:** Look at the Abstract and Introduction: Authors usually highlight the primary interventions or adaptation strategies they are investigating right away. The Methods / Interventions / Study Design sections: This is where authors detail the specific strategies tested, promoted, or surveyed in the study. Results and Descriptive Statistics (Tables): Look for tables detailing adoption rates, summary statistics, or regression variables, as these will list the exact practices tracked. Discussion and Conclusion: If the study is a modeling or vulnerability assessment that doesn't test a specific intervention, the authors will often propose an adaptation focus in these sections. The Appendix / Survey Instrument: If the researchers include their questionnaire, it will show the exact adaptation options they asked farmers about.
 
 ---
 
@@ -286,7 +286,7 @@ What the study measures. Select all that apply; separate with semicolons.
 | `risk_reduction` | Reduced exposure or sensitivity to climate shocks |
 | `resilience_adaptive_capacity` | Adaptive capacity indices, resilience scores, vulnerability indices |
 
-**Where to look:** Methods / Variable Descriptions / Summary Statistics tables (specific indicators listed); Results (qualitative and quantitative changes reported here); Discussion and Conclusion (how the intervention affected social processes, learning, or institutional dynamics).
+**Where to look:** Look in the Methods / Variable Descriptions / Summary Statistics (Tables): Authors will list the specific process indicators they tracked in these sections. Also check the Results / Findings sections: Qualitative and quantitative changes in knowledge, learning, and participation are reported here. Discussion and Conclusion: Authors often interpret how an intervention affected social processes, learning, or institutional dynamics in these sections.
 
 ---
 
@@ -325,7 +325,7 @@ Select all that apply; separate with semicolons.
 | `donor_reporting` | Report produced for a donor or funder |
 | `national_reporting` | Contributing to NAPs, NDCs, or national monitoring frameworks |
 
-**Where to look:** Abstract (high-level summary of why the study was conducted); Introduction (research questions or objectives are typically stated explicitly at the end of the introduction); Conclusion (authors restate core purpose when summarising findings).
+**Where to look:** Look in the Abstract: Authors typically provide a high-level summary of why the study was conducted right at the beginning of the document. Also check the Introduction — this is the most reliable place to look. Standard academic writing conventions dictate that authors explicitly outline their goals, objectives, or research questions at the very end of the introduction section, right before diving into the methodology. The Conclusion / Summary: Authors often briefly restate the core purpose of their assessment in the concluding section when summarising what their study ultimately set out to achieve and what it found.
 
 ---
 
@@ -353,7 +353,7 @@ Select all that apply; separate with semicolons.
 | `longitudinal` | Multi-year, panel data, repeated measures with the same individuals |
 | `repeated_cross_sectional` | Multi-year, repeated measures with different individuals each time |
 
-**Where to look:** Methods / Data Collection / Study Design (most definitive — authors detail when and how often data were collected); Data and Variables / Climate Modeling sections (for studies using secondary data or historical records, these define the time period analysed).
+**Where to look:** The Methodology / Data Collection / Study Design sections is the most definitive place to find temporal coverage — authors must detail exactly when and how often they collected their data. Also check the Data and Variables / Climate Modeling sections: If the study relies on secondary data, historical records, or predictive modeling (rather than field surveys), these sections will define the exact time periods analyzed.
 
 ---
 
@@ -378,7 +378,7 @@ Author-reported strengths and limitations. Look in the Discussion, Conclusion, a
 
 Key lessons or recommendations the authors report. 1–3 sentences. Focus on what they say should be done differently — not the findings themselves. Enter `not_reported` if absent.
 
-**Where to look:** Discussion (primary area where authors interpret results and extract practical insights); Conclusion / Implications / Recommendations subsections; Abstract (final sentences often distill the most critical lesson).
+**Where to look:** Look at the Discussion section: This is the primary area where authors interpret their results, explain why certain interventions worked or failed, and extract practical insights. The Conclusion (or specific "Implications" and "Recommendations" subsections): Authors consistently use the final sections of the paper to synthesise their overarching lessons for policymakers, donors, or future researchers. The Abstract (Final Sentences): Authors frequently distill their most critical lesson learned into the final lines of the abstract.
 
 ---
 
