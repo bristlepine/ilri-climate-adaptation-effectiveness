@@ -141,6 +141,7 @@ These papers were randomly sampled from the full-text retrieval pool — **not a
 
 | Field | Valid values |
 |-------|-------------|
+| `confirmed_include` | `yes` `no` |
 | `publication_type` | `journal_article` `report` `working_paper` `thesis` `other` |
 | `geographic_scale` | `local` `sub-national` `national` `multi-country` `regional` |
 | `producer_type` | `crop` `livestock` `fisheries_aquaculture` `agroforestry` `mixed` `undefined` |
