@@ -35,7 +35,7 @@
 
 ## Inclusion criteria
 
-These papers are a calibration sample for the systematic map. Read each paper and confirm it meets **all five criteria** below. The paper must satisfy ALL five — if it fails any one, note the reason in `notes`.
+These papers are a **calibration sample** — they were hand-picked because they are known to meet all five inclusion criteria. Use this round to practise applying the criteria and calibrate your judgement against other coders. Set `confirmed_include = yes` for all five papers unless you have a strong reason to disagree (note it in `notes`).
 
 ---
 
@@ -47,9 +47,11 @@ These papers are a calibration sample for the systematic map. Read each paper an
 
 **When in doubt:**
 
-- Mixed samples (smallholders + larger farms) → INCLUDE if smallholders are mentioned and analyzed as a distinct group
-- Generic "Farmers" label in LMIC contexts → INCLUDE unless the study clearly focuses on commercial-scale operations
-- Industrial or corporate agriculture → EXCLUDE
+| Scenario | Decision |
+|----------|----------|
+| Mixed samples (smallholders + larger farms) | INCLUDE — if smallholders are mentioned and analyzed as a distinct group |
+| Generic "Farmers" label in LMIC contexts | INCLUDE — unless study clearly focuses on commercial-scale operations |
+| Industrial or corporate agriculture | EXCLUDE |
 
 ---
 
@@ -64,10 +66,13 @@ These papers are a calibration sample for the systematic map. Read each paper an
 - Purely theoretical or conceptual (no intervention or measurement described)
 
 **When in doubt:**
-- Adoption/uptake of climate-smart agriculture or water management: INCLUDE
-- Livelihood diversification in response to climate stress: INCLUDE
-- Vulnerability index or risk score without coping/adaptation responses: EXCLUDE
-- Farmer awareness/perception of climate change alone: EXCLUDE
+
+| Scenario | Decision |
+|----------|----------|
+| Adoption/uptake of climate-smart agriculture or water management | INCLUDE |
+| Livelihood diversification in response to climate stress | INCLUDE |
+| Vulnerability index or risk score without coping/adaptation responses | EXCLUDE |
+| Farmer awareness/perception of climate change alone | EXCLUDE |
 
 ---
 
@@ -82,10 +87,13 @@ These papers are a calibration sample for the systematic map. Read each paper an
 - Agricultural impacts/responses unrelated to climate
 
 **When in doubt:**
-- "Water scarcity" or "aridity" in semi-arid regions (implies climate): INCLUDE
-- "Food insecurity" in LMIC rural contexts with adaptation responses: INCLUDE
-- Generic "livelihood change" in non-climate context: EXCLUDE
-- Agriculture + environmental change (without climate specificity): EXCLUDE
+
+| Scenario | Decision |
+|----------|----------|
+| "Water scarcity" or "aridity" in semi-arid regions (implies climate) | INCLUDE |
+| "Food insecurity" in LMIC rural contexts with adaptation responses | INCLUDE |
+| Generic "livelihood change" in non-climate context | EXCLUDE |
+| Agriculture + environmental change (without climate specificity) | EXCLUDE |
 
 ---
 
@@ -100,10 +108,13 @@ These papers are a calibration sample for the systematic map. Read each paper an
 - Opinion pieces or policy briefs without empirical method
 
 **When in doubt:**
-- Narrative case study of farmer adaptation: INCLUDE (qualitative empirical method)
-- Agent-based model with survey calibration: INCLUDE (model + data)
-- Pilot application of an adaptation tool: INCLUDE
-- Crop variety trial without farmer adoption analysis: EXCLUDE
+
+| Scenario | Decision |
+|----------|----------|
+| Narrative case study of farmer adaptation | INCLUDE — qualitative empirical method |
+| Agent-based model with survey calibration | INCLUDE — model + empirical data |
+| Pilot application of an adaptation tool | INCLUDE |
+| Crop variety trial without farmer adoption analysis | EXCLUDE |
 
 ---
 
@@ -114,10 +125,13 @@ These papers are a calibration sample for the systematic map. Read each paper an
 **Exclude if:** OECD high-income countries only (USA, UK, EU, Australia, Canada, Japan, South Korea, etc.) with no LMIC component.
 
 **When in doubt:**
-- China (all provinces): INCLUDE (upper-middle-income)
-- South Africa: INCLUDE (upper-middle-income)
-- Multi-country study (e.g. Peru + Germany): INCLUDE (Peru qualifies)
-- Brazil, Vietnam, Thailand, Iran: INCLUDE (all are LMIC)
+
+| Scenario | Decision |
+|----------|----------|
+| China (all provinces) | INCLUDE — upper-middle-income |
+| South Africa | INCLUDE — upper-middle-income |
+| Multi-country study (e.g. Peru + Germany) | INCLUDE — Peru qualifies |
+| Brazil, Vietnam, Thailand, Iran | INCLUDE — all are LMIC |
 
 ---
 
