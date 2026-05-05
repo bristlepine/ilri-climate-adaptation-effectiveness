@@ -47,14 +47,9 @@ These papers are a calibration sample for the systematic map. Read each paper an
 
 **When in doubt:**
 
-**Scenario 1: Mixed samples (smallholders + larger farms)**  
-→ INCLUDE if smallholders are mentioned and analyzed as a distinct group
-
-**Scenario 2: Generic "Farmers" label in LMIC contexts**  
-→ INCLUDE unless the study clearly focuses on commercial-scale operations
-
-**Scenario 3: Industrial or corporate agriculture**  
-→ EXCLUDE
+- Mixed samples (smallholders + larger farms) → INCLUDE if smallholders are mentioned and analyzed as a distinct group
+- Generic "Farmers" label in LMIC contexts → INCLUDE unless the study clearly focuses on commercial-scale operations
+- Industrial or corporate agriculture → EXCLUDE
 
 ---
 
