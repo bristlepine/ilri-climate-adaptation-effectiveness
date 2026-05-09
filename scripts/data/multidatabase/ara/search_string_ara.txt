@@ -1,0 +1,10 @@
+Organization: Adaptation Research Alliance (ARA)
+Repository: https://adaptationresearchalliance.org/ara-resources/
+Search date: 2026-05-08
+Filter: Topic = "Measuring adaptation impact"
+
+Search method: Topic filter (site search does not support Boolean)
+
+Total results: 9
+Records included: 5
+Note: ARA resource library has 415 total resources. "Measuring adaptation impact" topic filter used as equivalent to search string criteria. 9 results identified, 5 saved after screening for relevance. All 5 have abstracts.

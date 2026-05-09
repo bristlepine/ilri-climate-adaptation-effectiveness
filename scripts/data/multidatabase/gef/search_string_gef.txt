@@ -1,0 +1,9 @@
+Organization: Global Environment Facility (GEF)
+Repository: https://www.thegef.org
+Search date: 2026-05-08
+
+Google site search (full nested query):
+site:thegef.org ("climate adaptation" AND agriculture AND "impact evaluation") OR ("resilience metric" AND project AND agriculture) OR ("adaptive capacity" AND livelihood AND index) OR ("climate-smart agriculture" AND monitoring AND results) OR ("adaptation" AND "results framework" AND agriculture) OR ("climate resilience" AND evaluation AND project)
+
+Total results: ~10
+Note: PDFs downloaded manually from Google results and RIS created from PDF metadata.

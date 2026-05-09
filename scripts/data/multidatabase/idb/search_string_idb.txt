@@ -1,0 +1,12 @@
+Organization: Inter-American Development Bank (IDB)
+Repository: https://publications.iadb.org
+Search date: 2026-05-08
+
+Google Scholar site search (full nested query gave 1 result, simplified used instead):
+site:publications.iadb.org climate adaptation agriculture indicator smallholder evaluation
+
+Total results identified: 422 (sorted by relevance, 2005-2026)
+Records captured: ~70 (first 7 pages)
+Records included in RIS: 70
+
+Note: IDB internal search returned 0 results for all keyword combinations. Full nested Boolean query on Google Scholar returned only 1 result. Simplified keyword search used instead. Google Scholar rate-limiting blocked Zotero Connector from capturing beyond page 7. Top 70 results captured sorted by relevance. Remaining 352 results not captured due to Google rate-limiting.

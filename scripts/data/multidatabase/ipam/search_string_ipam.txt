@@ -1,0 +1,9 @@
+Organization: IPAM (Amazon Environmental Research Institute)
+Repository: https://ipam.org.br
+Search date: 2026-05-08
+
+Google site search:
+site:ipam.org.br climate adaptation agriculture indicator
+
+Total results: ~10
+Note: Full nested Boolean query returned 0 results. Simplified keyword search used instead. PDFs downloaded manually.

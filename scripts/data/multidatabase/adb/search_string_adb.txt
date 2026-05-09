@@ -1,0 +1,9 @@
+Organization: Asian Development Bank (ADB)
+Repository: https://www.adb.org/publications
+Search date: 2026-05-08
+
+Google Scholar site search (full nested query):
+site:adb.org ("climate adaptation" AND agriculture AND "impact evaluation") OR ("resilience metric" AND project AND agriculture) OR ("adaptive capacity" AND livelihood AND index) OR ("climate-smart agriculture" AND monitoring AND results) OR ("adaptation" AND "results framework" AND agriculture) OR ("climate resilience" AND evaluation AND project)
+
+Total results: ~20 (2 pages)
+Note: ADB internal search returned 31,438 results — Boolean not supported. Google Scholar site search used instead with full nested query. ~20 results across 2 pages captured via Zotero Connector.

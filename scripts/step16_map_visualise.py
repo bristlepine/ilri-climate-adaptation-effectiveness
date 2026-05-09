@@ -1907,7 +1907,11 @@ def _export_studies_json(df: pd.DataFrame, out_dir: Path) -> None:
                 val = ""
             # Year fallback: use Scopus metadata 'year' when LLM extraction is missing
             if dst_col == "year" and not val:
-                fallback = str(row.get("year", "") or "").strip()
+                fallback = row.get("year", "")
+                try:
+                    fallback = str(int(float(fallback)))
+                except (ValueError, TypeError):
+                    fallback = str(fallback or "").strip()
                 if fallback and fallback.lower() not in _BLANK:
                     val = fallback
             rec[dst_col] = val
@@ -1939,7 +1943,9 @@ def _export_studies_csv(df: pd.DataFrame, out_dir: Path) -> None:
             col_vals = df[src_col].fillna("").astype(str).str.strip()
             # Year fallback: use Scopus metadata 'year' where LLM extraction is missing
             if dst_col == "year" and "year" in df.columns:
-                meta_year = df["year"].fillna("").astype(str).str.strip()
+                meta_year = pd.to_numeric(df["year"], errors="coerce").apply(
+                    lambda x: str(int(x)) if pd.notna(x) else ""
+                )
                 col_vals = col_vals.where(
                     ~col_vals.str.lower().isin(_BLANK), meta_year
                 )

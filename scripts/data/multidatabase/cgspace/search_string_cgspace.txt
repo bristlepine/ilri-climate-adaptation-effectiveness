@@ -1,0 +1,9 @@
+Organization: CGSpace (CGIAR) — covers CIMMYT, CIAT, ICARDA, IFPRI, ILRI, WorldFish
+Repository: https://cgspace.cgiar.org
+Search date: 2026-05-08
+
+Google Scholar site search (full nested query):
+site:cgspace.cgiar.org ("smallholder" AND "climate adaptation" AND indicator) OR ("pastoralist resilience" AND metric) OR ("climate-smart agriculture" AND evaluation AND yield) OR ("adaptive capacity" AND livestock AND measurement) OR ("climate resilience" AND indicators AND agriculture) OR ("adaptation measurement" AND methodology) OR ("resilience index" AND smallholder)
+
+Total results: 158 (sorted by relevance, 2005-2026)
+Note: CGSpace internal search returned 10,577 results — Boolean not supported. Google Scholar site search used instead with full nested query. Results captured via Zotero Connector page by page.

@@ -1,0 +1,12 @@
+Organization: World Bank
+Repository: https://openknowledge.worldbank.org
+Search date: 2026-05-07
+Filter: Year 2005-2026
+
+Search strings:
+1. "climate adaptation" AND agriculture AND "impact evaluation"
+2. "resilience metric" AND project AND agriculture
+3. "adaptive capacity" AND livelihood AND index
+4. "climate-smart agriculture" AND monitoring AND results
+5. "adaptation" AND "results framework" AND agriculture
+6. "climate resilience" AND evaluation AND project

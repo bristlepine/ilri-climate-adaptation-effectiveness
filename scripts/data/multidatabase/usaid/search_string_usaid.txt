@@ -1,0 +1,12 @@
+Organization: USAID (U.S. Agency for International Development)
+Repository attempted: https://pdf.usaid.gov, https://dec.usaid.gov, https://usaid.gov
+Search date: 2026-05-08
+
+Search strings attempted:
+site:usaid.gov ("climate adaptation" AND agriculture AND "impact evaluation") OR ("resilience metric" AND project AND agriculture) OR ("adaptive capacity" AND livelihood AND index) OR ("climate-smart agriculture" AND monitoring AND results) OR ("adaptation" AND "results framework" AND agriculture) OR ("climate resilience" AND evaluation AND project)
+
+site:pdf.usaid.gov climate adaptation agriculture indicator evaluation smallholder
+
+Total results: 0
+Records included: 0
+Note: USAID's Development Experience Clearinghouse (DEC) was taken offline in 2025 following federal funding cuts. All document links return 404 errors. No records retrievable.

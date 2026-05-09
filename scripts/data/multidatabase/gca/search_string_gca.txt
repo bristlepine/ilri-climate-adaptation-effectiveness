@@ -1,0 +1,9 @@
+Organization: Global Centre on Adaptation (GCA)
+Repository: https://gca.org
+Search date: 2026-05-08
+
+Google site search (full nested query):
+site:gca.org ("climate adaptation" AND agriculture AND "impact evaluation") OR ("resilience metric" AND project AND agriculture) OR ("adaptive capacity" AND livelihood AND index) OR ("climate-smart agriculture" AND monitoring AND results) OR ("adaptation" AND "results framework" AND agriculture) OR ("climate resilience" AND evaluation AND project)
+
+Total results: ~3 (including 1 retrieved from CGSpace folder)
+Note: PDFs downloaded manually. RIS created from PDF metadata.

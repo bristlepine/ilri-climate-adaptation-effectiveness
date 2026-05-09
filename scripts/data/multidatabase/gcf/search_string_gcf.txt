@@ -1,0 +1,10 @@
+Organization: Green Climate Fund (GCF)
+Repository: https://www.greenclimate.fund/publications/documents
+Search date: 2026-05-07
+Filters applied: Type = Evaluation report, Publication, Guides, Policies strategies and guidelines
+
+Combined search string (all 6 strings joined with OR, parentheses used to group):
+("climate adaptation" AND agriculture AND "impact evaluation") OR ("resilience metric" AND project AND agriculture) OR ("adaptive capacity" AND livelihood AND index) OR ("climate-smart agriculture" AND monitoring AND results) OR ("adaptation" AND "results framework" AND agriculture) OR ("climate resilience" AND evaluation AND project)
+
+Total results: 157
+Note: GCF internal search does not support Boolean operators reliably for individual strings. Strings were combined into a single OR query with parenthetical grouping. Filters applied by document type to reduce noise.

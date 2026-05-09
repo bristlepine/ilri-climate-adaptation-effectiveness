@@ -1,0 +1,12 @@
+Organization: FCDO (Foreign, Commonwealth & Development Office)
+Repository attempted: https://r4d.org, https://www.gov.uk/research-for-development-outputs, https://opendocs.ids.ac.uk/opendocs/
+Search date: 2026-05-07
+
+Combined search string:
+("climate adaptation" AND agriculture AND "impact evaluation") OR ("resilience metric" AND project AND agriculture) OR ("adaptive capacity" AND livelihood AND index) OR ("climate-smart agriculture" AND monitoring AND results) OR ("adaptation" AND "results framework" AND agriculture) OR ("climate resilience" AND evaluation AND project)
+
+Google site search fallback: site:r4d.org "climate adaptation" agriculture indicator OR "resilience metric" OR "adaptive capacity" OR "climate-smart agriculture" OR "results framework"
+
+Total results: 2
+Records included: 2
+Note: FCDO repository is fragmented — r4d.org does not support Boolean search and is poorly indexed by Google. 2 PDFs retrieved via Google site search. RIS entries created manually. Records included for screening — final inclusion decision deferred to screening stage.

@@ -50,6 +50,7 @@ CALIBRATION_DOIS = {
 }
 
 TEMPLATE_FIELDS = [
+    "confirmed_include",
     "publication_year", "publication_type", "country_region", "geographic_scale",
     "producer_type", "marginalized_subpopulations", "adaptation_focus",
     "process_outcome_domains", "indicators_measured", "methodological_approach",
