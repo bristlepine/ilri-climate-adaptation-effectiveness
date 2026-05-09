@@ -10,10 +10,11 @@ Last updated: 2026-05-09
 | CABI (cab) | 5,723 | 5,723 | No | |
 | EconLit (econlit) | 479 | 478 | No | 1 record missing abstract |
 | ProQuest (proq) | 368 | 367 | No | 1 record missing abstract |
-| AGRIS (agris) | 3 | 3 | No | |
 | ASP (asp) | 1,187 | 1,187 | No | |
+| AGRIS (agris) | 3 | 3 | No | |
 | Google Scholar (gsch) | — | No | No | CSV export, no RIS — abstracts not captured |
 | DuckDuckGo (ddg) | — | — | 3 PDFs | No RIS — PDFs downloaded manually |
+| **Academic subtotal** | **22,939** | **22,928** | | |
 
 ## Organizational Website Searches
 
@@ -21,42 +22,42 @@ Last updated: 2026-05-09
 
 | Organization | Records | Abstracts | Full Texts (PDFs) | Notes |
 |---|---|---|---|---|
-| World Bank | 29 | No | No | Abstracts not captured by Zotero export |
-| GCF | 157 | Yes | No | HTML snapshots only, no PDFs |
-| GEF | 7 | Yes | 7 PDFs | |
-| ADB | 16 | Yes | 16 PDFs | |
-| AfDB | 5 | Yes | 7 PDFs | |
-| IDB | 70 | No | No | Google Scholar rate-limiting — abstracts not captured |
-| FCDO | 2 | Yes | 2 PDFs | RIS created manually from PDFs |
+| World Bank | 29 | 0 | No | Abstracts not captured by Zotero export |
+| GCF | 157 | 157 | No | HTML snapshots only, no PDFs |
+| GEF | 7 | 7 | 7 PDFs | |
+| ADB | 16 | 16 | 16 PDFs | |
+| AfDB | 5 | 5 | 7 PDFs | |
+| IDB | 70 | 0 | No | Google Scholar rate-limiting — abstracts not captured |
+| FCDO | 2 | 2 | 2 PDFs | RIS created manually |
 | USAID | 0 | — | — | DEC taken offline in 2025 |
 
 ### UN Agencies
 
 | Organization | Records | Abstracts | Full Texts (PDFs) | Notes |
 |---|---|---|---|---|
-| FAO | 2 | Yes | No | |
-| IFAD | 16 | Yes | No | |
-| UNDP | 9 | Yes | No | |
-| UNEP | 2 | Partial (1/2) | No | |
-| UNFCCC | 30 | No | 29 PDFs | Abstracts not captured |
+| FAO | 2 | 2 | No | |
+| IFAD | 16 | 16 | No | |
+| UNDP | 9 | 9 | No | |
+| UNEP | 2 | 1 | No | 1 record missing abstract |
+| UNFCCC | 30 | 28 | 29 PDFs | 2 records missing abstracts — PDF not found or no abstract section |
 
 ### International Research Centers (IRCs)
 
 | Organization | Records | Abstracts | Full Texts (PDFs) | Notes |
 |---|---|---|---|---|
-| CGSpace (CGIAR: CIMMYT, CIAT, ICARDA, IFPRI, ILRI, WorldFish) | 65 | Yes | 69 PDFs | RIS created manually from PDFs |
-| IPAM | 7 | Yes | 7 PDFs | RIS created manually from PDFs |
-| Adaptation Research Alliance (ARA) | 5 | Yes | No | |
-| GCA | 3 | Yes | 3 PDFs | RIS created manually from PDFs |
+| CGSpace (CGIAR: CIMMYT, CIAT, ICARDA, IFPRI, ILRI, WorldFish) | 65 | 65 | 69 PDFs | RIS created manually |
+| IPAM | 7 | 7 | 7 PDFs | RIS created manually |
+| Adaptation Research Alliance (ARA) | 5 | 5 | No | |
+| GCA | 3 | 3 | 3 PDFs | RIS created manually |
 
 ### M&E Networks
 
 | Organization | Records | Abstracts | Full Texts (PDFs) | Notes |
 |---|---|---|---|---|
-| 3ie | 5 | Partial (2/5) | No | |
-| Campbell Collaboration | 5 | No | No | Abstracts not captured |
+| WASP | 6 | 6 | 6 PDFs | |
+| 3ie | 5 | 2 | No | 3 records missing abstracts |
+| Campbell Collaboration | 5 | 0 | No | Abstracts not captured |
 | J-PAL | 0 | — | — | No relevant results |
-| WASP | 6 | Yes | 6 PDFs | |
 | CLEAR | 0 | — | — | Not yet searched |
 | IPA | 0 | — | — | Not yet searched |
 
@@ -72,14 +73,28 @@ Last updated: 2026-05-09
 
 ## Totals
 
-| Category | Records |
-|---|---|
-| Academic databases | ~23,939 |
-| Org website searches | ~446 |
-| **Grand total** | **~24,385** |
+| Category | Records | With Abstracts | With PDFs |
+|---|---|---|---|
+| Academic databases | 22,939 | 22,928 | 0 |
+| Org website searches | 435 | 327 | 146 |
+| **Grand total** | **23,374** | **23,255** | **146** |
+
+## Records Missing Abstracts (Priority to Fix)
+
+| Source | Missing Abstracts | Action |
+|---|---|---|
+| World Bank | 29 | Need to fetch from web or PDFs |
+| IDB | 70 | Need to fetch from web |
+| Campbell Collaboration | 5 | Need to fetch PDFs |
+| 3ie | 3 | Need to fetch PDFs |
+| UNEP | 1 | Need to fetch PDF |
+| UNFCCC | 2 | PDF not found or no abstract section |
+| WoS | 9 | Minor — already near complete |
+| EconLit | 1 | Minor |
+| ProQuest | 1 | Minor |
 
 ## Notes
-- Records with no abstracts will require manual abstract retrieval at full-text screening stage
-- PDFs attached in Zotero are linked via the `files/` subfolder where present
+- Abstract extraction script: `extract_abstracts.py` — patches AB fields from PDFs into RIS files
+- PDFs attached in Zotero are in `files/` subfolders where present
 - NGOs and some M&E networks (CLEAR, IPA) not yet searched — folders created and ready
 - Deduplication not yet run across all sources
