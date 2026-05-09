@@ -1,6 +1,6 @@
 # Database Search Summary
 
-Last updated: 2026-05-09
+Last updated: 2026-05-09 (IDB updated)
 
 ## Academic Databases
 
@@ -27,7 +27,7 @@ Last updated: 2026-05-09
 | GEF | 7 | 7 | 7 PDFs | |
 | ADB | 16 | 16 | 16 PDFs | |
 | AfDB | 5 | 5 | 7 PDFs | |
-| IDB | 70 | 0 | No | Google Scholar rate-limiting — abstracts not captured |
+| IDB | 126 | 111 | 100 PDFs | Expanded from 70 to 126 records; abstracts extracted from PDFs; 15 short factsheets without extractable abstracts |
 | FCDO | 2 | 2 | 2 PDFs | RIS created manually |
 | USAID | 0 | — | — | DEC taken offline in 2025 |
 
