@@ -22,7 +22,7 @@ Last updated: 2026-05-09
 
 | Organization | Records | Abstracts | Full Texts (PDFs) | Notes |
 |---|---|---|---|---|
-| World Bank | 29 | 0 | No | Abstracts not captured by Zotero export |
+| World Bank | 28 | 28 | 10 PDFs | Abstracts fetched via DSpace API; 1 bad record removed; PDFs saved where available |
 | GCF | 157 | 157 | No | HTML snapshots only, no PDFs |
 | GEF | 7 | 7 | 7 PDFs | |
 | ADB | 16 | 16 | 16 PDFs | |
@@ -83,8 +83,7 @@ Last updated: 2026-05-09
 
 | Source | Missing Abstracts | Action |
 |---|---|---|
-| World Bank | 29 | Need to fetch from web or PDFs |
-| IDB | 70 | Need to fetch from web |
+| IDB | 70 | Need to fetch from web — Cloudflare blocks automation, requires manual browser download |
 | Campbell Collaboration | 5 | Need to fetch PDFs |
 | 3ie | 3 | Need to fetch PDFs |
 | UNEP | 1 | Need to fetch PDF |
