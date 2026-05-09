@@ -54,7 +54,7 @@ Last updated: 2026-05-09
 
 | Organization | Records | Abstracts | Full Texts (PDFs) | Notes |
 |---|---|---|---|---|
-| WASP | 6 | 6 | No | PDFs were lost when old databases/ folder was removed — re-download needed |
+| WASP | 6 | 6 | 6 PDFs | PDFs restored from git history into flat wasp/ folder |
 | 3ie | 5 | 5 | No | |
 | Campbell Collaboration | 5 | 3 | No | 1 JS-rendered page (no extractable text), 1 bad record (Google search URL) |
 | J-PAL | 0 | — | — | No relevant results |
@@ -76,8 +76,8 @@ Last updated: 2026-05-09
 | Category | Records | With Abstracts | With PDFs |
 |---|---|---|---|
 | Academic databases | 22,939 | 22,928 | 0 |
-| Org website searches | 490 | 471 | 235 |
-| **Grand total** | **23,429** | **23,399** | **235** |
+| Org website searches | 490 | 471 | 241 |
+| **Grand total** | **23,429** | **23,399** | **241** |
 
 ## Records Missing Abstracts
 
@@ -93,6 +93,5 @@ Last updated: 2026-05-09
 ## Notes
 - Abstract extraction scripts: `extract_abstracts.py` (local PDFs), `fetch_abstracts_web.py` (World Bank DSpace API), `patch_missing_abstracts.py` (web scraping for 3ie, Campbell, UNEP)
 - UNFCCC PDFs are in `unfccc/files/` subdirectories (Zotero structure)
-- WASP PDFs need to be re-downloaded — lost when old `databases/` folder was cleaned up
 - NGOs and some M&E networks (CLEAR, IPA) not yet searched
 - Deduplication not yet run across all sources
