@@ -776,10 +776,13 @@ def main() -> None:
     parser.add_argument("--min-chars",         type=int, default=2000,
                         help="Min extracted character count (default 2000)")
     parser.add_argument("--dry-run",           action="store_true")
+    parser.add_argument("--fix-instructions",  action="store_true",
+                        help="Re-upload codebook to Drive parent and regenerate instruction PDFs "
+                             "for all already-pushed rounds")
     args = parser.parse_args()
 
-    if not args.rounds and not args.push and not args.sync_assignments:
-        parser.error("provide --rounds N, --push, or --sync-assignments")
+    if not args.rounds and not args.push and not args.sync_assignments and not args.fix_instructions:
+        parser.error("provide --rounds N, --push, --sync-assignments, or --fix-instructions")
 
     cleanup_stale_assignments()
 
@@ -800,6 +803,40 @@ def main() -> None:
         print("Connecting to Google Drive...")
         service = build("drive", "v3", credentials=gdrive_auth())
         push_dry_run_batches(service)
+        return
+
+    if args.fix_instructions:
+        from googleapiclient.discovery import build
+        print("Connecting to Google Drive...")
+        service = build("drive", "v3", credentials=gdrive_auth())
+        rows = _read_assignments()
+        live = [r for r in rows if r.get("drive_folder_id") not in ("", "DRY_RUN")]
+        if not live:
+            print("No pushed batches found.")
+            return
+        print(f"Found {len(live)} pushed batch(es): {', '.join(r['round'] for r in live)}")
+        codebook_url = ensure_codebook_in_parent(service)
+        for row in live:
+            round_name     = row["round"]
+            folder_id      = row["drive_folder_id"]
+            out_dir        = OUTPUTS_DIR / "step14b" / round_name
+            papers_csv     = out_dir / f"papers_{round_name.lower()}.csv"
+            if not papers_csv.exists():
+                print(f"  {round_name}: local papers CSV not found — skipping")
+                continue
+            n = len(pd.read_csv(papers_csv))
+            instruction_pdf = out_dir / f"instruction_{round_name.lower()}.pdf"
+            print(f"\n  {round_name}: regenerating instruction PDF ({n} papers)...")
+            make_instruction_pdf(
+                out_path=instruction_pdf,
+                round_name=round_name,
+                n_papers=n,
+                drive_folder_id=folder_id,
+                codebook_url=codebook_url,
+            )
+            instr_id = update_or_upload_file(service, instruction_pdf, instruction_pdf.name, folder_id)
+            print(f"  Re-uploaded: {instruction_pdf.name}  (id={instr_id})")
+        print("\nDone.")
         return
 
     rounds, base_seed = next_round_names(args.rounds)
