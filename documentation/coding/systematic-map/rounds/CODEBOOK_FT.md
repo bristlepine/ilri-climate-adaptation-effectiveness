@@ -5,8 +5,6 @@
 
 ## Inclusion criteria
 
-Use these five criteria to decide `confirmed_include` for each paper.
-
 ---
 
 ### 1. Population
@@ -226,11 +224,11 @@ Code only what is **explicitly stated** in the paper — do not infer. Select al
 
 - **Abstract and Introduction:** Authors often state upfront if their study specifically targets or evaluates a vulnerable subgroup.
 
-- **Methods / Sampling / Study Area sections:** This section details exactly who was surveyed and how they were chosen. Look for descriptions of "purposive sampling" criteria.
+- **Methods / Sampling / Study Area sections:** This section details exactly who was surveyed and how they were chosen. Look for descriptions of "purposive sampling" criteria—e.g., "deliberately selecting participants based on gender (if known) and/or youth."
 
 - **Results and Descriptive Statistics (Tables):** Check baseline household characteristics tables and demographic summaries to identify which groups were explicitly studied.
 
-- **Discussion and Conclusion:** Authors often highlight how interventions impact marginalized groups differently.
+- **Discussion and Conclusion:** Authors often highlight how interventions impact marginalized groups differently—e.g., "inherent resource inequities between men and women constrain adaptation."
 
 ---
 
@@ -258,13 +256,17 @@ The specific climate adaptation action, intervention, or practice the study trac
 
 - **Discussion and Conclusion:** If the study is a modeling or vulnerability assessment that doesn't test a specific intervention, authors will often propose an adaptation focus in these sections.
 
+- **Appendix / Survey Instrument:** If the researchers include their questionnaire, it will show the exact adaptation options they asked farmers about.
+
+**Example:** In the Malawi study, the "Sampling methods and agroecological experiments" section provides a categorized list of the exact methods farmers selected: integration of trees, soil fertility methods, crop diversification, and livelihood diversification (e.g., small livestock).
+
 ---
 
 ### 8. `process_outcome_domains`
 
 What the study measures. Select all that apply; separate with semicolons.
 
-**Rule:** Code only domains that are **explicitly measured** — not domains that could be inferred.
+**Rule:** Code only domains that are **explicitly measured** — not domains that could be inferred. If the paper measures yield but not income, code `yields_productivity` only.
 
 | Value | Meaning |
 |-------|---------|
@@ -284,11 +286,13 @@ What the study measures. Select all that apply; separate with semicolons.
 
 **Where to look:**
 
-- **Methods / Variable Descriptions / Summary Statistics (Tables):** Authors will list the specific process indicators they tracked.
+- **Methods / Variable Descriptions / Summary Statistics (Tables):** Authors will list the specific process indicators they tracked in these sections.
 
 - **Results / Findings sections:** Qualitative and quantitative changes in knowledge, learning, and participation are reported here.
 
-- **Discussion and Conclusion:** Authors often interpret how an intervention affected social processes, learning, or institutional dynamics.
+- **Discussion and Conclusion:** Authors often interpret how an intervention affected social processes, learning, or institutional dynamics in these sections.
+
+**Example:** In the Central Vietnam study, the results section explicitly reports on farmers' "capacity to learn," "capacity to decide," and "capacity to act" in a dedicated results subsection.
 
 ---
 
@@ -303,11 +307,11 @@ The specific indicators or metrics used. Extract from the methods or results sec
 
 **Where to look:**
 
-- **Tables (Variable Descriptions and Summary Statistics):** Authors almost always consolidate their indicators into comprehensive tables.
+- **Tables (Variable Descriptions and Summary Statistics):** Authors almost always consolidate their indicators into comprehensive tables for clarity.
 
-- **Methodology / Data Collection / Variables sections:** The narrative text in these sections describes the specific tools, scales, or census data used.
+- **Methodology / Data Collection / Variables sections:** The narrative text in these sections describes the specific tools, scales, or census data used to capture the indicators.
 
-- **Appendix / Survey Instrument:** If the researchers include their questionnaire, it will show the exact questions asked to construct an indicator.
+- **Appendix / Survey Instrument:** If you need to see the exact questions asked to construct an indicator, the appendix is the most reliable place. For example, the Northern Ghana study includes "Appendix B: Survey questionnaire with indicators scoring criterion," which shows the precise multiple-choice questions used and how points were assigned to measure economic resources, social capital, and technology.
 
 ---
 
@@ -325,13 +329,17 @@ Select all that apply; separate with semicolons.
 
 **Where to look:**
 
-- **Methods / Methodology / Materials and Methods section:** Authors typically dedicate this section to explaining their research design.
+- **Methods / Methodology / Materials and Methods section:** Authors typically dedicate this entire section to explaining their research design, often breaking it down into specific subsections.
 
 - **Data Collection / Sampling subsections:** Here, authors detail whether they used surveys, expert interviews, focus groups, or secondary data.
 
-- **Data Analysis / Empirical Approach subsection:** This explains the statistical or qualitative frameworks used.
+- **Data Analysis / Empirical Approach subsection:** This subsection explains the statistical or qualitative frameworks used to evaluate the data.
 
-- **Abstract:** Authors almost always provide a concise summary of their methods.
+- **Abstract:** Authors almost always provide a concise, one-to-two-sentence summary of their methods right at the beginning of the paper.
+
+- **Introduction (final paragraphs):** Right after stating their research objectives at the end of the introduction, authors frequently include a brief preview of their methodology.
+
+**Example:** The Malawi study introduces its methodology by stating: "A participatory research approach combined with pre-post longitudinal study design was used to examine changes..."
 
 ---
 
@@ -347,11 +355,11 @@ Select all that apply; separate with semicolons.
 
 **Where to look:**
 
-- **Abstract:** Authors typically provide a high-level summary of why the study was conducted.
+- **Abstract:** Authors typically provide a high-level summary of why the study was conducted right at the beginning of the document.
 
-- **Introduction (end of section):** Authors explicitly outline their goals or research questions at the end of the introduction.
+- **Introduction (end of section):** Standard academic writing conventions dictate that authors explicitly outline their goals, objectives, or research questions at the very end of the introduction section, right before diving into the methodology. **Example:** "The specific research objective of this study is to test whether agroecological farming methods... can improve food security..."
 
-- **Conclusion / Summary:** Authors often briefly restate the core purpose when summarising findings.
+- **Conclusion / Summary:** Authors often briefly restate the core purpose of their assessment in the concluding section when summarising what their study ultimately set out to achieve and what it found.
 
 ---
 
@@ -370,9 +378,9 @@ Select all that apply; separate with semicolons.
 
 **Where to look:**
 
-- **Methods / Methodology / Materials and Methods section:** Authors almost always include specific subsections dedicated to explaining where their data came from.
+- **Methods / Methodology / Materials and Methods section:** This is the primary and most detailed location. Authors almost always include specific subsections dedicated to explaining where their data came from. **Example:** In the Northern Ghana study, the "Data collection" subsection under "Research methods" explicitly outlines the use of primary data (expert interviews and structured questionnaires) and secondary data (a systematic literature review).
 
-- **Data / Data and Variables sections:** Sometimes authors dedicate a section specifically to the data used, especially in quantitative studies.
+- **Data / Data and Variables sections:** Sometimes, authors dedicate a top-level section specifically to the data used, especially in economic or quantitative studies relying heavily on existing secondary datasets or household panels. **Example:** The East Africa study features a section titled "Data, description of variables, and summary statistics," which explains that their data came from a baseline household survey collected by the CGIAR Research Program on Climate Change, Agriculture, and Food Security (CCAFS).
 
 ---
 
@@ -387,9 +395,11 @@ Select all that apply; separate with semicolons.
 
 **Where to look:**
 
-- **Abstract:** Authors frequently summarize the study's timeframe right at the beginning.
+- **Abstract:** Authors frequently summarize the study's timeframe or experimental design right at the beginning. **Example:** The Malawi study abstract explicitly mentions a "four-year study," baseline and follow-up surveys conducted in 2011 and 2013, and the use of "Longitudinal mixed effects models."
 
-- **Methodology / Data Collection / Study Design sections:** This is the most definitive place—authors detail exactly when and how often they collected data.
+- **Methodology / Data Collection / Study Design sections:** This is the most definitive place to find temporal coverage—authors must detail exactly when and how often they collected their data.
+
+- **Data and Variables / Climate Modeling sections:** If the study relies on secondary data, historical records, or predictive modeling (rather than field surveys), these sections will define the exact time periods analyzed.
 
 ---
 
@@ -402,27 +412,27 @@ Select all that apply; separate with semicolons.
 
 **Where to look:**
 
-- **Results / Economic Evaluation sections:** Cost figures, cost-benefit analyses, or cost-effectiveness ratios will be reported here.
+- **Results / Economic Evaluation sections:** If the core purpose of the study involves an economic or financial assessment, the exact cost figures, cost-benefit analyses, or cost-effectiveness ratios will be reported in the results, usually accompanied by data tables.
 
-- **Discussion and Conclusion:** Authors may summarize financial requirements or compare cost-effectiveness.
+- **Discussion and Conclusion:** Authors may summarize the exact financial requirements for implementing an adaptation strategy at a regional scale, or they may compare its cost-effectiveness against other measures.
 
-**Quick-search tip:** Use your document viewer's search function to scan for currency symbols ($, USD, VND, Euro) and keywords like "cost-effectiveness," "CBA," "expenditure," or "budget."
+**Quick-search tip:** Use your document viewer's search function to scan for currency symbols or acronyms (e.g., $, USD, VND, Euro) and economic keywords like "cost-effectiveness," "CBA" (cost-benefit analysis), "expenditure," or "budget."
 
 ---
 
 ### 15. `strengths_and_limitations` *(free text)*
 
-Author-reported strengths and limitations. Extract verbatim where possible.
+Author-reported strengths and limitations. Look in the Discussion, Conclusion, and Limitations sections. Extract verbatim where possible.
 
 **Format:** `Strength: <text>. Limitation: <text>.`
 
 **Where to look:**
 
-- **Discussion Section:** The most common place for both strengths and limitations.
+- **Discussion Section:** This is the most common place to find both strengths and limitations. As authors interpret their findings, they typically reflect on the robustness of their study design, highlight how their research makes strong contributions to existing literature, and acknowledge any methodological, sample size, or data constraints.
 
-- **Conclusion:** Authors often briefly summarize strengths and note boundaries to their findings.
+- **Conclusion:** Authors often briefly summarize the main strengths (e.g., "This study provides novel insights into...") and note any boundaries to their findings, frequently tying these limitations directly to recommendations for future research.
 
-- **Dedicated "Limitations" subsection:** Some journals require a specific subsection at the end of the Discussion.
+- **Dedicated "Limitations" subsection:** Some journals require authors to include a specific subsection—usually at the very end of the Discussion—explicitly detailing the study's constraints.
 
 ---
 
@@ -430,7 +440,7 @@ Author-reported strengths and limitations. Extract verbatim where possible.
 
 Key lessons or recommendations the authors report. 1–3 sentences. Focus on what they say should be done differently — not the findings themselves. Enter `not_reported` if absent.
 
-**Where to look:** Discussion section, Conclusion / Implications / Recommendations subsections, and the final sentences of the Abstract.
+**Where to look:** Look at the Discussion section: This is the primary area where authors interpret their results, explain why certain interventions worked or failed, and extract practical insights. The Conclusion (or specific "Implications" and "Recommendations" subsections): Authors consistently use the final sections of the paper to synthesise their overarching lessons for policymakers, donors, or future researchers. The Abstract (Final Sentences): Authors frequently distill their most critical lesson learned into the final lines of the abstract.
 
 ---
 
