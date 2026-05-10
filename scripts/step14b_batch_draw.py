@@ -61,7 +61,9 @@ MANIFEST_CSV    = OUTPUTS_DIR / "step13" / "step13_manifest.csv"
 STEP14_RESULTS  = OUTPUTS_DIR / "step14" / "step14_results.csv"
 ASSIGNMENTS_CSV = OUTPUTS_DIR / "step14b" / "assignments.csv"
 
-DRIVE_PARENT_ID = "13p22XfvB6sNtTtnMS-dkI1t-joMn-6Bo"
+DRIVE_PARENT_ID    = "13p22XfvB6sNtTtnMS-dkI1t-joMn-6Bo"
+CODEBOOK_LOCAL     = ROUNDS_DOC_DIR / "FT-R1a" / "CODEBOOK_FT-R1a.pdf"
+CODEBOOK_DRIVE_NAME = "CODEBOOK_FT.pdf"
 
 # Papers used in calibration rounds — never re-sample
 CALIBRATION_DOIS = {
@@ -302,6 +304,7 @@ def make_instruction_pdf(
     round_name: str,
     n_papers: int,
     drive_folder_id: str,
+    codebook_url: str = "",
 ) -> None:
     """Generate a one-page coder instruction sheet using reportlab."""
     from reportlab.lib.pagesizes import A4
@@ -378,8 +381,7 @@ def make_instruction_pdf(
     # Where to find files
     story.append(Paragraph("Where to find your files", h2_style))
     story.append(Paragraph(
-        "Your papers and coding template are in the Google Drive folder below. "
-        "The shared codebook is in the parent folder one level up.",
+        "Your papers and coding template are in the Google Drive folder below.",
         body_style,
     ))
     story.append(Spacer(1, 0.2 * cm))
@@ -391,16 +393,23 @@ def make_instruction_pdf(
     items = [
         f"<b>coding_{round_name.lower()}_template.csv</b> — your blank coding sheet",
         f"<b>{round_name} pdfs/</b> — the full-text PDFs for each paper",
-        "<b>CODEBOOK_FT.pdf</b> (in the parent folder) — criteria and field definitions",
     ]
     for item in items:
         story.append(Paragraph(f"&nbsp;&nbsp;• {item}", body_style))
+    if codebook_url:
+        story.append(Paragraph(
+            f'&nbsp;&nbsp;• <b>Codebook</b> — <a href="{codebook_url}">{codebook_url}</a>',
+            body_style,
+        ))
     story.append(Spacer(1, 0.3 * cm))
 
     # How to code
     story.append(Paragraph("How to code", h2_style))
+    codebook_ref = (
+        f'<a href="{codebook_url}">the codebook</a>' if codebook_url else "<b>CODEBOOK_FT.pdf</b>"
+    )
     steps = [
-        "Download <b>CODEBOOK_FT.pdf</b> from the parent folder and read it before starting.",
+        f"Open {codebook_ref} and read it before starting.",
         "Open the coding template CSV in Excel or Google Sheets.",
         "For each paper: read the PDF, decide <b>confirmed_include</b> (yes / no / unclear), "
         "then fill in all 16 fields if included.",
@@ -444,6 +453,33 @@ def gdrive_auth():
     if creds.expired and creds.refresh_token:
         creds.refresh(Request())
     return creds
+
+
+def ensure_codebook_in_parent(service) -> str:
+    """
+    Upload CODEBOOK_FT.pdf to the parent folder if not already there,
+    set anyone-with-link read access, and return the direct view URL.
+    """
+    file_id = find_file(service, CODEBOOK_DRIVE_NAME, DRIVE_PARENT_ID)
+    if file_id:
+        print(f"  Codebook already in parent folder  (id={file_id})")
+    else:
+        if not CODEBOOK_LOCAL.exists():
+            print(f"  WARNING: local codebook not found at {CODEBOOK_LOCAL} — skipping")
+            return ""
+        print(f"  Uploading codebook: {CODEBOOK_DRIVE_NAME}")
+        file_id = upload_file(service, CODEBOOK_LOCAL, CODEBOOK_DRIVE_NAME, DRIVE_PARENT_ID)
+        print(f"  Uploaded codebook  (id={file_id})")
+    try:
+        service.permissions().create(
+            fileId=file_id,
+            body={"type": "anyone", "role": "reader"},
+            fields="id",
+        ).execute()
+        print(f"  Codebook sharing: anyone with link can view")
+    except Exception as e:
+        print(f"  WARNING: could not set codebook sharing — {e}")
+    return f"https://drive.google.com/file/d/{file_id}/view"
 
 
 def find_folder(service, name: str, parent_id: str) -> str | None:
@@ -571,6 +607,7 @@ def draw_batch(
             round_name=round_name,
             n_papers=len(sample),
             drive_folder_id="[TO BE ASSIGNED]",
+            codebook_url="",
         )
         print(f"  Written: {instruction_pdf.relative_to(REPO_ROOT)}")
         print(f"  [dry-run] skipping Drive upload")
@@ -582,6 +619,8 @@ def draw_batch(
     action = "Created" if created else "Using"
     print(f"  {action} Drive folder: {round_name}  (id={round_folder_id})")
 
+    codebook_url = ensure_codebook_in_parent(service)
+
     # Instruction PDF with real Drive link
     instruction_pdf = out_dir / f"instruction_{round_name.lower()}.pdf"
     make_instruction_pdf(
@@ -589,6 +628,7 @@ def draw_batch(
         round_name=round_name,
         n_papers=len(sample),
         drive_folder_id=round_folder_id,
+        codebook_url=codebook_url,
     )
     print(f"  Written: {instruction_pdf.relative_to(REPO_ROOT)}")
 
@@ -647,6 +687,8 @@ def push_dry_run_batches(service) -> None:
     print(f"Found {len(pending)} dry-run batch(es) to push: "
           f"{', '.join(r['round'] for r in pending)}")
 
+    codebook_url = ensure_codebook_in_parent(service)
+
     for row in pending:
         round_name = row["round"]
         out_dir    = OUTPUTS_DIR / "step14b" / round_name
@@ -677,6 +719,7 @@ def push_dry_run_batches(service) -> None:
             round_name=round_name,
             n_papers=n,
             drive_folder_id=round_folder_id,
+            codebook_url=codebook_url,
         )
         print(f"  Regenerated: {instruction_pdf.name}")
 
