@@ -5,39 +5,6 @@
 
 ---
 
-## Quick start for coders
-
-Everything is on Google Drive — no GitHub or local setup needed.
-
-**[→ Open the FT-R1a folder on Google Drive](https://drive.google.com/drive/folders/1DLifotAW4YcYZZ-5iYd0T0X0Q-N3MOmQ?usp=sharing)**
-
-**Three steps:**
-
-1. **Get your papers** — open the `FT-R1a pdfs` subfolder in the Drive link above
-2. **Open the coding sheet** — download `coding_ft_r1a_XX.csv`, save a copy as `coding_ft_r1a_INITIALS.csv` (e.g. `coding_ft_r1a_CS.csv`), and upload your completed file back to the same Drive folder
-3. **Code each paper** using the schema below — one row per paper, all 16 fields — save regularly
-
-**Rules while coding:**
-- Fill in `coder_id` with your initials — same initials every row
-- Code independently — no discussion with the other coder until review
-- If a field is genuinely not reported: leave blank or enter `not_reported`
-- If unsure: make your best judgement and add a note in the `notes` column
-- Do not look at the other coder's sheet
-
-**Your sheet columns:**
-```
-doi, filename,
-publication_year, publication_type, country_region, geographic_scale,
-producer_type, marginalized_subpopulations, adaptation_focus,
-process_outcome_domains, indicators_measured, methodological_approach,
-purpose_of_assessment, data_sources, temporal_coverage, cost_data_reported,
-strengths_and_limitations, lessons_learned,
-coder_id, notes
-```
-The first two columns (`doi`, `filename`) are pre-filled. Fill the rest.
-
----
-
 ## The 16 coding fields
 
 Use this as your reference while coding. Valid values must be used exactly as written (except free-text fields, marked ⚠).

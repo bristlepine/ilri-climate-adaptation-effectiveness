@@ -396,11 +396,13 @@ def make_instruction_pdf(
     ]
     for item in items:
         story.append(Paragraph(f"&nbsp;&nbsp;• {item}", body_style))
-    if codebook_url:
-        story.append(Paragraph(
-            f'&nbsp;&nbsp;• <b>Codebook</b> — <a href="{codebook_url}">open codebook (Google Drive)</a>',
-            body_style,
-        ))
+    story.append(Spacer(1, 0.2 * cm))
+    codebook_line = (
+        f'<b>Codebook</b> — <a href="{codebook_url}">open codebook</a>'
+        if codebook_url else
+        '<b>Codebook</b> — shared separately by the review team'
+    )
+    story.append(Paragraph(codebook_line, body_style))
     story.append(Spacer(1, 0.3 * cm))
 
     # How to code
@@ -457,24 +459,20 @@ def gdrive_auth():
 
 def ensure_codebook_in_parent(service) -> str:
     """
-    Upload CODEBOOK_FT.pdf to the parent folder if not already there,
-    set anyone-with-link read access, and return the direct view URL.
+    Upload or replace CODEBOOK_FT.pdf in the parent folder, set anyone-with-link
+    read access, and return the direct view URL.
     """
-    file_id = find_file(service, CODEBOOK_DRIVE_NAME, DRIVE_PARENT_ID)
-    if file_id:
-        print(f"  Codebook already in parent folder  (id={file_id})")
-    else:
-        if not CODEBOOK_LOCAL.exists():
-            print(f"  WARNING: local codebook not found at {CODEBOOK_LOCAL} — skipping")
-            return ""
-        print(f"  Uploading codebook: {CODEBOOK_DRIVE_NAME}")
-        file_id = upload_file(service, CODEBOOK_LOCAL, CODEBOOK_DRIVE_NAME, DRIVE_PARENT_ID)
-        print(f"  Uploaded codebook  (id={file_id})")
+    if not CODEBOOK_LOCAL.exists():
+        print(f"  WARNING: local codebook not found at {CODEBOOK_LOCAL} — skipping")
+        return ""
+    file_id = update_or_upload_file(service, CODEBOOK_LOCAL, CODEBOOK_DRIVE_NAME, DRIVE_PARENT_ID)
+    print(f"  Codebook synced to parent folder  (id={file_id})")
     try:
         service.permissions().create(
             fileId=file_id,
             body={"type": "anyone", "role": "reader"},
             fields="id",
+            supportsAllDrives=True,
         ).execute()
         print(f"  Codebook sharing: anyone with link can view")
     except Exception as e:
