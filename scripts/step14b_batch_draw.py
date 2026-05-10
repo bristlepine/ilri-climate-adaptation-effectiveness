@@ -385,7 +385,7 @@ def make_instruction_pdf(
         body_style,
     ))
     story.append(Spacer(1, 0.2 * cm))
-    story.append(Paragraph(f'<a href="{drive_url}">{drive_url}</a>', link_style))
+    story.append(Paragraph(f'<a href="{drive_url}">open your Drive folder</a>', link_style))
     story.append(Spacer(1, 0.2 * cm))
     story.append(Paragraph(
         "Inside your folder you will find:", body_style,
@@ -398,7 +398,7 @@ def make_instruction_pdf(
         story.append(Paragraph(f"&nbsp;&nbsp;• {item}", body_style))
     if codebook_url:
         story.append(Paragraph(
-            f'&nbsp;&nbsp;• <b>Codebook</b> — <a href="{codebook_url}">{codebook_url}</a>',
+            f'&nbsp;&nbsp;• <b>Codebook</b> — <a href="{codebook_url}">open codebook (Google Drive)</a>',
             body_style,
         ))
     story.append(Spacer(1, 0.3 * cm))
@@ -541,11 +541,14 @@ def update_or_upload_file(
     service, local_path: Path, drive_name: str, parent_id: str
 ) -> str:
     """Replace existing file in-place if found, otherwise upload fresh copy."""
+    import mimetypes
     from googleapiclient.http import MediaFileUpload
 
     existing_id = find_file(service, drive_name, parent_id)
     if existing_id:
-        media = MediaFileUpload(str(local_path), mimetype="text/csv", resumable=True)
+        mime, _ = mimetypes.guess_type(str(local_path))
+        mime = mime or "application/octet-stream"
+        media = MediaFileUpload(str(local_path), mimetype=mime, resumable=True)
         service.files().update(
             fileId=existing_id, media_body=media, supportsAllDrives=True,
         ).execute()
