@@ -3,6 +3,43 @@
 
 ---
 
+## Quick reference
+
+| Field | Valid values |
+|-------|-------------|
+| `confirmed_include` | `yes` `no` |
+| `publication_type` | `journal_article` `report` `working_paper` `thesis` `other` |
+| `geographic_scale` | `local` `sub-national` `national` `multi-country` `regional` |
+| `producer_type` | `crop` `livestock` `fisheries_aquaculture` `agroforestry` `mixed` `undefined` |
+| `marginalized_subpopulations` | `women` `youth` `people_with_disabilities` `landless` `indigenous_peoples` `ethnic_minorities` `migrant_seasonal_workers` `other` `none_reported` |
+| `adaptation_focus` | **free text** |
+| `process_outcome_domains` | `knowledge_awareness_learning` `decision_making_planning` `uptake_adoption` `behavioral_change` `participation_coproduction` `institutional_governance` `access_information_services` `yields_productivity` `income_assets` `livelihoods` `wellbeing` `risk_reduction` `resilience_adaptive_capacity` |
+| `indicators_measured` | **free text** |
+| `methodological_approach` | `qualitative` `quantitative` `participatory` `modeling_with_empirical_validation` `experimental` |
+| `purpose_of_assessment` | `research` `project_learning` `program_evaluation` `donor_reporting` `national_reporting` |
+| `data_sources` | `surveys` `administrative_data` `remote_sensing` `participatory_methods` `secondary_data` `other` |
+| `temporal_coverage` | `cross_sectional` `seasonal` `longitudinal` `repeated_cross_sectional` |
+| `cost_data_reported` | `yes` `no` |
+| `strengths_and_limitations` | **free text** |
+| `lessons_learned` | **free text** |
+
+---
+
+## `confirmed_include`
+
+Does this paper meet all five inclusion criteria?
+
+| Value | Meaning |
+|-------|---------|
+| `yes` | Paper meets all five criteria — proceed to fill in all 16 fields |
+| `no` | Paper fails one or more criteria — leave remaining fields blank |
+
+Use the inclusion criteria below to make this decision. If you are unsure, enter your best judgement and add a note in the `notes` column.
+
+---
+
+<div class="page-break"></div>
+
 ## Inclusion criteria
 
 ---
@@ -102,28 +139,6 @@
 | Brazil, Vietnam, Thailand, Iran | INCLUDE — all are LMIC |
 
 ---
-
-<div class="page-break"></div>
-
-## Quick reference
-
-| Field | Valid values |
-|-------|-------------|
-| `confirmed_include` | `yes` `no` |
-| `publication_type` | `journal_article` `report` `working_paper` `thesis` `other` |
-| `geographic_scale` | `local` `sub-national` `national` `multi-country` `regional` |
-| `producer_type` | `crop` `livestock` `fisheries_aquaculture` `agroforestry` `mixed` `undefined` |
-| `marginalized_subpopulations` | `women` `youth` `people_with_disabilities` `landless` `indigenous_peoples` `ethnic_minorities` `migrant_seasonal_workers` `other` `none_reported` |
-| `adaptation_focus` | **free text** |
-| `process_outcome_domains` | `knowledge_awareness_learning` `decision_making_planning` `uptake_adoption` `behavioral_change` `participation_coproduction` `institutional_governance` `access_information_services` `yields_productivity` `income_assets` `livelihoods` `wellbeing` `risk_reduction` `resilience_adaptive_capacity` |
-| `indicators_measured` | **free text** |
-| `methodological_approach` | `qualitative` `quantitative` `participatory` `modeling_with_empirical_validation` `experimental` |
-| `purpose_of_assessment` | `research` `project_learning` `program_evaluation` `donor_reporting` `national_reporting` |
-| `data_sources` | `surveys` `administrative_data` `remote_sensing` `participatory_methods` `secondary_data` `other` |
-| `temporal_coverage` | `cross_sectional` `seasonal` `longitudinal` `repeated_cross_sectional` |
-| `cost_data_reported` | `yes` `no` |
-| `strengths_and_limitations` | **free text** |
-| `lessons_learned` | **free text** |
 
 <div class="page-break"></div>
 
