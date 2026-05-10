@@ -22,7 +22,7 @@ ROUNDS       = ["FT-R1a", "FT-R2a"]
 CHROME       = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 # Generic (non-round-specific) codebook
-CODEBOOK_MD  = SYSMAP_DIR / "CODEBOOK.md"
+CODEBOOK_MD  = ROUNDS_DIR / "CODEBOOK_FT.md"
 CODEBOOK_PDF = ROUNDS_DIR / "CODEBOOK_FT.pdf"
 
 CSS = """
