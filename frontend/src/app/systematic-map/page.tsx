@@ -40,7 +40,7 @@ export default function SystematicMapPage() {
   const [sortCol, setSortCol] = useState<keyof Study>('year');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [geoView, setGeoView] = useState<'map' | 'bar'>('map');
-  const [flowView, setFlowView] = useState<'sankey' | 'prisma'>('sankey');
+  const [flowView, setFlowView] = useState<'sankey' | 'prisma'>('prisma');
 
   useEffect(() => {
     fetch('/map/data/studies.json')
@@ -98,7 +98,7 @@ export default function SystematicMapPage() {
       {/* Status Banner */}
       <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3">
         <p className="max-w-5xl mx-auto text-xs font-tagline text-yellow-800">
-          <strong>In progress — data extraction running.</strong> Scopus (6,218) + WoS (1,137) included after screening. Full-text coding underway; figures update as records are coded. Final version expected May 2026.
+          <strong>In progress — full-text screening running.</strong> 40,653 records identified across 27 sources → 26,182 after deduplication → 8,753 full texts sought → 3,425 assessed → 2,750 included. Step 14 (LLM full-text screening) still running; figures update as records are coded. Final version expected May 2026.
         </p>
       </div>
 
@@ -108,22 +108,22 @@ export default function SystematicMapPage() {
           <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
             <div>
               <h2 className="text-2xl font-logo font-bold text-green">ROSES Flow Diagram</h2>
-              <p className="font-tagline text-sm text-gray-500 mt-1">Record flow across all screening stages, following ROSES reporting standards.</p>
+              <p className="font-tagline text-sm text-gray-500 mt-1">Record flow across all 27 sources and screening stages, following ROSES reporting standards.</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {/* View toggle */}
               <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
                 <button
-                  onClick={() => setFlowView('sankey')}
-                  className={`px-3 py-1.5 transition ${flowView === 'sankey' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'}`}
-                >
-                  Sankey
-                </button>
-                <button
                   onClick={() => setFlowView('prisma')}
-                  className={`px-3 py-1.5 transition border-l border-gray-200 ${flowView === 'prisma' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'}`}
+                  className={`px-3 py-1.5 transition ${flowView === 'prisma' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'}`}
                 >
                   PRISMA
+                </button>
+                <button
+                  onClick={() => setFlowView('sankey')}
+                  className={`px-3 py-1.5 transition border-l border-gray-200 ${flowView === 'sankey' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'}`}
+                >
+                  Sankey
                 </button>
               </div>
               {flowView === 'sankey' && (

@@ -1816,10 +1816,39 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     add(I_FTRET, I_PEND,  n_ft_pending_screen, "rgba(107,174,214,0.20)",
         f"Pending FT screening: {n_ft_pending_screen:,}")
 
+    # ── Explicit node positions (freeform layout) ────────────────────────────
+    # DB source column spread top-to-bottom; pipeline nodes placed by flow logic;
+    # final column (Included / Excluded / Pending) spread across full height.
+    n_db = N + 1  # Scopus + N other-DB nodes
+    _db_ys = [round(0.02 + i * 0.96 / max(n_db - 1, 1), 4) for i in range(n_db)]
+
+    _X = dict(db=0.01, dup=0.18, scr=0.28, abс=0.50, ft=0.72, final=0.92)
+    node_x = (
+        [_X["db"]] * n_db
+        + [_X["dup"],                        # I_DUP
+           _X["scr"],                        # I_SCR
+           _X["abс"],  _X["abс"],            # I_INC, I_EXC
+           _X["ft"],   _X["ft"],             # I_FTRET, I_FTNR
+           _X["final"], _X["final"], _X["final"]]  # I_CODED, I_FTEXC, I_PEND
+    )
+    node_y = (
+        _db_ys
+        + [0.50,   # I_DUP: center (receives from all non-Scopus DBs)
+           0.50,   # I_SCR: center
+           0.35,   # I_INC: upper
+           0.82,   # I_EXC: lower
+           0.22,   # I_FTRET: upper
+           0.72,   # I_FTNR: lower
+           0.12,   # I_CODED: near top — spread final column
+           0.60,   # I_FTEXC: lower-middle
+           0.90]   # I_PEND: near bottom
+    )
+
     fig = go.Figure(go.Sankey(
-        arrangement="snap",
+        arrangement="freeform",
         node=dict(
-            pad=55, thickness=22,
+            pad=20, thickness=22,
+            x=node_x, y=node_y,
             line=dict(color="white", width=1),
             label=labels,
             color=node_colors,
@@ -1835,7 +1864,7 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     fig.update_layout(
         title=dict(
             text=(
-                "<b>ROSES Flow Diagram — Scopus + WoS + CAB + ASP + AGRIS</b><br>"
+                "<b>ROSES Flow Diagram — Scopus + 27 other sources</b><br>"
                 "<sup>Record flow across all screening stages · hover nodes and links for detail</sup>"
             ),
             x=0.5, xanchor="center", font=dict(size=14),

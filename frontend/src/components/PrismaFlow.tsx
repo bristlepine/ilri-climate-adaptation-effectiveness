@@ -164,40 +164,40 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       {/* Box 1 — Records identified */}
       <CenterBox y={Y1} h={BH1}
         label="Records identified via database searching"
-        n="n = 39,113"
-        sub="Scopus 17,021 · WoS 15,179 · CAB 5,723 · ASP 1,187 · AGRIS 3"
+        n="n = 40,653"
+        sub="Scopus 17,021 · WoS 15,179 · CAB 5,723 · ASP 1,187 · 24 other sources 1,543"
       />
 
       {/* Arrow 1 → 2 */}
       <DownArrow y={Y1 + BH1} />
 
       {/* Box 2 — After deduplication */}
-      <CenterBox y={Y2} label="Records after deduplication" n="n = 25,208" pct="64% of all identified" />
-      <ExclusionBox y={Y2} label="Duplicates removed" n="n = 13,905" pct="36% of all identified" />
+      <CenterBox y={Y2} label="Records after deduplication" n="n = 26,182" pct="64% of all identified" />
+      <ExclusionBox y={Y2} label="Duplicates removed" n="n = 14,471" pct="36% of all identified" />
       <RightArrow sourceY={Y2} />
 
       {/* Arrow 2 → 3 */}
       <DownArrow y={Y2 + BH} />
 
       {/* Box 3 — Screened */}
-      <CenterBox y={Y3} label="Records screened (title & abstract)" n="n = 25,208" />
-      <ExclusionBox y={Y3} label="Records excluded" n="n = 16,653" pct="66% of screened" />
+      <CenterBox y={Y3} label="Records screened (title & abstract)" n="n = 26,182" />
+      <ExclusionBox y={Y3} label="Records excluded" n="n = 17,429" pct="67% of screened" />
       <RightArrow sourceY={Y3} />
 
       {/* Arrow 3 → 4 */}
       <DownArrow y={Y3 + BH} />
 
       {/* Box 4 — Full texts sought */}
-      <CenterBox y={Y4} label="Full texts sought for retrieval" n="n = 8,555" pct="34% of screened" />
-      <ExclusionBox y={Y4} label="Not retrieved" n="n = 5,079" pct="59% of full texts sought" />
+      <CenterBox y={Y4} label="Full texts sought for retrieval" n="n = 8,753" pct="33% of screened" />
+      <ExclusionBox y={Y4} label="Not retrieved" n="n = 5,248" pct="60% of full texts sought" />
       <RightArrow sourceY={Y4} />
 
       {/* Arrow 4 → 5 */}
       <DownArrow y={Y4 + BH} />
 
       {/* Box 5 — Full texts assessed */}
-      <CenterBox y={Y5} label="Full texts assessed for eligibility" n="n = 3,476" pct="41% of full texts sought" />
-      <ExclusionBox y={Y5} label="Full texts excluded" n="n = 726" pct="21% of assessed" />
+      <CenterBox y={Y5} label="Full texts assessed for eligibility" n="n = 3,425" pct="39% of full texts sought" />
+      <ExclusionBox y={Y5} label="Full texts excluded" n="n = 675" pct="20% of assessed" />
       <RightArrow sourceY={Y5} />
 
       {/* Arrow 5 → 6 */}
@@ -206,7 +206,7 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       {/* Box 6 — Included */}
       <CenterBox y={Y6} h={BH + 8}
         label="Studies included in data extraction"
-        n="n = 2,750" pct="79% of assessed" highlight
+        n="n = 2,750" pct="80% of assessed" highlight
       />
     </svg>
   );

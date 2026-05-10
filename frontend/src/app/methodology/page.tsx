@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PlotlyChart from "@/components/PlotlyChart";
@@ -8,25 +9,10 @@ import { ExternalLink } from "lucide-react";
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const pipelineStats = [
-  { value: '32,200', label: 'Records retrieved (2 databases)' },
-  { value: '21,704', label: 'Unique after deduplication' },
-  { value: '0.966', label: 'Sensitivity (R2b)' },
-  { value: '6 rounds', label: 'Calibration iterations' },
-];
-
-const innovations = [
-  {
-    title: 'Calibration-first validation',
-    body: 'Full-corpus screening did not proceed until the LLM screener met published thresholds across three independent calibration rounds. Two human reviewers screened each calibration batch independently in EPPI Reviewer, reconciled disagreements into a gold standard, then assessed the LLM against it — with criteria revised between rounds.',
-  },
-  {
-    title: 'Conservative inclusion by design',
-    body: 'At every screening stage, uncertainty defaults to inclusion rather than exclusion. Records with missing abstracts, ambiguous evidence, or unclear LLM decisions are retained. This encodes the fundamental systematic review principle that missing a relevant study is a more serious error than including an irrelevant one.',
-  },
-  {
-    title: 'Deterministic, locally hosted LLM',
-    body: 'All LLM inference uses qwen2.5:14b via Ollama at temperature 0.0 — fully deterministic and reproducible without external API dependencies. Fixed model, fixed input, identical output. Every decision is cached to disk and auditable. The model\'s parameters are never updated; calibration validates prompt and criteria design, not model training.',
-  },
+  { value: '40,634', label: 'Records identified (29 sources)' },
+  { value: '26,173', label: 'Unique after deduplication' },
+  { value: '8,753',  label: 'Included at T&A screening' },
+  { value: '2,750',  label: 'Included at full-text screening' },
 ];
 
 const calibrationRounds = [
@@ -45,61 +31,7 @@ const benchmarks = [
   { label: 'AI mean, 172 studies (Scherbakov 2025)', sens: '0.804', spec: '—', prec: '0.632', f1: '0.708', kappa: '—',    humanK: '—' },
 ];
 
-const pipelineSteps = [
-  { step: '01', title: 'Search query design',        desc: 'PCCM-structured query defined in version-controlled YAML. Scopus API queried to validate record counts per element and combination.' },
-  { step: '02', title: 'Record retrieval',            desc: 'Full corpus retrieved via Scopus API. 5,000-record paging limit handled by automatic year-slicing. 17,083 records → 17,021 after deduplication (DOI → title+year → title → EID priority).' },
-  { step: '03–04', title: 'Benchmark coverage',      desc: 'Pre-compiled list of known key studies enriched with DOIs via Crossref, OpenAlex, Semantic Scholar. Coverage validated; missing records used to refine query.' },
-  { step: '08', title: 'Cleaning & deduplication',   desc: 'Deterministic cleaning: HTML unescaping, whitespace normalisation, DOI canonicalisation, year extraction. Missing fields repaired via Crossref. Fully idempotent.' },
-  { step: '09–09a', title: 'Abstract enrichment',    desc: 'Missing abstracts retrieved via sequential API chain: Elsevier → Semantic Scholar → OpenAlex → Crossref → Unpaywall → scrape. RIS exports from EPPI Reviewer supplement remaining gaps. 30-day response cache.' },
-  { step: '10–11', title: 'Calibration rounds',      desc: 'Six rounds of dual human screening, gold-standard reconciliation, LLM assessment, and criteria revision. Full-corpus screening withheld until all five metrics met published thresholds.' },
-  { step: '12', title: 'Title/abstract screening',   desc: 'LLM screener applied to all 17,021 records. Per-criterion decisions (yes/no/unclear) with quoted supporting passages. Unverifiable quotations downgraded to unclear. Any unclear defaults to inclusion. Result: 6,206 included.' },
-  { step: '13', title: 'Full-text retrieval',         desc: 'Full texts retrieved for all included records via Unpaywall, Elsevier Full-Text API, Semantic Scholar, OpenAlex, CORE. 4,002 of 6,218 records retrieved (64.4%). Downloads capped at 25 MB.' },
-  { step: '14', title: 'Full-text screening',         desc: 'LLM screener applied to retrieved full texts (truncated to 12,000 tokens). Records without full text retained for inclusion by default per Cochrane guidance.' },
-  { step: '15', title: 'Data extraction & coding',   desc: '20-field extraction schema: publication year/type, country, geographic scale, producer type, adaptation domain, methodological approach, effectiveness metric, equity dimensions. Coding source tracked per record.' },
-  { step: '16', title: 'Systematic map outputs',      desc: 'All publication-ready figures generated programmatically from the coded dataset: ROSES flow diagram, evidence gap map, temporal trends, geographic distribution, domain heatmap.' },
-];
 
-const efficiencyData = [
-  {
-    stage: 'Title/abstract screening',
-    n: '17,021',
-    manualHr: '1,135',
-    pipelineHr: '3',
-    savedHr: '~1,132',
-  },
-  {
-    stage: 'Full-text retrieval',
-    n: '4,002 †',
-    manualHr: '~1,001',
-    pipelineHr: '11',
-    savedHr: '~991',
-  },
-  {
-    stage: 'Full-text screening',
-    n: '4,002',
-    manualHr: '~1,334',
-    pipelineHr: '~48 ‡',
-    savedHr: '~1,330',
-  },
-  {
-    stage: 'Data extraction & coding',
-    n: '~6,076',
-    manualHr: '~2,532',
-    pipelineHr: '~8 ‡',
-    savedHr: '~2,524',
-  },
-];
-
-const reproducibilityPrinciples = [
-  { title: 'Deterministic outputs',          desc: 'Temperature 0.0 for all LLM calls. Fixed model + fixed input = identical output. No stochastic variation between runs.' },
-  { title: 'Comprehensive caching',          desc: 'Every external API response and LLM decision cached to disk. Re-runs process only new or expired records; prior decisions are preserved.' },
-  { title: 'Quotation verification',         desc: 'Screening decisions must cite a passage from the abstract. Unverifiable citations are automatically downgraded to \'unclear\' — a lightweight hallucination check built into the pipeline.' },
-  { title: 'Conservative defaults',          desc: 'Absence of required evidence defaults to inclusion at all stages. Records with missing abstracts, failed retrievals, or uncertain LLM decisions are never silently excluded.' },
-  { title: 'Iterative human calibration',    desc: 'Six calibration rounds with two independent human reviewers. Criteria revised and versioned between rounds. Full-corpus screening withheld until thresholds met.' },
-  { title: 'Version-controlled criteria',    desc: 'Eligibility criteria stored in criteria.yml and extraction criteria in criteria_sysmap_v1.yml, versioned in Git alongside all code. Criteria changes are traceable.' },
-  { title: 'ROSES compliance',               desc: 'Record counts at every pipeline stage are automatically compiled into a ROSES flow diagram at Step 16, providing a machine-generated audit trail of the entire review process.' },
-  { title: 'Coding source provenance',       desc: 'Every coded record carries a coding_source field (full text / abstract only / title-only) so downstream analyses can weight or filter by evidence quality.' },
-];
 
 const softwareStack = [
   { component: 'LLM inference',        tool: 'Ollama (qwen2.5:14b)',            purpose: 'Local deterministic screening and data extraction' },
@@ -117,12 +49,12 @@ const softwareStack = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function SectionHeading({ label, title, subtitle }: { label: string; title: string; subtitle?: string }) {
+function SectionHeading({ label, title, subtitle, dark = false }: { label: string; title: string; subtitle?: string; dark?: boolean }) {
   return (
     <div className="mb-10">
-      <p className="text-xs font-tagline uppercase tracking-widest text-green mb-2">{label}</p>
-      <h2 className="text-2xl md:text-3xl font-logo font-bold text-charcoal mb-2">{title}</h2>
-      {subtitle && <p className="font-tagline text-gray-500 max-w-2xl">{subtitle}</p>}
+      <p className={`text-xs font-tagline uppercase tracking-widest mb-2 ${dark ? 'text-white/80' : 'text-green'}`}>{label}</p>
+      <h2 className={`text-2xl md:text-3xl font-logo font-bold mb-2 ${dark ? 'text-white' : 'text-charcoal'}`}>{title}</h2>
+      {subtitle && <p className={`font-tagline max-w-2xl ${dark ? 'text-white/60' : 'text-gray-500'}`}>{subtitle}</p>}
     </div>
   );
 }
@@ -136,7 +68,31 @@ function Td({ children, className = '' }: { children: React.ReactNode; className
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
+const navItems = [
+  { id: 'step1', label: '1 · Search' },
+  { id: 'step2', label: '2 · Dedup' },
+  { id: 'step3', label: '3 · Calibration' },
+  { id: 'step4', label: '4 · Screening' },
+  { id: 'step5', label: '5 · Full-text' },
+  { id: 'step6', label: '6 · Coding' },
+  { id: 'step7', label: '7 · Map' },
+];
+
 export default function MethodologyPage() {
+  const flowRef = useRef<HTMLElement>(null);
+  const [navVisible, setNavVisible] = useState(false);
+
+  useEffect(() => {
+    const el = flowRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setNavVisible(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
     <main className="page-wrapper min-h-screen flex flex-col">
       <Navbar />
@@ -148,10 +104,10 @@ export default function MethodologyPage() {
         </video>
         <div className="absolute inset-0 bg-black/70 z-0" />
         <div className="relative z-10 max-w-4xl mx-auto w-full">
-          <p className="text-sm font-tagline uppercase tracking-widest text-clay mb-3">Computational Pipeline · Systematic Map</p>
+          <p className="text-sm font-tagline uppercase tracking-widest text-white/50 mb-3">Computational Pipeline · Systematic Map</p>
           <h1 className="text-4xl md:text-5xl font-logo font-bold mb-4 leading-tight">Methodology</h1>
-          <p className="text-lg font-tagline text-clay max-w-3xl leading-relaxed">
-            A sixteen-step computational pipeline for AI-assisted systematic mapping, combining local large language model inference with structured human calibration and conservative inclusion-by-default logic.
+          <p className="text-lg font-tagline text-white/70 max-w-3xl leading-relaxed">
+            40,634 records across 29 sources. Cross-database deduplication. Six calibration rounds. LLM full-text screening at scale. 8,753 included at title/abstract screening; 2,750 included at full-text screening.
           </p>
         </div>
       </section>
@@ -168,61 +124,161 @@ export default function MethodologyPage() {
         </div>
       </div>
 
-      {/* Overview */}
-      <section className="bg-white px-6 py-16">
+      {/* Mini-nav — fixed below main navbar, shown once flow diagram scrolls out of view */}
+      <nav
+        className="fixed left-0 right-0 z-40 transition-all duration-200"
+        style={{
+          top: '68px',
+          background: 'var(--green)',
+          transform: navVisible ? 'translateY(0)' : 'translateY(-110%)',
+          opacity: navVisible ? 1 : 0,
+          pointerEvents: navVisible ? 'auto' : 'none',
+        }}
+      >
+        <div className="max-w-5xl mx-auto flex items-center justify-center gap-0.5 px-6 py-2 overflow-x-auto">
+          {navItems.map(item => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              className="px-3 py-1.5 rounded-full text-xs font-tagline font-semibold whitespace-nowrap transition"
+              style={{ color: 'rgba(255,255,255,0.75)' }}
+              onMouseEnter={e => { (e.target as HTMLElement).style.color = '#fff'; (e.target as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.color = 'rgba(255,255,255,0.75)'; (e.target as HTMLElement).style.background = 'transparent'; }}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+
+      {/* Flow diagram */}
+      <section ref={flowRef} className="bg-sand px-6 py-14 border-b border-gray-200">
         <div className="max-w-4xl mx-auto">
-          <SectionHeading label="Overview" title="Human-guided automation at scale" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 font-tagline text-charcoal leading-relaxed text-sm">
-            <div>
-              <p className="mb-4">
-                The pipeline consists of sixteen sequential steps implemented in Python, each producing auditable outputs that feed the next stage. It is fully resumable: all external API responses and LLM decisions are cached to disk, and re-runs process only new or changed records.
-              </p>
-              <p>
-                The design principle is assistive automation — human judgement concentrated at every consequential decision point, with automated processing handling scale. The LLM is a screener, not a decision-maker; human reviewers set the eligibility criteria, validate performance against a reconciled gold standard, and retain final authority over inclusion decisions.
-              </p>
+          <p className="text-xs font-tagline uppercase tracking-widest text-green mb-10">Pipeline overview</p>
+
+          {/* Row 1: steps 1–4 */}
+          <div className="flex items-stretch">
+            {[
+              { id: 'step1', n: '1',  label: 'Database search',   sub: '40,634 records · 29 sources', color: '#2563eb' },
+              { id: 'step2', n: '2',  label: 'Deduplication',      sub: '26,173 unique records',       color: '#4f46e5' },
+              { id: 'step3', n: '3',  label: 'Calibration',        sub: '6 rounds · κ = 0.720',        color: '#7c3aed' },
+              { id: 'step4', n: '4',  label: 'Abstract screening', sub: '8,753 included',              color: '#9333ea' },
+            ].map((s, i, arr) => (
+              <div key={s.id} className="flex items-center flex-1 min-w-0">
+                <a href={`#${s.id}`} className="flex-1 group rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-3.5 flex flex-col items-center text-center hover:shadow-md transition min-w-0">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-logo font-bold text-[11px] mb-2 group-hover:scale-110 transition" style={{ background: s.color }}>{s.n}</div>
+                  <p className="font-logo font-bold text-charcoal text-[11px] leading-tight mb-0.5">{s.label}</p>
+                  <p className="font-tagline text-gray-400 text-[10px] leading-snug">{s.sub}</p>
+                </a>
+                {i < arr.length - 1 && <div className="shrink-0 px-1 text-gray-300 font-bold text-sm">→</div>}
+              </div>
+            ))}
+          </div>
+
+          {/* Arrow straight down to step 5 */}
+          <div className="flex justify-center"><div className="w-px h-8 bg-gray-300" /></div>
+
+          {/* Row 2: step 5 centered */}
+          <div className="flex justify-center">
+            <a href="#step5" className="w-44 group rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-3.5 flex flex-col items-center text-center hover:shadow-md transition">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-logo font-bold text-[11px] mb-2 group-hover:scale-110 transition" style={{ background: '#0d9488' }}>5</div>
+              <p className="font-logo font-bold text-charcoal text-[11px] leading-tight mb-0.5">Full-text retrieval</p>
+              <p className="font-tagline text-gray-400 text-[10px] leading-snug">3,505 full texts</p>
+            </a>
+          </div>
+
+          {/* Fork SVG: down from centre, split out to 6a (left) and 6b (right) */}
+          <svg className="w-full" height="44" style={{ display: 'block' }}>
+            <line x1="50%" y1="0"  x2="50%" y2="22" stroke="#d1d5db" strokeWidth="1.5" />
+            <line x1="25%" y1="22" x2="75%" y2="22" stroke="#d1d5db" strokeWidth="1.5" />
+            <line x1="25%" y1="22" x2="25%" y2="44" stroke="#d1d5db" strokeWidth="1.5" />
+            <line x1="75%" y1="22" x2="75%" y2="44" stroke="#d1d5db" strokeWidth="1.5" />
+          </svg>
+
+          {/* Row 3: 6a and 6b, spread to match SVG endpoints */}
+          <div className="flex gap-4">
+            <div className="flex-1 flex justify-center">
+              <a href="#step6a" className="w-44 group rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-3.5 flex flex-col items-center text-center hover:shadow-md transition">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-logo font-bold text-[11px] mb-2 group-hover:scale-110 transition" style={{ background: '#ea580c' }}>6a</div>
+                <p className="font-logo font-bold text-charcoal text-[11px] leading-tight mb-0.5">Human coding</p>
+                <p className="font-tagline text-gray-400 text-[10px] leading-snug">Batches of 20 · ongoing</p>
+              </a>
             </div>
-            <div>
-              <p className="mb-4">
-                The search was conducted across Scopus (pilot corpus), with Web of Science, CAB Abstracts, AGRIS, and Academic Search Premier integration underway. All LLM steps use qwen2.5:14b via Ollama at temperature 0.0 — fully deterministic and locally hosted, with no external API dependency for inference.
-              </p>
-              <p>
-                Eligibility criteria are stored in version-controlled YAML files alongside the code. Every criteria revision is traceable in the Git history, and the pipeline can be re-run end-to-end against updated criteria at any time.
-              </p>
+            <div className="flex-1 flex justify-center">
+              <a href="#step6b" className="w-44 group rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-3.5 flex flex-col items-center text-center hover:shadow-md transition">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-logo font-bold text-[11px] mb-2 group-hover:scale-110 transition" style={{ background: '#d97706' }}>6b</div>
+                <p className="font-logo font-bold text-charcoal text-[11px] leading-tight mb-0.5">LLM coding</p>
+                <p className="font-tagline text-gray-400 text-[10px] leading-snug">2,750 included · map toggle</p>
+              </a>
             </div>
           </div>
 
-          {/* Human oversight points */}
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { title: 'Search design', desc: 'Query and PCCM eligibility criteria constructed and iteratively refined by the research team before any automated step.' },
-              { title: 'Dual-reviewer gold standard', desc: 'Two independent human reviewers (Caroline Staub, Jennifer Cisse) screened each calibration sample and reconciled all disagreements before the LLM was assessed.' },
-              { title: 'Spot-checking at every stage', desc: 'Random samples of LLM decisions reviewed at abstract screening, full-text screening, and data extraction. Extracted fields checked against source documents.' },
-            ].map(p => (
-              <div key={p.title} className="rounded-xl border border-gray-100 bg-gray-50 p-5">
-                <h3 className="font-logo font-bold text-charcoal text-sm mb-2">{p.title}</h3>
-                <p className="font-tagline text-xs text-gray-600 leading-relaxed">{p.desc}</p>
-              </div>
-            ))}
+          {/* Merge SVG: both 6a and 6b converge back to centre, then down to 7 */}
+          <svg className="w-full" height="44" style={{ display: 'block' }}>
+            <line x1="25%" y1="0"  x2="25%" y2="22" stroke="#d1d5db" strokeWidth="1.5" />
+            <line x1="75%" y1="0"  x2="75%" y2="22" stroke="#d1d5db" strokeWidth="1.5" />
+            <line x1="25%" y1="22" x2="75%" y2="22" stroke="#d1d5db" strokeWidth="1.5" />
+            <line x1="50%" y1="22" x2="50%" y2="44" stroke="#d1d5db" strokeWidth="1.5" />
+          </svg>
+
+          {/* Row 4: step 7 centered */}
+          <div className="flex justify-center">
+            <a href="#step7" className="w-44 group rounded-xl bg-white shadow-sm px-3 py-3.5 flex flex-col items-center text-center hover:shadow-md transition" style={{ border: '2px solid var(--green)' }}>
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-logo font-bold text-[11px] mb-2 group-hover:scale-110 transition" style={{ background: 'var(--green)' }}>7</div>
+              <p className="font-logo font-bold text-charcoal text-[11px] leading-tight mb-0.5">Systematic map</p>
+              <p className="font-tagline text-gray-400 text-[10px] leading-snug">Figures & outputs</p>
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Multi-database search & deduplication */}
-      <section className="bg-sand px-6 py-16">
+      {/* 1. Database search */}
+      <section id="step1" className="bg-white px-6 py-16">
         <div className="max-w-5xl mx-auto">
-          <SectionHeading
-            label="Database search"
-            title="Multi-database search & deduplication"
-            subtitle="Records retrieved from Scopus and Web of Science, deduplicated by DOI exact match, then title+year exact match, then fuzzy Jaccard similarity ≥ 0.85."
-          />
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <SectionHeading label="Step 1" title="Database search" />
+          <div className="overflow-x-auto rounded-xl border border-gray-200 mb-4">
+            <table className="w-full border-collapse text-xs font-tagline">
+              <thead className="bg-gray-50">
+                <tr><Th>Category</Th><Th>Sources</Th><Th>Records</Th><Th>Abstracts</Th></tr>
+              </thead>
+              <tbody>
+                {[
+                  { cat: 'Bibliographic databases', sources: 'Scopus, Web of Science, CAB Abstracts, Academic Search Premier, EconLit, ProQuest, AGRIS', records: '39,949', abs: '39,949' },
+                  { cat: 'Web search engines',      sources: 'Google Scholar, DuckDuckGo', records: '196', abs: '196' },
+                  { cat: 'UN agencies',             sources: 'FAO, IFAD, UNDP, UNEP, UNFCCC', records: '57', abs: '57' },
+                  { cat: 'Development agencies',    sources: 'World Bank, GEF, GCF, IDB, ADB, AfDB, FCDO', records: '338', abs: '338' },
+                  { cat: 'Research centres',        sources: 'CGSpace (CGIAR), IPAM, Adaptation Research Alliance, GCA, WASP', records: '86', abs: '86' },
+                  { cat: 'M&E networks',            sources: '3ie, Campbell Collaboration, J-PAL', records: '8', abs: '8' },
+                ].map((row, i) => (
+                  <tr key={row.cat} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                    <Td className="font-semibold">{row.cat}</Td>
+                    <Td className="text-gray-500">{row.sources}</Td>
+                    <Td>{row.records}</Td>
+                    <Td className="text-green font-semibold">{row.abs}</Td>
+                  </tr>
+                ))}
+                <tr className="border-t-2 border-gray-300 bg-charcoal text-white">
+                  <td className="px-3 py-2.5 font-logo font-bold text-xs" colSpan={2}>Total — 29 sources</td>
+                  <td className="px-3 py-2.5 font-bold text-xs text-white">40,634</td>
+                  <td className="px-3 py-2.5 font-bold text-xs text-sand">40,634 (100%)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs font-tagline text-gray-400">Unrecoverable records removed before deduplication: dead URLs, no abstract section, format issues.</p>
+        </div>
+      </section>
+
+      {/* 2. Deduplication */}
+      <section id="step2" className="bg-sand px-6 py-16">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeading label="Step 2" title="Deduplication" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
-              { value: '17,021', label: 'Scopus records', color: 'bg-blue-600' },
-              { value: '15,179', label: 'Web of Science records', color: 'bg-green-600' },
-              { value: '10,496', label: 'Duplicates removed', color: 'bg-red-500' },
-              { value: '21,704', label: 'Unique records', color: 'bg-purple-600' },
-              { value: '6,218', label: 'Scopus: included', color: 'bg-teal-500' },
-              { value: '3,570', label: 'Full texts retrieved', color: 'bg-orange-500' },
+              { value: '40,634', label: 'Total records across all 29 sources', color: 'bg-blue-600' },
+              { value: '14,461', label: 'Duplicates removed',                  color: 'bg-red-500' },
+              { value: '26,173', label: 'Unique records entering screening',   color: 'bg-teal-500' },
+              { value: '100%',   label: 'Abstract coverage',                   color: 'bg-green-600' },
             ].map(s => (
               <div key={s.label} className="rounded-xl bg-white border border-gray-100 p-4 flex items-center gap-3">
                 <div className={`w-2 h-10 rounded-full shrink-0 ${s.color}`} />
@@ -233,88 +289,45 @@ export default function MethodologyPage() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs font-tagline text-gray-400">
-            See the <a href="/systematic-map" className="underline hover:text-green">ROSES flow diagram</a> on the systematic map page for the full record-flow visualisation across all databases and screening stages.
-          </p>
-        </div>
-      </section>
-
-      {/* Key innovations */}
-      <section className="bg-white px-6 py-16">
-        <div className="max-w-4xl mx-auto">
-          <SectionHeading label="Design principles" title="Three core methodological innovations" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {innovations.map((inn, i) => (
-              <div key={inn.title} className="rounded-xl bg-white border border-gray-200 p-6 flex flex-col">
-                <div className="w-8 h-8 rounded-full bg-green text-white flex items-center justify-center font-logo font-bold text-sm mb-4 shrink-0">
-                  {i + 1}
-                </div>
-                <h3 className="font-logo font-bold text-charcoal mb-2">{inn.title}</h3>
-                <p className="font-tagline text-xs text-gray-600 leading-relaxed flex-1">{inn.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Calibration — the core story */}
-      <section className="bg-white px-6 py-16">
-        <div className="max-w-5xl mx-auto">
-          <SectionHeading
-            label="Calibration & validation"
-            title="Six rounds of structured criteria refinement"
-            subtitle="Full-corpus screening did not proceed until all five metrics met their published benchmarks. The table below shows the progression from R1 (initial criteria) to R3a (independent stability check on the same criteria as R2b)."
-          />
-
-          {/* Metric definitions */}
-          <div className="mb-8 overflow-x-auto rounded-xl border border-gray-200">
-            <table className="w-full border-collapse">
+          <p className="font-tagline text-sm text-gray-600 mb-5">All 40,634 records from all 29 sources were pooled and deduplicated together using three passes in priority order. A record is a duplicate if it matches on any pass.</p>
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
+            <table className="w-full border-collapse text-xs font-tagline">
               <thead className="bg-gray-50">
-                <tr>
-                  <Th>Metric</Th>
-                  <Th>What it measures</Th>
-                  <Th>Formula</Th>
-                  <Th>Priority</Th>
-                </tr>
+                <tr><Th>Pass</Th><Th>Method</Th><Th>Detail</Th></tr>
               </thead>
               <tbody>
                 {[
-                  { m: 'Sensitivity / Recall', w: 'Of all truly relevant records, what proportion were correctly included?', f: 'TP / (TP + FN)', p: 'Highest — missing a relevant study is the most serious error in systematic reviewing' },
-                  { m: 'Specificity', w: 'Of all truly irrelevant records, what proportion were correctly excluded?', f: 'TN / (TN + FP)', p: 'Secondary — false positives are caught at full-text screening' },
-                  { m: 'Precision', w: 'Of all included records, what proportion are truly relevant?', f: 'TP / (TP + FP)', p: 'Secondary' },
-                  { m: 'F1', w: 'Harmonic mean of precision and recall. Penalises imbalance.', f: '2PR / (P + R)', p: 'Balanced single score' },
-                  { m: "Cohen's κ", w: 'Agreement beyond chance between two raters', f: '(p_o − p_e) / (1 − p_e)', p: 'Standard IRR metric — EPPI Reviewer, Cochrane, Campbell' },
+                  { pass: '1', method: 'DOI match',              detail: 'DOIs normalised: lowercased, URL prefix stripped. Exact string match.' },
+                  { pass: '2', method: 'Exact title + year',      detail: 'Title lowercased, punctuation stripped, whitespace collapsed. Both title and year must match.' },
+                  { pass: '3', method: 'Fuzzy title (same year)', detail: 'Jaccard token overlap ≥ 0.85 within the same year. Skipped if title has fewer than 4 tokens to avoid false positives.' },
                 ].map((row, i) => (
-                  <tr key={row.m} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
-                    <Td className="font-semibold">{row.m}</Td>
-                    <Td>{row.w}</Td>
-                    <Td className="font-mono text-xs">{row.f}</Td>
-                    <Td>{row.p}</Td>
+                  <tr key={row.pass} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                    <Td className="font-semibold text-center">{row.pass}</Td>
+                    <Td className="font-semibold">{row.method}</Td>
+                    <Td className="text-gray-600">{row.detail}</Td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <p className="mt-3 text-xs font-tagline text-gray-400">Priority order ensures the most precise match is used first. Pass 3 catches minor title variations (subtitles, punctuation, truncation) without risking false positives across different years.</p>
+        </div>
+      </section>
 
-          {/* Calibration results */}
+      {/* 3. Calibration */}
+      <section id="step3" className="bg-white px-6 py-16">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeading label="Step 3" title="Calibration & eligibility criteria development" subtitle="Two independent human reviewers (Caroline Staub, Jennifer Cisse) screened each batch in EPPI Reviewer, reconciled disagreements into a gold standard, then the LLM was assessed against it. Criteria were revised between rounds. Full-corpus screening withheld until sensitivity ≥ 0.95 and κ ≥ 0.60." />
           <div className="overflow-x-auto rounded-xl border border-gray-200">
             <table className="w-full border-collapse">
               <thead className="bg-gray-50">
                 <tr>
-                  <Th>Round</Th>
-                  <Th>n</Th>
-                  <Th>Sensitivity</Th>
-                  <Th>Specificity</Th>
-                  <Th>Precision</Th>
-                  <Th>F1</Th>
-                  <Th>LLM κ</Th>
-                  <Th>Human κ</Th>
-                  <Th>Threshold met?</Th>
+                  <Th>Round</Th><Th>n</Th><Th>Sensitivity</Th><Th>Specificity</Th>
+                  <Th>Precision</Th><Th>F1</Th><Th>LLM κ</Th><Th>Human κ</Th><Th>Passed</Th>
                 </tr>
               </thead>
               <tbody>
-                {/* Benchmarks */}
-                {benchmarks.map((b, i) => (
+                {benchmarks.map((b) => (
                   <tr key={b.label} className="bg-blue-50/40 border-b border-blue-100">
                     <Td className="text-blue-600 italic">{b.label}</Td>
                     <Td className="text-blue-600 italic">—</Td>
@@ -327,144 +340,203 @@ export default function MethodologyPage() {
                     <Td>{''}</Td>
                   </tr>
                 ))}
-                {/* Divider */}
                 <tr><td colSpan={9} className="h-px bg-gray-300" /></tr>
-                {/* Calibration rounds */}
                 {calibrationRounds.map((r) => (
                   <tr key={r.round} className={r.pass ? 'bg-green/5' : 'bg-white'}>
                     <Td className={r.pass ? 'font-semibold text-green' : ''}>{r.round}</Td>
                     <Td>{r.n}</Td>
                     <Td className={parseFloat(r.sens) >= 0.95 ? 'font-bold text-green' : ''}>{r.sens}</Td>
-                    <Td>{r.spec}</Td>
-                    <Td>{r.prec}</Td>
-                    <Td>{r.f1}</Td>
+                    <Td>{r.spec}</Td><Td>{r.prec}</Td><Td>{r.f1}</Td>
                     <Td className={parseFloat(r.kappa) >= 0.60 ? 'font-bold text-green' : ''}>{r.kappa}</Td>
                     <Td>{r.humanK}</Td>
-                    <Td>
-                      {r.pass
-                        ? <span className="inline-block px-2 py-0.5 rounded-full bg-green text-white text-xs font-tagline font-semibold">✓ Yes</span>
-                        : <span className="inline-block px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 text-xs font-tagline">Refining</span>
-                      }
+                    <Td>{r.pass
+                      ? <span className="inline-block px-2 py-0.5 rounded-full bg-green text-white text-xs font-tagline font-semibold">✓ Yes</span>
+                      : <span className="inline-block px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 text-xs font-tagline">Refining</span>}
                     </Td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div className="mt-3 space-y-1.5 text-xs font-tagline text-gray-400">
-            <p>† R2a: metrics at time of initial submission (sensitivity 0.897, below ≥0.95 threshold); eligibility criteria subsequently revised before R2b.</p>
-            <p>‡ R3a: same criteria as R2b; separate 107-paper sample with independent reconciled gold standard; confirms stability (n=33 true positives, 1 miss).</p>
-            <p>§ Scherbakov et al. 2025: F1 computed from reported sensitivity (0.804) and precision (0.632) — not directly reported in the paper.</p>
-            <p>R2b sensitivity 95% CI (Wilson): 0.828–0.994. R3a: 0.847–0.995. Pooled across both independent samples (60/62 true positives): 0.890–0.991. Point estimates of both samples exceed ≥0.95; the O'Mara-Eves threshold is defined as a point-estimate target only.</p>
-          </div>
-
-          {/* Relationship to supervised ML */}
-          <div className="mt-10 rounded-xl border border-gray-200 bg-gray-50 p-6">
-            <h3 className="font-logo font-bold text-charcoal mb-2">Relationship to supervised ML screeners</h3>
-            <p className="font-tagline text-sm text-gray-600 leading-relaxed">
-              Supervised ML screeners (e.g. EPPI Reviewer, Juno) are classifiers trained from near-scratch on labelled examples and typically require 2,000–7,000 training records before reaching adequate performance. qwen2.5:14b is a pre-trained large language model — its parameters are never updated. The ~515 calibration records across four rounds (R1 through R2a) constitute a <em>validation set</em> for prompt and criteria design, not a training corpus. The analogy in conventional systematic review practice is calibration training: verifying that a reviewer correctly understands the eligibility criteria before independent screening begins.
-            </p>
+          <div className="mt-3 space-y-1 text-xs font-tagline text-gray-400">
+            <p>R3a: independent 107-paper sample with new gold standard; confirms stability of R2b criteria (1 miss in 33 true positives).</p>
+            <p>R2b 95% CI (Wilson): 0.828–0.994. R3a: 0.847–0.995. Pooled (60/62 true positives): 0.890–0.991.</p>
           </div>
         </div>
       </section>
 
-      {/* Pipeline stages */}
-      <section className="relative px-6 py-16 overflow-hidden">
-        <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-[-1]">
-          <source src="https://bristlepine.s3.us-east-2.amazonaws.com/2994205-uhd_3840_2160_30fps_clip.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-black/75 z-0" />
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <div className="mb-10">
-            <p className="text-xs font-tagline uppercase tracking-widest text-clay mb-2">Pipeline</p>
-            <h2 className="text-2xl md:text-3xl font-logo font-bold text-sand mb-2">Sixteen sequential steps</h2>
-            <p className="font-tagline text-white/75 text-sm max-w-2xl">Each step produces auditable CSV and JSON outputs. The pipeline is fully resumable — re-runs skip cached results and process only new records.</p>
-          </div>
-          <div className="space-y-3">
-            {pipelineSteps.map((step) => (
-              <div key={step.step} className="flex gap-4 rounded-xl bg-white/15 border border-white/20 px-5 py-4 hover:bg-white/20 transition">
-                <div className="shrink-0 w-10 text-right">
-                  <span className="font-logo font-bold text-white text-sm">{step.step}</span>
-                </div>
+      {/* 4. Abstract screening */}
+      <section id="step4" className="bg-sand px-6 py-16">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeading label="Step 4" title="Title/abstract screening" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {[
+              { value: '26,173', label: 'Records screened', color: 'bg-blue-600' },
+              { value: '8,753',  label: 'Included (Scopus 6,218 + multi 2,535)', color: 'bg-green-600' },
+              { value: '17,420', label: 'Excluded',         color: 'bg-red-500' },
+              { value: '0',      label: 'Missing abstract', color: 'bg-gray-400' },
+            ].map(s => (
+              <div key={s.label} className="rounded-xl bg-white border border-gray-100 p-4 flex items-center gap-3">
+                <div className={`w-2 h-10 rounded-full shrink-0 ${s.color}`} />
                 <div>
-                  <h3 className="font-logo font-bold text-white text-sm mb-0.5">{step.title}</h3>
-                  <p className="font-tagline text-xs text-white/75 leading-relaxed">{step.desc}</p>
+                  <p className="text-xl font-logo font-bold text-charcoal">{s.value}</p>
+                  <p className="text-xs font-tagline text-gray-500 leading-tight">{s.label}</p>
                 </div>
               </div>
             ))}
           </div>
+          <p className="text-xs font-tagline text-gray-500">LLM: qwen2.5:14b via Ollama, temperature 0.0. Per-criterion decisions (yes/no/unclear) with quoted supporting passage. Unverifiable quotes downgraded to unclear. Uncertain or missing defaults to include.</p>
         </div>
       </section>
 
-      {/* Efficiency */}
-      <section className="bg-sand px-6 py-16">
+      {/* 5. Full-text retrieval */}
+      <section id="step5" className="bg-white px-6 py-16">
         <div className="max-w-5xl mx-auto">
-          <SectionHeading
-            label="Computational efficiency"
-            title="~6,000 person-hours of systematic review work completed in ~70 hours of compute"
-            subtitle="Manual estimates use published rates (O'Mara-Eves 2015). Compute times are actual measured durations or per-record extrapolations from pipeline run logs. Manual and pipeline totals are calculated on the same set of records — the pipeline cannot retrieve papers that are inaccessible to any automated method."
-          />
-
-          <div className="overflow-x-auto rounded-xl border border-gray-200">
+          <SectionHeading label="Step 5" title="Full-text retrieval" subtitle="Full texts retrieved for all included records via automated API chain. Records from organisational website sources were already held locally as PDFs from the database search stage." />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {[
+              { value: '8,748',  label: 'Full texts sought (all databases)', color: 'bg-blue-600' },
+              { value: '3,505',  label: 'Retrieved (40.1%)',                 color: 'bg-green-600' },
+              { value: '5,243',  label: 'Not retrieved (paywalled / no DOI)', color: 'bg-red-500' },
+              { value: '100%',   label: 'Abstract coverage entering FT stage', color: 'bg-purple-600' },
+            ].map(s => (
+              <div key={s.label} className="rounded-xl bg-white border border-gray-100 p-4 flex items-center gap-3">
+                <div className={`w-2 h-10 rounded-full shrink-0 ${s.color}`} />
+                <div>
+                  <p className="text-xl font-logo font-bold text-charcoal">{s.value}</p>
+                  <p className="text-xs font-tagline text-gray-500 leading-tight">{s.label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-gray-200 mb-4">
             <table className="w-full border-collapse text-xs font-tagline">
               <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Stage</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Records (n)</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-200 bg-orange-50/50">Manual — person-hr</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-green/80 uppercase tracking-wide border-b border-gray-200 bg-green/5">Pipeline — hr (automated)</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-tagline font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Person-hr saved</th>
-                </tr>
+                <tr><Th>Source</Th><Th>Records retrieved</Th><Th>Format</Th></tr>
               </thead>
               <tbody>
-                {efficiencyData.map((row, i) => (
-                  <tr key={row.stage} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}>
-                    <td className="px-3 py-3 font-semibold text-charcoal">{row.stage}</td>
-                    <td className="px-3 py-3 text-center text-gray-500">{row.n}</td>
-                    <td className="px-3 py-3 text-center text-gray-600 bg-orange-50/30 font-semibold">{row.manualHr}</td>
-                    <td className="px-3 py-3 text-center text-green bg-green/5 font-bold">{row.pipelineHr}</td>
-                    <td className="px-3 py-3 text-center font-semibold text-charcoal">{row.savedHr}</td>
+                {[
+                  { src: 'Unpaywall',              n: '2,173', fmt: 'PDF' },
+                  { src: 'Elsevier full-text API', n: '1,100', fmt: 'PDF / HTML' },
+                  { src: 'Semantic Scholar',       n: '157',   fmt: 'PDF' },
+                  { src: 'OpenAlex',               n: '40',    fmt: 'PDF' },
+                  { src: 'CORE',                   n: '33',    fmt: 'PDF' },
+                  { src: 'Other',                  n: '2',     fmt: 'HTML' },
+                ].map((row, i) => (
+                  <tr key={row.src} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                    <Td className="font-semibold">{row.src}</Td>
+                    <Td>{row.n}</Td>
+                    <Td className="text-gray-500">{row.fmt}</Td>
                   </tr>
                 ))}
                 <tr className="border-t-2 border-gray-300 bg-charcoal text-white">
-                  <td className="px-3 py-3 font-logo font-bold text-sm" colSpan={2}>Total</td>
-                  <td className="px-3 py-3 text-center font-bold text-white">~6,000 person-hr</td>
-                  <td className="px-3 py-3 text-center font-bold text-sand">~70 hr</td>
-                  <td className="px-3 py-3 text-center font-bold text-sand">~5,935 person-hr</td>
+                  <td className="px-3 py-2.5 font-logo font-bold text-xs">Total retrieved</td>
+                  <td className="px-3 py-2.5 font-bold text-xs text-white">3,505</td>
+                  <td className="px-3 py-2.5 text-xs text-sand">PDF / HTML</td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <p className="text-xs font-tagline text-gray-400">Non-retrieved records are retained for inclusion by default — absence of full text is not grounds for exclusion.</p>
+        </div>
+      </section>
 
-          <div className="mt-3 space-y-1 text-xs font-tagline text-gray-400">
-            <p>Manual rates estimated at 4 min/record (title/abstract, 2 reviewers), 15 min/record (retrieval), 20 min/record (full-text, 2 reviewers), 25 min/record (extraction). Pipeline times are wall-clock hours on a single machine running unattended.</p>
-            <p>† Full-text retrieval: pipeline retrieved 4,002 of 6,218 records (64%). The remaining 2,216 are behind paywalls or lack DOIs — barriers that apply equally to any automated system. All figures in this table are based on the 4,002 records retrieved.</p>
-            <p>‡ Full-text screening and data extraction times are estimated from calibration runs; full-corpus runs in progress.</p>
+      {/* 6. Full-text screening & coding (6a human + 6b LLM) */}
+      <section id="step6" className="relative px-6 py-16 overflow-hidden">
+        <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-[-1]">
+          <source src="https://bristlepine.s3.us-east-2.amazonaws.com/2994205-uhd_3840_2160_30fps_clip.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-black/75 z-0" />
+        <div className="relative z-10 max-w-5xl mx-auto">
+          <SectionHeading dark label="Step 6" title="Full-text screening & data extraction" />
+
+          {/* Randomisation panel */}
+          <div className="rounded-xl border border-white/20 p-6 mb-6" style={{ background: 'rgba(255,255,255,0.10)' }}>
+            <p className="text-[10px] font-tagline uppercase tracking-widest text-white/70 mb-1">Randomisation</p>
+            <h3 className="font-logo font-bold text-white text-lg mb-3">Batch sampling method</h3>
+            <p className="text-sm font-tagline text-white/80 leading-relaxed mb-5">
+              Papers are sampled using a pure random draw — no stratification. A fixed integer seed controls each batch: seed 42 draws the first 20, seed 43 the next 20, and so on. Every batch explicitly excludes all DOIs already assigned in prior batches, making overlap impossible by construction. Re-running the draw script with the same seed always returns the identical sample, so every batch is fully reproducible and auditable.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { prop: 'Method',       val: 'Pure random (no stratification)' },
+                { prop: 'Batch size',   val: '20 papers' },
+                { prop: 'Seeds',        val: '42, 43, 44, … (one per batch)' },
+                { prop: 'No-overlap',   val: 'Prior-batch DOIs excluded before each draw' },
+              ].map(item => (
+                <div key={item.prop} className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                  <p className="text-[10px] font-tagline uppercase tracking-widest text-white/50 mb-1">{item.prop}</p>
+                  <p className="text-xs font-tagline text-white font-semibold leading-snug">{item.val}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* 6a — Human coders */}
+            <div id="step6a" className="rounded-xl border border-white/20 p-6" style={{ background: 'rgba(255,255,255,0.12)', borderLeft: '4px solid var(--green)' }}>
+              <p className="text-[10px] font-tagline uppercase tracking-widest text-white/70 mb-1">6a</p>
+              <h3 className="font-logo font-bold text-white mb-4">Human coders</h3>
+              <table className="w-full text-xs font-tagline mb-5">
+                <tbody>
+                  {[
+                    { label: 'Pool',             value: '8,753 included records (T&A screening)' },
+                    { label: 'Target',           value: 'Batches drawn until convergence (few hundred papers), not full pool' },
+                    { label: 'Fields extracted', value: '20 (country, scale, producer type, adaptation domain, intervention, outcome, effectiveness metric, equity, study design, evidence quality, …)' },
+                    { label: 'Status',           value: 'Ongoing' },
+                  ].map(row => (
+                    <tr key={row.label} className="border-b border-white/10">
+                      <td className="py-2 pr-4 text-white/90 w-36 align-top">{row.label}</td>
+                      <td className="py-2 text-white font-semibold">{row.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 6b — LLM parallel track */}
+            <div id="step6b" className="rounded-xl border border-white/20 p-6" style={{ background: 'rgba(255,255,255,0.12)', borderLeft: '4px solid #c2703a' }}>
+              <p className="text-[10px] font-tagline uppercase tracking-widest text-white/70 mb-1">6b</p>
+              <h3 className="font-logo font-bold text-white mb-4">LLM — automated parallel track</h3>
+              <table className="w-full text-xs font-tagline">
+                <tbody>
+                  {[
+                    { label: 'Full texts retrieved',       value: '3,505 of 8,748 sought (40%)' },
+                    { label: 'Included after FT screening', value: '2,750' },
+                    { label: 'Excluded after FT screening', value: '673' },
+                    { label: 'Fields extracted',           value: 'Same 20-field schema' },
+                    { label: 'Display',                    value: 'Toggleable overlay on systematic map' },
+                  ].map(row => (
+                    <tr key={row.label} className="border-b border-white/10">
+                      <td className="py-2 pr-4 text-white/90 w-36 align-top">{row.label}</td>
+                      <td className="py-2 text-white font-semibold">{row.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* Reproducibility */}
-      <section className="bg-white px-6 py-16">
-        <div className="max-w-4xl mx-auto">
-          <SectionHeading
-            label="Transparency & reproducibility"
-            title="Eight reproducibility commitments"
-            subtitle="The pipeline was designed from the outset to produce results that can be independently verified, re-run, and audited at every step."
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {reproducibilityPrinciples.map((p) => (
-              <div key={p.title} className="rounded-xl border border-gray-100 p-5 bg-gray-50/50">
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-green mt-1.5 shrink-0" />
-                  <div>
-                    <h3 className="font-logo font-bold text-charcoal text-sm mb-1">{p.title}</h3>
-                    <p className="font-tagline text-xs text-gray-600 leading-relaxed">{p.desc}</p>
-                  </div>
-                </div>
+      {/* 7. Systematic map */}
+      <section id="step7" className="bg-sand px-6 py-16">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeading label="Step 7" title="Systematic map & outputs" />
+          <p className="font-tagline text-sm text-gray-600 mb-6">All figures generated programmatically from the coded dataset. Human and LLM coding tracks shown as a toggle on the map page.</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {['ROSES flow diagram', 'Evidence gap map', 'Temporal trends', 'Geographic distribution', 'Domain heatmap', 'Equity dimensions'].map(fig => (
+              <div key={fig} className="rounded-xl bg-white border border-gray-200 px-4 py-3 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-green shrink-0" />
+                <span className="font-tagline text-xs text-charcoal">{fig}</span>
               </div>
             ))}
           </div>
+          <p className="mt-6 text-xs font-tagline text-gray-400">
+            <a href="/systematic-map" className="underline hover:text-green">View the systematic map →</a>
+          </p>
         </div>
       </section>
 
