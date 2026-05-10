@@ -278,18 +278,19 @@ def cleanup_stale_assignments() -> None:
 
 def record_assignment(round_name: str, n_papers: int, drive_folder_id: str) -> None:
     """
-    Add or overwrite the row for this round in assignments.csv.
+    Add or update the row for this round in assignments.csv.
 
-    coder_name and coder_email are left empty — fill them in manually once a
-    coder is hired and given access to their Drive folder.
+    Preserves any manually entered coder_name, coder_email, and assigned_date
+    already in the file — only n_papers and drive_folder_id are overwritten.
     """
     rows = _read_assignments()
+    existing = next((r for r in rows if r.get("round") == round_name), {})
     rows = [r for r in rows if r.get("round") != round_name]
     rows.append({
         "round":           round_name,
-        "coder_name":      "",
-        "coder_email":     "",
-        "assigned_date":   date.today().isoformat(),
+        "coder_name":      existing.get("coder_name", ""),
+        "coder_email":     existing.get("coder_email", ""),
+        "assigned_date":   existing.get("assigned_date") or date.today().isoformat(),
         "n_papers":        n_papers,
         "drive_folder_id": drive_folder_id,
     })
