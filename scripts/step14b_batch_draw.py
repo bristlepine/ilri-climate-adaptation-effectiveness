@@ -62,7 +62,7 @@ STEP14_RESULTS  = OUTPUTS_DIR / "step14" / "step14_results.csv"
 ASSIGNMENTS_CSV = OUTPUTS_DIR / "step14b" / "assignments.csv"
 
 DRIVE_PARENT_ID    = "13p22XfvB6sNtTtnMS-dkI1t-joMn-6Bo"
-CODEBOOK_LOCAL     = ROUNDS_DOC_DIR / "FT-R1a" / "CODEBOOK_FT-R1a.pdf"
+CODEBOOK_LOCAL      = ROUNDS_DOC_DIR / "CODEBOOK_FT.pdf"
 CODEBOOK_DRIVE_NAME = "CODEBOOK_FT.pdf"
 
 # Papers used in calibration rounds — never re-sample

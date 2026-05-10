@@ -15,10 +15,15 @@ import sys
 import re
 from pathlib import Path
 
-REPO_ROOT  = Path(__file__).parent.parent.parent.parent
-ROUNDS_DIR = REPO_ROOT / "documentation" / "coding" / "systematic-map" / "rounds"
-ROUNDS     = ["FT-R1a", "FT-R2a"]
-CHROME     = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+REPO_ROOT    = Path(__file__).parent.parent.parent.parent
+SYSMAP_DIR   = REPO_ROOT / "documentation" / "coding" / "systematic-map"
+ROUNDS_DIR   = SYSMAP_DIR / "rounds"
+ROUNDS       = ["FT-R1a", "FT-R2a"]
+CHROME       = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+# Generic (non-round-specific) codebook
+CODEBOOK_MD  = SYSMAP_DIR / "CODEBOOK.md"
+CODEBOOK_PDF = ROUNDS_DIR / "CODEBOOK_FT.pdf"
 
 CSS = """
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -195,6 +200,16 @@ with sync_playwright() as p:
 def main():
     print("Generating codebook PDFs...\n")
 
+    # Generic codebook from main CODEBOOK.md
+    if CODEBOOK_MD.exists():
+        print(f"  CODEBOOK_FT: converting...", end=" ", flush=True)
+        html = make_html(CODEBOOK_MD, "Systematic Map Codebook")
+        to_pdf(html, CODEBOOK_PDF)
+        print(f"✓  ({CODEBOOK_PDF.stat().st_size // 1024} KB)  →  {CODEBOOK_PDF}")
+    else:
+        print(f"  Skipping CODEBOOK_FT — {CODEBOOK_MD} not found")
+
+    # Round-specific codebooks
     for round_name in ROUNDS:
         md  = ROUNDS_DIR / round_name / f"CODEBOOK_{round_name}.md"
         pdf = ROUNDS_DIR / round_name / f"CODEBOOK_{round_name}.pdf"
