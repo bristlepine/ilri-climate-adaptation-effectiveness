@@ -188,16 +188,16 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       <DownArrow y={Y3 + BH} />
 
       {/* Box 4 — Full texts sought */}
-      <CenterBox y={Y4} label="Full texts sought for retrieval" n="n = 8,753" pct="33% of screened" />
-      <ExclusionBox y={Y4} label="Not retrieved" n="n = 5,248" pct="60% of full texts sought" />
+      <CenterBox y={Y4} label="Full texts sought for retrieval" n="n = 8,748" pct="33% of screened" />
+      <ExclusionBox y={Y4} label="Not retrieved" n="n = 5,243" pct="60% of full texts sought" />
       <RightArrow sourceY={Y4} />
 
       {/* Arrow 4 → 5 */}
       <DownArrow y={Y4 + BH} />
 
       {/* Box 5 — Full texts assessed */}
-      <CenterBox y={Y5} label="Full texts assessed for eligibility" n="n = 3,425" pct="39% of full texts sought" />
-      <ExclusionBox y={Y5} label="Full texts excluded" n="n = 675" pct="20% of assessed" />
+      <CenterBox y={Y5} label="Full texts assessed for eligibility" n="n = 3,505" pct="40% of full texts sought" />
+      <ExclusionBox y={Y5} label="Full texts excluded" n="n = 1,148" pct="33% of assessed" />
       <RightArrow sourceY={Y5} />
 
       {/* Arrow 5 → 6 */}
@@ -206,7 +206,7 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       {/* Box 6 — Included */}
       <CenterBox y={Y6} h={BH + 8}
         label="Studies included in data extraction"
-        n="n = 2,750" pct="80% of assessed" highlight
+        n="n = 2,357" pct="67% of assessed" highlight
       />
     </svg>
   );

@@ -98,7 +98,7 @@ export default function SystematicMapPage() {
       {/* Status Banner */}
       <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3">
         <p className="max-w-5xl mx-auto text-xs font-tagline text-yellow-800">
-          <strong>In progress — data extraction underway.</strong> 40,653 records identified across 27 sources → 26,182 after deduplication → 8,753 full texts sought → 3,425 assessed → 2,750 included. Figures update as records are coded. Final version expected May 2026.
+          <strong>In progress — data extraction underway.</strong> 40,653 records identified across 27 sources → 26,182 after deduplication → 8,748 full texts sought → 3,505 assessed → 2,357 included. Figures update as records are coded. Final version expected May 2026.
         </p>
       </div>
 
