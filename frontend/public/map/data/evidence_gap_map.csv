@@ -1,66 +1,66 @@
 domain_code,domain_label,producer_code,producer_label,n_studies
-knowledge_awareness_learning,Knowledge & Awareness,crop,Crop farmers,731
-knowledge_awareness_learning,Knowledge & Awareness,livestock,Livestock,252
-knowledge_awareness_learning,Knowledge & Awareness,fisheries_aquaculture,Fisheries/Aquaculture,108
-knowledge_awareness_learning,Knowledge & Awareness,agroforestry,Agroforestry,95
-knowledge_awareness_learning,Knowledge & Awareness,mixed,Mixed/General,107
-decision_making_planning,Decision-making & Planning,crop,Crop farmers,627
-decision_making_planning,Decision-making & Planning,livestock,Livestock,277
-decision_making_planning,Decision-making & Planning,fisheries_aquaculture,Fisheries/Aquaculture,127
-decision_making_planning,Decision-making & Planning,agroforestry,Agroforestry,78
-decision_making_planning,Decision-making & Planning,mixed,Mixed/General,95
-uptake_adoption,Uptake & Adoption,crop,Crop farmers,715
-uptake_adoption,Uptake & Adoption,livestock,Livestock,189
-uptake_adoption,Uptake & Adoption,fisheries_aquaculture,Fisheries/Aquaculture,59
-uptake_adoption,Uptake & Adoption,agroforestry,Agroforestry,66
-uptake_adoption,Uptake & Adoption,mixed,Mixed/General,101
-behavioral_change,Behavioral Change,crop,Crop farmers,536
-behavioral_change,Behavioral Change,livestock,Livestock,281
-behavioral_change,Behavioral Change,fisheries_aquaculture,Fisheries/Aquaculture,104
-behavioral_change,Behavioral Change,agroforestry,Agroforestry,80
-behavioral_change,Behavioral Change,mixed,Mixed/General,92
-participation_coproduction,Participation & Co-production,crop,Crop farmers,33
-participation_coproduction,Participation & Co-production,livestock,Livestock,35
-participation_coproduction,Participation & Co-production,fisheries_aquaculture,Fisheries/Aquaculture,24
-participation_coproduction,Participation & Co-production,agroforestry,Agroforestry,9
-participation_coproduction,Participation & Co-production,mixed,Mixed/General,12
-institutional_governance,Institutional Governance,crop,Crop farmers,180
-institutional_governance,Institutional Governance,livestock,Livestock,135
-institutional_governance,Institutional Governance,fisheries_aquaculture,Fisheries/Aquaculture,67
-institutional_governance,Institutional Governance,agroforestry,Agroforestry,47
-institutional_governance,Institutional Governance,mixed,Mixed/General,51
-access_information_services,Access to Services,crop,Crop farmers,421
-access_information_services,Access to Services,livestock,Livestock,205
-access_information_services,Access to Services,fisheries_aquaculture,Fisheries/Aquaculture,106
-access_information_services,Access to Services,agroforestry,Agroforestry,73
-access_information_services,Access to Services,mixed,Mixed/General,67
+knowledge_awareness_learning,Knowledge & Awareness,crop,Crop farmers,433
+knowledge_awareness_learning,Knowledge & Awareness,livestock,Livestock,154
+knowledge_awareness_learning,Knowledge & Awareness,fisheries_aquaculture,Fisheries/Aquaculture,56
+knowledge_awareness_learning,Knowledge & Awareness,agroforestry,Agroforestry,64
+knowledge_awareness_learning,Knowledge & Awareness,mixed,Mixed/General,38
+decision_making_planning,Decision-making & Planning,crop,Crop farmers,657
+decision_making_planning,Decision-making & Planning,livestock,Livestock,314
+decision_making_planning,Decision-making & Planning,fisheries_aquaculture,Fisheries/Aquaculture,126
+decision_making_planning,Decision-making & Planning,agroforestry,Agroforestry,98
+decision_making_planning,Decision-making & Planning,mixed,Mixed/General,60
+uptake_adoption,Uptake & Adoption,crop,Crop farmers,599
+uptake_adoption,Uptake & Adoption,livestock,Livestock,197
+uptake_adoption,Uptake & Adoption,fisheries_aquaculture,Fisheries/Aquaculture,62
+uptake_adoption,Uptake & Adoption,agroforestry,Agroforestry,75
+uptake_adoption,Uptake & Adoption,mixed,Mixed/General,54
+behavioral_change,Behavioral Change,crop,Crop farmers,284
+behavioral_change,Behavioral Change,livestock,Livestock,151
+behavioral_change,Behavioral Change,fisheries_aquaculture,Fisheries/Aquaculture,54
+behavioral_change,Behavioral Change,agroforestry,Agroforestry,38
+behavioral_change,Behavioral Change,mixed,Mixed/General,32
+participation_coproduction,Participation & Co-production,crop,Crop farmers,44
+participation_coproduction,Participation & Co-production,livestock,Livestock,40
+participation_coproduction,Participation & Co-production,fisheries_aquaculture,Fisheries/Aquaculture,19
+participation_coproduction,Participation & Co-production,agroforestry,Agroforestry,14
+participation_coproduction,Participation & Co-production,mixed,Mixed/General,8
+institutional_governance,Institutional Governance,crop,Crop farmers,285
+institutional_governance,Institutional Governance,livestock,Livestock,179
+institutional_governance,Institutional Governance,fisheries_aquaculture,Fisheries/Aquaculture,79
+institutional_governance,Institutional Governance,agroforestry,Agroforestry,53
+institutional_governance,Institutional Governance,mixed,Mixed/General,38
+access_information_services,Access to Services,crop,Crop farmers,188
+access_information_services,Access to Services,livestock,Livestock,118
+access_information_services,Access to Services,fisheries_aquaculture,Fisheries/Aquaculture,55
+access_information_services,Access to Services,agroforestry,Agroforestry,39
+access_information_services,Access to Services,mixed,Mixed/General,25
 yields_productivity,Yields & Productivity,crop,Crop farmers,306
-yields_productivity,Yields & Productivity,livestock,Livestock,68
-yields_productivity,Yields & Productivity,fisheries_aquaculture,Fisheries/Aquaculture,28
-yields_productivity,Yields & Productivity,agroforestry,Agroforestry,36
-yields_productivity,Yields & Productivity,mixed,Mixed/General,40
-income_assets,Income & Assets,crop,Crop farmers,213
-income_assets,Income & Assets,livestock,Livestock,66
-income_assets,Income & Assets,fisheries_aquaculture,Fisheries/Aquaculture,37
-income_assets,Income & Assets,agroforestry,Agroforestry,27
-income_assets,Income & Assets,mixed,Mixed/General,33
-livelihoods,Livelihoods,crop,Crop farmers,108
-livelihoods,Livelihoods,livestock,Livestock,49
-livelihoods,Livelihoods,fisheries_aquaculture,Fisheries/Aquaculture,34
-livelihoods,Livelihoods,agroforestry,Agroforestry,25
-livelihoods,Livelihoods,mixed,Mixed/General,19
-wellbeing,Wellbeing,crop,Crop farmers,79
-wellbeing,Wellbeing,livestock,Livestock,38
-wellbeing,Wellbeing,fisheries_aquaculture,Fisheries/Aquaculture,26
-wellbeing,Wellbeing,agroforestry,Agroforestry,17
-wellbeing,Wellbeing,mixed,Mixed/General,12
-risk_reduction,Risk Reduction,crop,Crop farmers,85
-risk_reduction,Risk Reduction,livestock,Livestock,53
-risk_reduction,Risk Reduction,fisheries_aquaculture,Fisheries/Aquaculture,45
-risk_reduction,Risk Reduction,agroforestry,Agroforestry,20
-risk_reduction,Risk Reduction,mixed,Mixed/General,15
-resilience_adaptive_capacity,Resilience & Adaptive Capacity,crop,Crop farmers,15
-resilience_adaptive_capacity,Resilience & Adaptive Capacity,livestock,Livestock,5
-resilience_adaptive_capacity,Resilience & Adaptive Capacity,fisheries_aquaculture,Fisheries/Aquaculture,8
-resilience_adaptive_capacity,Resilience & Adaptive Capacity,agroforestry,Agroforestry,4
-resilience_adaptive_capacity,Resilience & Adaptive Capacity,mixed,Mixed/General,2
+yields_productivity,Yields & Productivity,livestock,Livestock,75
+yields_productivity,Yields & Productivity,fisheries_aquaculture,Fisheries/Aquaculture,23
+yields_productivity,Yields & Productivity,agroforestry,Agroforestry,34
+yields_productivity,Yields & Productivity,mixed,Mixed/General,24
+income_assets,Income & Assets,crop,Crop farmers,203
+income_assets,Income & Assets,livestock,Livestock,64
+income_assets,Income & Assets,fisheries_aquaculture,Fisheries/Aquaculture,22
+income_assets,Income & Assets,agroforestry,Agroforestry,23
+income_assets,Income & Assets,mixed,Mixed/General,20
+livelihoods,Livelihoods,crop,Crop farmers,85
+livelihoods,Livelihoods,livestock,Livestock,38
+livelihoods,Livelihoods,fisheries_aquaculture,Fisheries/Aquaculture,17
+livelihoods,Livelihoods,agroforestry,Agroforestry,21
+livelihoods,Livelihoods,mixed,Mixed/General,11
+wellbeing,Wellbeing,crop,Crop farmers,81
+wellbeing,Wellbeing,livestock,Livestock,56
+wellbeing,Wellbeing,fisheries_aquaculture,Fisheries/Aquaculture,22
+wellbeing,Wellbeing,agroforestry,Agroforestry,18
+wellbeing,Wellbeing,mixed,Mixed/General,10
+risk_reduction,Risk Reduction,crop,Crop farmers,126
+risk_reduction,Risk Reduction,livestock,Livestock,102
+risk_reduction,Risk Reduction,fisheries_aquaculture,Fisheries/Aquaculture,41
+risk_reduction,Risk Reduction,agroforestry,Agroforestry,31
+risk_reduction,Risk Reduction,mixed,Mixed/General,17
+resilience_adaptive_capacity,Resilience & Adaptive Capacity,crop,Crop farmers,27
+resilience_adaptive_capacity,Resilience & Adaptive Capacity,livestock,Livestock,20
+resilience_adaptive_capacity,Resilience & Adaptive Capacity,fisheries_aquaculture,Fisheries/Aquaculture,7
+resilience_adaptive_capacity,Resilience & Adaptive Capacity,agroforestry,Agroforestry,13
+resilience_adaptive_capacity,Resilience & Adaptive Capacity,mixed,Mixed/General,4
