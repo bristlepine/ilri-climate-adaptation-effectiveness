@@ -3,22 +3,41 @@ compare_r1a.py
 
 Side-by-side comparison of all human coders and LLM for FT-R1a.
 
-Outputs:
-  comparison_r1a.csv   — long-format: doi × field → values + agree flags
-  summary_r1a.csv      — agreement rates by field
-  comparison_r1a.html  — human-readable colour-coded table
-  comparison_r1a.pdf   — PDF version
+Outputs (versioned vNN_YYYYMMDD on each run):
+  comparison_r1a_vNN_YYYYMMDD.csv   — long-format: doi × field → values + agree flags
+  summary_r1a_vNN_YYYYMMDD.csv      — agreement rates by field
+  comparison_r1a_vNN_YYYYMMDD.html  — human-readable colour-coded table
+  comparison_r1a_vNN_YYYYMMDD.pdf   — PDF version
 
 Run: python documentation/coding/systematic-map/rounds/FT-R1a/compare_r1a.py
 """
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 from itertools import combinations
 import re
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
+
+# ── versioned output filenames ────────────────────────────────────────────────
+def _next_version() -> str:
+    today = date.today().strftime("%Y%m%d")
+    existing = sorted(HERE.glob("comparison_r1a_v*.pdf"))
+    if not existing:
+        return f"v01_{today}"
+    # extract version numbers from filenames like comparison_r1a_v02_20260515.pdf
+    nums = []
+    for p in existing:
+        m = re.search(r"_v(\d+)_", p.name)
+        if m:
+            nums.append(int(m.group(1)))
+    n = max(nums) + 1 if nums else 1
+    return f"v{n:02d}_{today}"
+
+VERSION = _next_version()
+print(f"Output version: {VERSION}")
 
 # ── load ──────────────────────────────────────────────────────────────────────
 
@@ -32,14 +51,20 @@ HUMAN_FILES = {
     "AZ":  HERE / "coding_ft_r1a_AZ.xlsx",
     "CGS": HERE / "coding_ft_r1a_CGS.xlsx",
     "SZC": HERE / "coding_ft_r1a_SZC.csv",
+    "JK":  HERE / "coding_ft_r1a_JK.xlsx",
+    "LJ":  HERE / "coding_ft_r1a_LJ.xlsx",
 }
 
 llm = load(HERE.parent / "FT-R1b" / "coding_ft_r1b_LLM.csv").set_index("doi")
 humans_raw = {name: load(path) for name, path in HUMAN_FILES.items()}
 
 humans = {name: df.set_index("doi") for name, df in humans_raw.items()}
-CODERS = {"CGS": humans["CGS"], "LLM": llm, "AZ": humans["AZ"], "SZC": humans["SZC"]}
-HUMAN_NAMES = ["CGS", "AZ", "SZC"]
+CODERS = {
+    "CGS": humans["CGS"], "LLM": llm,
+    "AZ":  humans["AZ"],  "SZC": humans["SZC"],
+    "JK":  humans["JK"],  "LJ":  humans["LJ"],
+}
+HUMAN_NAMES = ["CGS", "AZ", "SZC", "JK", "LJ"]
 
 # ── field definitions ─────────────────────────────────────────────────────────
 
@@ -105,9 +130,18 @@ PAIRS = [
     ("CGS", "LLM"),
     ("CGS", "AZ"),
     ("CGS", "SZC"),
+    ("CGS", "JK"),
+    ("CGS", "LJ"),
     ("LLM", "AZ"),
     ("LLM", "SZC"),
-    ("AZ", "SZC"),
+    ("LLM", "JK"),
+    ("LLM", "LJ"),
+    ("AZ",  "SZC"),
+    ("AZ",  "JK"),
+    ("AZ",  "LJ"),
+    ("SZC", "JK"),
+    ("SZC", "LJ"),
+    ("JK",  "LJ"),
 ]
 PAIR_COLS = [f"{a}_vs_{b}" for a, b in PAIRS]
 
@@ -143,8 +177,8 @@ for doi in dois:
         })
 
 comp = pd.DataFrame(rows)
-comp.to_csv(HERE / "comparison_r1a.csv", index=False)
-print(f"Saved comparison_r1a.csv ({len(comp)} rows)")
+comp.to_csv(HERE / f"comparison_r1a_{VERSION}.csv", index=False)
+print(f"Saved comparison_r1a_{VERSION}.csv ({len(comp)} rows)")
 
 # ── summary by field ──────────────────────────────────────────────────────────
 
@@ -159,13 +193,15 @@ summary_rows = []
 for field in CATEGORICAL + MULTIVALUE:
     sub = comp[comp["field"] == field]
     row = {"field": field, "type": "categorical" if field in CATEGORICAL else "multivalue"}
-    for col in PAIR_COLS:
-        row[col] = pct_yes(sub[col])
+    for (a, b), col in zip(PAIRS, PAIR_COLS):
+        # Only count papers where both coders provided a value
+        both_coded = sub[(sub[a] != "") & (sub[b] != "")]
+        row[col] = pct_yes(both_coded[col])
     summary_rows.append(row)
 
 summary = pd.DataFrame(summary_rows)
-summary.to_csv(HERE / "summary_r1a.csv", index=False)
-print(f"Saved summary_r1a.csv")
+summary.to_csv(HERE / f"summary_r1a_{VERSION}.csv", index=False)
+print(f"Saved summary_r1a_{VERSION}.csv")
 print()
 print(summary.to_string(index=False))
 
@@ -262,9 +298,9 @@ for doi in dois:
     html_parts.append("</table>")
 
 html_parts.append("</body></html>")
-html_path = HERE / "comparison_r1a.html"
+html_path = HERE / f"comparison_r1a_{VERSION}.html"
 html_path.write_text("\n".join(html_parts), encoding="utf-8")
-print(f"\nSaved comparison_r1a.html")
+print(f"\nSaved comparison_r1a_{VERSION}.html")
 print(f"  file://{html_path}")
 
 # ── PDF report ────────────────────────────────────────────────────────────────
@@ -307,7 +343,7 @@ try:
         if val == "both_empty": return LGREY
         return WHITE
 
-    pdf_path = HERE / "comparison_r1a.pdf"
+    pdf_path = HERE / f"comparison_r1a_{VERSION}.pdf"
     n_coders = len(CODERS)
     n_pairs  = len(PAIRS)
 
@@ -357,13 +393,17 @@ try:
             return colors.HexColor("#f8d7da")  # red
 
     story.append(Paragraph("Agreement Summary (categorical + multivalue fields)", h3))
-    sum_header = ["Field", "Type"] + PAIR_COLS
+    sum_header = ["Field", "Type"] + [c.replace("_vs_", "\nvs\n") for c in PAIR_COLS]
     sum_data = [sum_header]
     for _, r in summary.iterrows():
         sum_data.append([P(r["field"], bold), P(r["type"], small)]
                         + [P(r[col]) for col in PAIR_COLS])
-    # Bigger columns — use available page width
-    sum_col_w = [5.5*cm, 2.2*cm] + [3.2*cm]*n_pairs
+    # Compute column widths to fill page exactly
+    _USABLE = 28.1 * cm
+    _field_w = 4.5 * cm
+    _type_w  = 1.8 * cm
+    _pair_w  = (_USABLE - _field_w - _type_w) / n_pairs
+    sum_col_w = [_field_w, _type_w] + [_pair_w] * n_pairs
     sum_table = Table(sum_data, colWidths=sum_col_w)
 
     # Build table style with heatmap coloring on agreement columns
@@ -371,12 +411,13 @@ try:
         ("BACKGROUND",  (0,0), (-1,0),  GREEN),
         ("TEXTCOLOR",   (0,0), (-1,0),  WHITE),
         ("FONTNAME",    (0,0), (-1,0),  "Helvetica-Bold"),
-        ("FONTSIZE",    (0,0), (-1,-1), 7),
-        ("GRID",        (0,0), (-1,-1), 0.5, colors.HexColor("#cccccc")),
+        ("FONTSIZE",    (0,0), (-1,-1), 6),
+        ("LEADING",     (0,0), (-1,-1), 7),
+        ("GRID",        (0,0), (-1,-1), 0.4, colors.HexColor("#cccccc")),
         ("VALIGN",      (0,0), (-1,-1), "MIDDLE"),
         ("ALIGN",       (0,0), (-1,-1), "CENTER"),
-        ("TOPPADDING",  (0,0), (-1,-1), 5),
-        ("BOTTOMPADDING",(0,0),(-1,-1), 5),
+        ("TOPPADDING",  (0,0), (-1,-1), 3),
+        ("BOTTOMPADDING",(0,0),(-1,-1), 3),
     ]
     # Color agreement columns: columns 2 onward (0=Field, 1=Type, 2+=pairs)
     for i, (_, r) in enumerate(summary.iterrows(), start=1):
@@ -427,7 +468,7 @@ try:
         story.append(Spacer(1, 0.3*cm))
 
     doc.build(story)
-    print(f"Saved comparison_r1a.pdf")
+    print(f"Saved comparison_r1a_{VERSION}.pdf")
     print(f"  {pdf_path}")
 
 except ImportError:
