@@ -193,12 +193,40 @@ def parse_csv_file(path: Path) -> List[Dict[str, str]]:
 # =============================================================================
 
 DATABASE_DIRS = {
-    "wos":     "Web of Science",
-    "cab":     "CAB Abstracts",
-    "agris":   "AGRIS",
-    "asp":     "Academic Search Premier",
-    "econlit": "EconLit",
-    "proq":    "ProQuest",
+    # Bibliographic databases
+    "wos":      "Web of Science",
+    "cab":      "CAB Abstracts",
+    "agris":    "AGRIS",
+    "asp":      "Academic Search Premier",
+    "econlit":  "EconLit",
+    "proq":     "ProQuest",
+    # Web search engines
+    "gsch":     "Google Scholar",
+    "ddg":      "DuckDuckGo",
+    # UN agencies
+    "fao":      "FAO",
+    "ifad":     "IFAD",
+    "undp":     "UNDP",
+    "unep":     "UNEP",
+    "unfccc":   "UNFCCC",
+    # Development agencies
+    "worldbank": "World Bank",
+    "gef":      "GEF",
+    "gcf":      "GCF",
+    "idb":      "IDB",
+    "adb":      "ADB",
+    "afdb":     "AfDB",
+    "fcdo":     "FCDO",
+    # International research centers
+    "cgspace":  "CGSpace (CGIAR)",
+    "ipam":     "IPAM",
+    "ara":      "Adaptation Research Alliance",
+    "gca":      "GCA",
+    "wasp":     "WASP",
+    # Evaluation and M&E networks
+    "3ie":      "3ie",
+    "campbell": "Campbell Collaboration",
+    "jpal":     "J-PAL",
 }
 
 
@@ -232,32 +260,22 @@ def _save_cached(cache_dir: Path, file_hash: str, records: List[Dict]) -> None:
         pickle.dump(records, f)
 
 
-def load_all_imports(data_root: Path, out_root: Optional[Path] = None) -> Tuple[pd.DataFrame, List[Dict], List[Dict]]:
-    """
-    Returns: (standard_records_df, google_scholar_records, ddg_pdfs_manifest)
-
-    - standard_records_df: deduplicated against Scopus
-    - google_scholar_records: flagged for abstract retrieval (separate step4b)
-    - ddg_pdfs_manifest: grey literature PDFs for manual screening
-    """
+def load_all_imports(data_root: Path, out_root: Optional[Path] = None) -> pd.DataFrame:
+    """Load all RIS/CSV records from all protocol-required database folders."""
     multi_root = data_root / "multidatabase"
     all_records: List[Dict] = []
-    google_scholar_recs: List[Dict] = []
-    ddg_pdfs: List[Dict] = []
 
     cdir = _cache_dir(out_root) if out_root else None
 
-    # Load standard RIS databases (WoS, CAB, AGRIS, ASP, EconLit, ProQuest)
     for subdir, db_label in DATABASE_DIRS.items():
         db_dir = multi_root / subdir
         if not db_dir.exists():
-            print(f"[step2b] {db_label}: folder not found ({db_dir}) — skipping")
+            print(f"[step2b] {db_label}: folder not found — skipping")
             continue
-        files = list(db_dir.glob("*.ris")) + list(db_dir.glob("*.txt")) + list(db_dir.glob("*.csv"))
-        # Exclude search string txt files
+        files = list(db_dir.glob("*.ris")) + list(db_dir.glob("*.RIS")) + list(db_dir.glob("*.csv"))
         files = [f for f in files if not f.name.startswith("search_string")]
         if not files:
-            print(f"[step2b] {db_label}: no files found in {db_dir} — skipping")
+            print(f"[step2b] {db_label}: no files — skipping")
             continue
         n_before = len(all_records)
         n_cached = 0
@@ -281,37 +299,8 @@ def load_all_imports(data_root: Path, out_root: Optional[Path] = None) -> Tuple[
         cache_note = f" ({n_cached}/{len(files)} from cache)" if cdir else ""
         print(f"[step2b] {db_label}: {n_added:,} records from {len(files)} file(s){cache_note}")
 
-    # Load Google Scholar CSV (if present) — flagged for abstract retrieval
-    gsch_dir = multi_root / "gsch"
-    if gsch_dir.exists():
-        gsch_files = list(gsch_dir.glob("*.csv"))
-        if gsch_files:
-            for f in gsch_files:
-                recs = parse_csv_file(f)
-                for r in recs:
-                    r["source_db"] = "Google Scholar"
-                    r["source_file"] = f.name
-                    r["needs_abstract_retrieval"] = "yes"  # flag for step4b
-                google_scholar_recs.extend(recs)
-            print(f"[step2b] Google Scholar: {len(google_scholar_recs):,} records (flagged for abstract retrieval)")
-
-    # Load DDG grey literature PDFs — create manifest for manual screening
-    ddg_dir = multi_root / "ddg"
-    if ddg_dir.exists():
-        pdf_files = list(ddg_dir.glob("*.pdf"))
-        if pdf_files:
-            for pdf_path in pdf_files:
-                ddg_pdfs.append({
-                    "pdf_filename": pdf_path.name,
-                    "pdf_path": str(pdf_path),
-                    "source_db": "Grey Literature (DDG)",
-                    "status": "pending_manual_review",
-                    "note": "Requires manual title/abstract extraction and full-text review",
-                })
-            print(f"[step2b] Grey literature (DDG): {len(ddg_pdfs):,} PDFs (flagged for manual review)")
-
     if not all_records:
-        print("[step2b] No RIS/CSV records found. Place exports in scripts/data/multidatabase/<db>/")
+        print("[step2b] No records found in any source folder.")
 
     df = pd.DataFrame(all_records) if all_records else pd.DataFrame()
     if not df.empty:
@@ -320,7 +309,7 @@ def load_all_imports(data_root: Path, out_root: Optional[Path] = None) -> Tuple[
                 df[col] = ""
         df = df.fillna("")
 
-    return df, google_scholar_recs, ddg_pdfs
+    return df
 
 
 # =============================================================================
@@ -460,84 +449,60 @@ def run(config: dict) -> dict:
     print(f"[step2b] Scopus corpus: {len(scopus_df):,} records | {len(doi_set):,} with DOIs")
 
     print(f"[step2b] Loading multi-database imports...")
-    imports, google_scholar_recs, ddg_pdfs = load_all_imports(data_root, out_root)
-    if imports.empty and not google_scholar_recs and not ddg_pdfs:
+    imports = load_all_imports(data_root, out_root)
+    if imports.empty:
         return {"error": "no imports found"}
 
     raw_csv = base / "step2b_combined_raw.csv"
-    if not imports.empty:
-        imports.to_csv(raw_csv, index=False)
-        print(f"[step2b] Total RIS/CSV imported: {len(imports):,} records")
-    else:
-        print(f"[step2b] No RIS/CSV records imported")
+    imports.to_csv(raw_csv, index=False)
+    print(f"[step2b] Total imported: {len(imports):,} records")
 
-    net_new = imports
-    net_new_formatted = imports
-    duplicates = pd.DataFrame()
-    dedup_methods = {}
+    print(f"[step2b] Deduplicating against Scopus corpus...")
+    t0 = time.time()
+    net_new, duplicates = deduplicate(imports, doi_set, title_year_map, title_token_list)
+    elapsed = time.time() - t0
 
-    if not imports.empty:
-        print(f"[step2b] Deduplicating...")
-        t0 = time.time()
-        net_new, duplicates = deduplicate(imports, doi_set, title_year_map, title_token_list)
-        elapsed = time.time() - t0
-
-        # Format net-new for pipeline
-        net_new_formatted = format_for_pipeline(net_new)
-        dedup_methods = duplicates.get("dedup_match_method", pd.Series(dtype=str)).value_counts(dropna=False).to_dict() if not duplicates.empty else {}
-    else:
-        print(f"[step2b] No RIS/CSV records to deduplicate")
+    net_new_formatted = format_for_pipeline(net_new)
+    dedup_methods = duplicates.get("dedup_match_method", pd.Series(dtype=str)).value_counts(dropna=False).to_dict() if not duplicates.empty else {}
 
     # Write outputs
     net_new_csv  = base / "step2b_net_new.csv"
     dupes_csv    = base / "step2b_duplicates.csv"
-    gsch_csv     = base / "step2b_google_scholar_pending.csv"
-    ddg_csv      = base / "step2b_ddg_grey_literature.csv"
     summary_json = base / "step2b_summary.json"
 
     net_new_formatted.to_csv(net_new_csv, index=False)
     if not duplicates.empty:
         duplicates.to_csv(dupes_csv, index=False)
-    if google_scholar_recs:
-        df_gsch = pd.DataFrame(google_scholar_recs)
-        df_gsch.to_csv(gsch_csv, index=False)
-    if ddg_pdfs:
-        df_ddg = pd.DataFrame(ddg_pdfs)
-        df_ddg.to_csv(ddg_csv, index=False)
 
-    # Count by database
-    db_counts = imports.get("source_db", pd.Series(dtype=str)).value_counts(dropna=False).to_dict() if not imports.empty else {}
-    net_new_by_db = net_new.get("source_db", pd.Series(dtype=str)).value_counts(dropna=False).to_dict() if not net_new.empty else {}
+    db_counts     = imports["source_db"].value_counts(dropna=False).to_dict()
+    net_new_by_db = net_new["source_db"].value_counts(dropna=False).to_dict() if not net_new.empty else {}
+    dedup_rate    = round(100 * len(duplicates) / len(imports), 1) if len(imports) else 0
 
     summary = {
-        "scopus_corpus_size":         int(len(scopus_df)),
-        "total_ris_csv_imported":     int(len(imports)),
-        "total_ris_csv_duplicates":   int(len(duplicates)),
-        "total_ris_csv_net_new":      int(len(net_new)),
-        "dedup_rate_pct":             round(100 * len(duplicates) / len(imports), 1) if len(imports) else 0,
-        "google_scholar_records":     int(len(google_scholar_recs)),
-        "ddg_grey_literature_pdfs":   int(len(ddg_pdfs)),
-        "by_database_imported":       {str(k): int(v) for k, v in db_counts.items()},
-        "by_database_net_new":        {str(k): int(v) for k, v in net_new_by_db.items()},
-        "dedup_match_methods":        {str(k): int(v) for k, v in dedup_methods.items()},
-        "net_new_csv":                str(net_new_csv),
-        "duplicates_csv":             str(dupes_csv),
-        "google_scholar_csv":         str(gsch_csv),
-        "ddg_grey_literature_csv":    str(ddg_csv),
-        "raw_csv":                    str(raw_csv),
-        "timestamp_utc":              time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "scopus_corpus_size":       int(len(scopus_df)),
+        "total_imported":           int(len(imports)),
+        "total_duplicates":         int(len(duplicates)),
+        "total_net_new":            int(len(net_new)),
+        "dedup_rate_pct":           dedup_rate,
+        "by_database_imported":     {str(k): int(v) for k, v in db_counts.items()},
+        "by_database_net_new":      {str(k): int(v) for k, v in net_new_by_db.items()},
+        "dedup_match_methods":      {str(k): int(v) for k, v in dedup_methods.items()},
+        "net_new_csv":              str(net_new_csv),
+        "duplicates_csv":           str(dupes_csv),
+        "raw_csv":                  str(raw_csv),
+        "elapsed_seconds":          round(elapsed, 1),
+        "timestamp_utc":            time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
 
     with open(summary_json, "w") as f:
         json.dump(summary, f, indent=2)
 
-    print(f"\n[step2b] ── Results ─────────────────────────────────")
-    print(f"[step2b]   RIS/CSV Imported:       {len(imports):,}")
-    print(f"[step2b]   Duplicates (Scopus):    {len(duplicates):,} ({summary['dedup_rate_pct']}%)")
-    print(f"[step2b]   Net-new (RIS/CSV):      {len(net_new):,}  ← step12")
-    print(f"[step2b]   Google Scholar:        {len(google_scholar_recs):,}  ← step4b (abstract retrieval)")
-    print(f"[step2b]   Grey Lit (DDG PDFs):   {len(ddg_pdfs):,}  ← manual review")
-    print(f"[step2b]   By database: {net_new_by_db}")
+    print(f"\n[step2b] ── Results ──────────────────────────────────")
+    print(f"[step2b]   Imported:            {len(imports):,}")
+    print(f"[step2b]   Duplicates (Scopus): {len(duplicates):,} ({dedup_rate}%)")
+    print(f"[step2b]   Net-new → step12:    {len(net_new):,}")
+    print(f"[step2b]   Dedup time:          {elapsed:.1f}s")
+    print(f"[step2b]   By DB (net-new): {net_new_by_db}")
     print(f"[step2b] ─────────────────────────────────────────────")
     return summary
 

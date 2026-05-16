@@ -46,7 +46,54 @@ The pipeline is designed as an assistive tool, not an autonomous decision-maker.
 
 ### Database Coverage
 
-The current pipeline was built and validated end-to-end using Scopus. The Deliverable 3 protocol commits to five primary databases: Scopus, Web of Science Core Collection, CAB Abstracts, AGRIS, and Academic Search Premier, plus grey literature from approximately 20 institutional repositories. Coverage checks against Web of Science and OpenAlex are underway; net-new records will be incorporated before the final deliverable.
+All sources named in the Systematic Map Protocol (D3, §3) have been searched. Records from all sources are held as RIS files in `scripts/data/multidatabase/`. After deduplication against the Scopus corpus (Step 2b) and multi-pass abstract recovery (Step 4b), **9,152 net-new records** with 100% abstract coverage enter screening.
+
+**Bibliographic databases (Protocol §3.1)**
+
+| Source | Records | Abstracts |
+|---|---|---|
+| Scopus | 17,021 | 15,707 |
+| Web of Science | 15,170 | 15,170 |
+| CAB Abstracts | 5,723 | 5,723 |
+| Academic Search Premier | 1,187 | 1,187 |
+| EconLit | 478 | 478 |
+| ProQuest | 367 | 367 |
+| AGRIS | 3 | 3 |
+
+**Web search engines (Protocol §3.2)**
+
+| Source | Records | Abstracts |
+|---|---|---|
+| Google Scholar | 193 | 193 |
+| DuckDuckGo | 3 | 3 |
+
+**Organizational websites (Protocol §3.3)**
+
+| Source | Records | Abstracts | PDFs |
+|---|---|---|---|
+| World Bank | 28 | 28 | 21 |
+| GCF | 157 | 157 | — |
+| GEF | 7 | 7 | 7 |
+| IDB | 123 | 123 | 100 |
+| ADB | 16 | 16 | 16 |
+| AfDB | 5 | 5 | 7 |
+| FCDO | 2 | 2 | 2 |
+| USAID | 0 | — | — |
+| FAO | 2 | 2 | — |
+| IFAD | 16 | 16 | — |
+| UNDP | 9 | 9 | — |
+| UNEP | 2 | 2 | 1 |
+| UNFCCC | 28 | 28 | 29 |
+| CGSpace (CGIAR) | 65 | 65 | 69 |
+| IPAM | 7 | 7 | 7 |
+| Adaptation Research Alliance | 5 | 5 | — |
+| GCA | 3 | 3 | 3 |
+| WASP | 6 | 6 | 6 |
+| 3ie | 5 | 5 | — |
+| Campbell Collaboration | 3 | 3 | — |
+| J-PAL | 0 | — | — |
+
+Notes: USAID's Development Experience Clearinghouse (DEC) was taken offline in 2025 and could not be searched. J-PAL was searched with no relevant results. Records without recoverable abstracts were removed before deduplication: 9 WoS, 1 EconLit, 1 ProQuest, 5 Google Scholar, 3 IDB, 2 UNFCCC, 2 Campbell. RIS files were created from Google Scholar's CSV export and DuckDuckGo PDFs (no native RIS export available for either source).
 
 
 ### Preliminary Nature of Current Figures
@@ -57,6 +104,8 @@ All LLM steps used a locally hosted model (Ollama; qwen2.5:14b) at temperature 0
 
 
 ### Pipeline Summary Statistics
+
+**Scopus corpus**
 
 | Stage | Count |
 |---|---|
@@ -74,6 +123,16 @@ All LLM steps used a locally hosted model (Ollama; qwen2.5:14b) at temperature 0
 | Records coded in systematic map | 6,076 |
 | — Coded from full text | 184 |
 | — Coded from abstract only | 4,583 |
+
+**Additional databases (non-Scopus)**
+
+| Stage | Count |
+|---|---|
+| Records retrieved across all additional sources | 23,613 |
+| Net-new after deduplication against Scopus (Step 2b) | 9,152 |
+| Records with abstract (after Step 4b recovery) | 9,152 |
+| Abstract coverage | 100% |
+| Records screened at title/abstract stage (Step 12b) | 9,152 |
 
 
 ---
@@ -113,6 +172,13 @@ The search query was structured around a Population, Concept, Context, and Metho
 Step 2 retrieved all matching records. Scopus's 5,000-record deep-paging limit was handled by automatically slicing by publication year, then by subject area or source type where needed. After deduplication: **17,021** unique records from **17,083** reported by Scopus. Deduplication used DOI → normalised title + year → title → EID priority.
 
 
+### Additional Database Search (Step 2b)
+
+All 29 sources named in Protocol §3.1–3.3 outside Scopus were searched manually. Records were exported as RIS files (or, where no export was available, converted from CSV or extracted from PDFs). Searches were conducted using the same PCCM eligibility framework as the Scopus query. Retrieved records were loaded into the deduplication pipeline (Step 2b) to identify records not already present in the Scopus corpus.
+
+**Results:** 23,613 records retrieved across all additional sources; **9,152 net-new** after deduplication against the Scopus corpus. All 9,152 entered abstract screening with 100% abstract coverage after multi-pass recovery (Step 4b).
+
+
 ### Benchmark Coverage Analysis (Steps 3, 4, 7)
 
 A pre-compiled benchmark list of known key studies was used to validate coverage. Step 3 enriched the list with DOIs via Crossref, OpenAlex, and Semantic Scholar (title similarity ≥ 0.90 accepted automatically). Step 7 compared the benchmark against the Scopus retrieval and generated keyword suggestions from non-retrieved records for iterative query refinement.
@@ -123,7 +189,33 @@ A pre-compiled benchmark list of known key studies was used to validate coverage
 
 ## Record Cleaning and Deduplication
 
-Step 8 applied deterministic cleaning: HTML unescaping, whitespace normalisation, DOI canonicalisation, year extraction. Missing fields were repaired via Crossref where a DOI was present. All lookups cached locally. Idempotent: re-runs preserve previously cleaned records.
+Deduplication occurs at two stages: first within the Scopus corpus (Step 8), then across all additional databases against the Scopus corpus (Step 2b).
+
+### Within-Scopus Deduplication (Step 8)
+
+Step 8 applied deterministic cleaning to the Scopus corpus: HTML unescaping, whitespace normalisation, DOI canonicalisation, year extraction. Missing fields were repaired via Crossref where a DOI was present. All lookups cached locally. Within-corpus duplicates were identified using DOI → normalised title + year → EID priority, reducing 17,083 raw Scopus records to **17,021** unique records.
+
+### Cross-Database Deduplication (Step 2b)
+
+After all additional databases were searched (see Database Coverage above), records from every non-Scopus source were loaded and deduplicated against the Scopus corpus. This step determines which records are genuinely *net-new* — not already present in the Scopus corpus — and therefore require screening.
+
+**Sources included in Step 2b:**
+
+All 29 protocol-required sources outside Scopus: Web of Science, CAB Abstracts, AGRIS, Academic Search Premier, EconLit, ProQuest, Google Scholar, DuckDuckGo, and all 21 organisational website sources (UN agencies, development agencies, international research centres, and M&E networks).
+
+**Deduplication logic (applied in priority order):**
+
+| Step | Method | Notes |
+|---|---|---|
+| 1 | DOI match | DOIs normalised to bare form (lowercased, URL prefix stripped) |
+| 2 | Exact title + year | Title lowercased, punctuation stripped, whitespace collapsed |
+| 3 | Fuzzy title match within year | Jaccard token overlap ≥ 0.85; skipped for titles with fewer than 4 tokens |
+
+A record is classified as a duplicate if it matches on *any* of the three criteria. Records that survive all three checks are classified as net-new and forwarded to abstract screening (Step 12b).
+
+**Why this order:** DOI matching is the most precise but requires both records to carry a DOI. Exact title + year catches the same paper indexed differently across databases. Fuzzy matching within year catches minor title variations (subtitles, punctuation differences, truncation) without risking false positives across different years.
+
+**Results:** Of 23,613 records across all non-Scopus sources, **9,152 were net-new** (not present in the Scopus corpus of 17,021 records). These proceed to abstract screening (Step 12b).
 
 
 ---
@@ -142,6 +234,17 @@ Step 9 retrieved missing abstracts via a sequential chain: (1) Elsevier Abstract
 ### RIS-Based Supplementary Enrichment (Step 9a)
 
 Step 9a parsed EPPI Reviewer RIS exports (17,011 records across 5 files) and injected manually entered abstracts into remaining gaps, matching by DOI, EID, or normalised title. It then re-attempted API enrichment for remaining gaps. Recovered **116** additional abstracts, reducing the missing count from 1,430 to **1,314**.
+
+
+### Net-New Abstract Recovery (Step 4b)
+
+Of the 9,152 net-new records from Step 2b, 119 initially lacked abstracts. Recovery proceeded in three passes:
+
+1. **API retrieval** — OpenAlex (primary) and CrossRef (fallback), queried by DOI then by title. Recovered 69 abstracts.
+2. **User-retrieved RIS/PDFs** — 50 records still missing were flagged and sourced manually. A Zotero RIS export (31 records) and IDB PDFs were matched back by normalised title. Recovered 41 abstracts.
+3. **Removal** — 9 records with no abstract recoverable from any source were removed (5 Google Scholar, 3 IDB, 1 ProQuest).
+
+**Result:** All 9,152 net-new records entering Step 12b screening have abstracts (100% coverage).
 
 
 ---

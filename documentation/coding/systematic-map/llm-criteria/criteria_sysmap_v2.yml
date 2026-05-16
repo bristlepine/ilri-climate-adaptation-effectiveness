@@ -1,0 +1,220 @@
+# LLM Extraction Criteria — sysmap v2
+# Used in: FT-R2a and onwards
+# Based on: CODEBOOK_FT-R2a (ILRI / Bristlepine, 2025-2026)
+# Loaded by: scripts/step15_extract_data.py
+# To activate: set step15_criteria_yml in config.py to this file
+
+fields:
+
+  publication_year:
+    name: "Publication Year"
+    extract: >
+      Year the study was published. If multiple versions exist, use the most recent.
+      Where to look: listed at the very top or bottom of pages alongside title, volume, and page numbers.
+    valid_values: "integer e.g. 2021"
+
+  publication_type:
+    name: "Publication Type"
+    extract: >
+      journal_article = peer-reviewed journal (check headers/footers for journal name, volume, issue, page numbers).
+      report = project/programme report, evaluation report, policy brief (look for cover page with NGO, World Bank, FAO, or government ministry logos).
+      working_paper = pre-publication working paper or discussion paper (look for disclaimers stating research is preliminary or circulating for discussion).
+      thesis = PhD or master's dissertation (title page will state "submitted in partial fulfillment of requirements for the degree of [Master's/PhD]").
+      other = book chapter, conference paper, dataset paper.
+    valid_values: "journal_article | report | working_paper | thesis | other"
+
+  country_region:
+    name: "Country/Region"
+    extract: >
+      Country or countries where the study was conducted. Use a region label ONLY if no countries are named.
+      Separate multiple entries with semicolons.
+      Where to look: scan the title, abstract, introduction, and Methods/Study Area/Site Description section —
+      authors typically state study location early and clearly.
+    valid_values: "e.g. Tanzania | Ghana; Burkina Faso | East Africa | Global"
+
+  geographic_scale:
+    name: "Geographic Scale"
+    extract: >
+      local = village, community, or single site.
+      sub-national = district, province, or region within one country.
+      national = one country, explicitly national or nationally representative.
+      multi-country = two or more SPECIFIC NAMED countries as study locations — always use this when multiple country names appear as study sites.
+      regional = broad region (e.g. West Africa) without country-level focus.
+      Where to look: Methods/Study Area/Site Description section — authors must clearly state whether the
+      study focused on a village, a district, the entire country, multiple named countries, or a broad region.
+    valid_values: "local | sub-national | national | multi-country | regional"
+
+  producer_type:
+    name: "Producer Type(s)"
+    extract: >
+      Select all that apply; separate with semicolons.
+      crop = crop farming systems.
+      livestock = livestock farming systems.
+      fisheries_aquaculture = fisheries or aquaculture systems.
+      agroforestry = agroforestry systems.
+      mixed = explicitly mixed crop-livestock (must be stated, not inferred).
+      undefined = generic "smallholder farmers" with no production system specified.
+      Where to look: Abstract and Introduction (authors usually state target population right away);
+      if not, check Methods/Study Area/Site Description (most reliable — authors must describe
+      agricultural baselines of surveyed communities).
+    valid_values: "crop | livestock | fisheries_aquaculture | agroforestry | mixed | undefined"
+
+  marginalized_subpopulations:
+    name: "Marginalized Subpopulations"
+    extract: >
+      Code ONLY what is EXPLICITLY STATED in the paper — do NOT infer. Select all that apply; separate with semicolons.
+      women = women explicitly targeted or gender-disaggregated analysis.
+      youth = young farmers or age-disaggregated outcomes.
+      people_with_disabilities = persons with disabilities explicitly named.
+      landless = landless households or tenure-insecure groups.
+      indigenous_peoples = indigenous communities named.
+      ethnic_minorities = ethnic minority groups named.
+      migrant_seasonal_workers = migrant or seasonal agricultural workers.
+      other = any other marginalised group explicitly named (add a note).
+      none_reported = no marginalised groups mentioned.
+      Where to look: Abstract and Introduction (upfront if study targets a subgroup);
+      Methods/Sampling (purposive sampling criteria for gender or youth);
+      Results/Descriptive Statistics tables (baseline household characteristics);
+      Discussion/Conclusion (how interventions impact marginalised groups differently).
+    valid_values: "women | youth | people_with_disabilities | landless | indigenous_peoples | ethnic_minorities | migrant_seasonal_workers | other | none_reported"
+
+  adaptation_focus:
+    name: "Adaptation Focus"
+    extract: >
+      The specific climate adaptation action, intervention, or practice the study tracks. Write 5–15 words
+      based on what the paper describes.
+      Where to look: Abstract and Introduction (primary interventions or adaptation strategies highlighted upfront);
+      Methods/Interventions/Study Design (specific strategies tested, promoted, or surveyed);
+      Results tables (adoption rates, summary statistics, regression variables list exact practices);
+      Discussion/Conclusion (for modeling or vulnerability assessments that don't test a specific intervention);
+      Appendix/Survey Instrument (questionnaire shows exact adaptation options asked about).
+    valid_values: "free text e.g. 'drought-tolerant crop varieties' or 'seasonal climate forecasts for farmers' or 'water management and irrigation'"
+
+  process_outcome_domains:
+    name: "Process and Outcome Domains Assessed"
+    extract: >
+      Code ONLY domains that are EXPLICITLY MEASURED — not domains that could be inferred.
+      If the paper measures yield but not income, code yields_productivity only.
+      Select all that apply; separate with semicolons.
+      knowledge_awareness_learning = awareness of climate change, knowledge of options, learning outcomes.
+      decision_making_planning = farmer decision-making, use of forecasts in planning.
+      uptake_adoption = rates of adoption of a practice or technology.
+      behavioral_change = changes in farming or land management behaviour.
+      participation_coproduction = participation in programmes, co-design, farmer group engagement.
+      institutional_governance = policy uptake, institutional change, governance.
+      access_information_services = access to extension, credit, markets, climate information.
+      yields_productivity = crop yield, livestock productivity, fish catch.
+      income_assets = household income, asset accumulation.
+      livelihoods = food security, livelihood diversification.
+      wellbeing = health, nutrition, subjective wellbeing.
+      risk_reduction = reduced exposure or sensitivity to climate shocks.
+      resilience_adaptive_capacity = adaptive capacity indices, resilience scores, vulnerability indices.
+      Where to look: Methods/Variable Descriptions/Summary Statistics tables (specific process indicators);
+      Results/Findings sections (qualitative and quantitative changes in knowledge, participation, outcomes);
+      Discussion/Conclusion (institutional dynamics, social processes).
+    valid_values: "knowledge_awareness_learning | decision_making_planning | uptake_adoption | behavioral_change | participation_coproduction | institutional_governance | access_information_services | yields_productivity | income_assets | livelihoods | wellbeing | risk_reduction | resilience_adaptive_capacity"
+
+  indicators_measured:
+    name: "Indicators Measured"
+    extract: >
+      The specific indicators or metrics used. Extract from the methods or results sections.
+      Include units where stated.
+      Where to look: Tables of variable descriptions and summary statistics (authors almost always
+      consolidate indicators into comprehensive tables);
+      Methodology/Data Collection/Variables sections (describes specific tools, scales, or census data);
+      Appendix/Survey Instrument (exact questions asked to construct an indicator).
+    valid_values: "free text e.g. 'yield (t/ha), income (USD/season), food security score (HFIAS), adoption rate (%), area under improved variety (ha)'"
+
+  methodological_approach:
+    name: "Methodological Approach"
+    extract: >
+      Select all that apply; separate with semicolons.
+      qualitative = qualitative research design (interviews, focus groups, ethnography).
+      quantitative = quantitative research design (surveys, statistical analysis).
+      participatory = ONLY when participation is the PRIMARY design (PRA, photovoice) —
+                      NOT when farmers are merely surveyed; semi-structured interviews and
+                      focus groups are qualitative, not participatory.
+      modeling_with_empirical_validation = crop/climate/agent-based models validated with field data.
+      experimental = RCTs, natural experiments, quasi-experimental approaches.
+      Where to look: Methods/Methodology/Materials and Methods section (authors dedicate this section
+      to explaining research design); Data Collection/Sampling subsections (surveys, interviews, focus groups,
+      secondary data); Data Analysis/Empirical Approach (statistical or qualitative frameworks);
+      Abstract (concise 1-2 sentence summary of methods); Introduction final paragraphs.
+    valid_values: "qualitative | quantitative | participatory | modeling_with_empirical_validation | experimental"
+
+  purpose_of_assessment:
+    name: "Purpose of Assessment"
+    extract: >
+      research = academic study with no programme affiliation.
+      project_learning = M&E embedded in an ongoing project.
+      program_evaluation = formal evaluation of a completed programme.
+      donor_reporting = report produced for a donor or funder.
+      national_reporting = contributing to NAPs, NDCs, or national monitoring frameworks.
+      Where to look: Abstract (high-level summary of why the study was conducted);
+      Introduction end (authors explicitly outline goals, objectives, or research questions);
+      Conclusion/Summary (authors restate the core purpose of their assessment).
+    valid_values: "research | project_learning | program_evaluation | donor_reporting | national_reporting"
+
+  data_sources:
+    name: "Data Sources"
+    extract: >
+      Select all that apply; separate with semicolons.
+      surveys = primary household or farm surveys.
+      administrative_data = government or programme records.
+      remote_sensing = satellite or aerial imagery.
+      participatory_methods = PRA, focus groups, photovoice as a DATA SOURCE.
+      secondary_data = existing datasets, literature, or other secondary sources.
+      other = any data source not listed above.
+      Where to look: Methods/Methodology/Materials and Methods section (primary location —
+      authors include specific subsections on data sources); Data/Data and Variables sections
+      (especially in economic or quantitative studies relying on household panels or secondary data).
+    valid_values: "surveys | administrative_data | remote_sensing | participatory_methods | secondary_data | other"
+
+  temporal_coverage:
+    name: "Temporal Coverage"
+    extract: >
+      cross_sectional = single point in time or single season.
+      seasonal = intra-annual, across one or a few seasons.
+      longitudinal = multi-year, panel data, repeated measures with the SAME individuals.
+      repeated_cross_sectional = multi-year, repeated measures with DIFFERENT individuals each time.
+      Where to look: Abstract (authors summarize study timeframe or experimental design upfront —
+      e.g. "a four-year study", "baseline and follow-up surveys in 2011 and 2013");
+      Methodology/Data Collection/Study Design sections (most definitive — authors must detail
+      when and how often they collected data).
+    valid_values: "cross_sectional | seasonal | longitudinal | repeated_cross_sectional"
+
+  cost_data_reported:
+    name: "Cost Data Reported"
+    extract: >
+      yes = paper explicitly reports cost figures or cost-effectiveness ratios.
+      no = no cost data reported, OR cost mentioned only qualitatively
+           (e.g. "limited resources", "low-cost approach" — these count as NO).
+      Quick-search tip: use document search for currency symbols ($, USD, VND, Euro),
+      acronyms (CBA, cost-benefit analysis), and keywords (expenditure, budget, cost-effectiveness).
+      Where to look: Results/Economic Evaluation sections (cost figures and cost-benefit tables);
+      Discussion/Conclusion (financial requirements for implementing adaptation at scale).
+    valid_values: "yes | no"
+
+  strengths_and_limitations:
+    name: "Strengths and Limitations"
+    extract: >
+      Author-reported strengths and limitations. Look in Discussion, Conclusion, and Limitations sections.
+      Extract verbatim where possible.
+      Format: Strength: <text>. Limitation: <text>.
+      Enter 'not_reported' if absent.
+      Where to look: Discussion section (authors reflect on robustness of study design and acknowledge
+      methodological, sample size, or data constraints); Conclusion (brief summary of strengths and
+      boundaries of findings); Dedicated "Limitations" subsection (often at end of Discussion).
+    valid_values: "free text — format: 'Strength: <text>. Limitation: <text>.'"
+
+  lessons_learned:
+    name: "Lessons Learned"
+    extract: >
+      Key lessons or recommendations the authors report. 1–3 sentences.
+      Focus on what they say SHOULD BE DONE DIFFERENTLY — not the findings themselves.
+      Enter 'not_reported' if absent.
+      Where to look: Discussion section (authors interpret results and extract practical insights);
+      Conclusion/Implications/Recommendations subsections (overarching lessons for policymakers,
+      donors, or future researchers); Abstract final sentences (authors frequently distill their
+      most critical lesson into the final lines of the abstract).
+    valid_values: "free text"

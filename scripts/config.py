@@ -81,7 +81,7 @@ step13_run_limit    = None        # None = all included rows; set int for partia
 # -----------------------------
 # Step 14 inputs
 # -----------------------------
-step14_criteria_yml = os.path.join(_criteria_dir, "criteria.yml")
+step14_criteria_yml = os.path.join(_criteria_dir, "criteria_ft_r2a.yml")
 step14_model        = ""          # leave blank to use DEFAULT_MODEL in step14
 step14_run_limit    = None        # None = all rows
 
@@ -91,7 +91,7 @@ step14_run_limit    = None        # None = all rows
 _extraction_criteria_dir = os.path.join(here, "..", "documentation", "coding", "systematic-map", "llm-criteria")
 _rounds_dir              = os.path.join(here, "..", "documentation", "coding", "systematic-map", "rounds")
 
-step15_criteria_yml = os.path.join(_extraction_criteria_dir, "criteria_sysmap_v1.yml")  # update to v2, v3... after each round
+step15_criteria_yml = os.path.join(_extraction_criteria_dir, "criteria_sysmap_v2.yml")  # FT-R2a
 step15_model        = ""          # leave blank to use DEFAULT_MODEL in step15
 step15_run_limit    = None        # None = all rows
 

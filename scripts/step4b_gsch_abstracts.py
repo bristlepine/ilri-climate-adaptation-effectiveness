@@ -28,7 +28,7 @@ import pandas as pd
 import requests
 from tqdm import tqdm
 
-from utils import normalize_doi, request_with_retries, utc_now_iso
+from utils import normalize_doi, utc_now_iso
 
 
 # =============================================================================
@@ -36,42 +36,48 @@ from utils import normalize_doi, request_with_retries, utc_now_iso
 # =============================================================================
 
 CROSSREF_WORKS_URL = "https://api.crossref.org/works/"
-SEMANTIC_SCHOLAR_URL = "https://api.semanticscholar.org/graph/v1/paper/"
-OPENALEX_WORKS_URL = "https://api.openalex.org/works/"
+OPENALEX_WORKS_URL = "https://api.openalex.org/works"
 
-SLEEP_S = 0.2  # rate limiting
+HEADERS = {"User-Agent": "research-abstract-retrieval/1.0 (mailto:zarrar85@gmail.com)"}
+SLEEP_S = 0.15
+
+
+def _reconstruct_openalex_abstract(inverted_index: dict) -> str:
+    """Reconstruct abstract from OpenAlex inverted index format."""
+    if not inverted_index:
+        return ""
+    positions: dict = {}
+    for word, pos_list in inverted_index.items():
+        for pos in pos_list:
+            positions[pos] = word
+    return " ".join(positions[k] for k in sorted(positions.keys()))
 
 
 def fetch_via_doi(doi: str) -> Optional[Dict[str, Any]]:
-    """Fetch title + abstract via DOI (CrossRef + Semantic Scholar)."""
+    """Fetch abstract via DOI: OpenAlex first, CrossRef fallback."""
     if not doi:
         return None
 
-    # Try CrossRef
+    # OpenAlex DOI lookup
     try:
-        url = f"{CROSSREF_WORKS_URL}{doi}"
-        r = request_with_retries(url, timeout=5)
-        if r and r.status_code == 200:
-            data = r.json().get("message", {})
-            return {
-                "abstract": data.get("abstract", ""),
-                "title": data.get("title", ""),
-                "source": "crossref",
-            }
+        r = requests.get(f"{OPENALEX_WORKS_URL}/doi:{doi}", headers=HEADERS, timeout=15)
+        if r.status_code == 200:
+            data = r.json()
+            inv = data.get("abstract_inverted_index")
+            if inv:
+                return {"abstract": _reconstruct_openalex_abstract(inv), "source": "openalex_doi"}
     except Exception:
         pass
 
-    # Try Semantic Scholar with DOI
+    time.sleep(SLEEP_S)
+
+    # CrossRef fallback
     try:
-        url = f"{SEMANTIC_SCHOLAR_URL}DOI:{doi}"
-        r = request_with_retries(url, timeout=5)
-        if r and r.status_code == 200:
-            data = r.json()
-            return {
-                "abstract": data.get("abstract", ""),
-                "title": data.get("title", ""),
-                "source": "semantic_scholar",
-            }
+        r = requests.get(f"{CROSSREF_WORKS_URL}{doi}", headers=HEADERS, timeout=15)
+        if r.status_code == 200:
+            ab = r.json().get("message", {}).get("abstract", "")
+            if ab:
+                return {"abstract": re.sub(r"<[^>]+>", "", ab).strip(), "source": "crossref_doi"}
     except Exception:
         pass
 
@@ -79,61 +85,47 @@ def fetch_via_doi(doi: str) -> Optional[Dict[str, Any]]:
 
 
 def fetch_via_title(title: str) -> Optional[Dict[str, Any]]:
-    """Fetch abstract via title search (CrossRef, Semantic Scholar, OpenAlex)."""
+    """Fetch abstract via title search: OpenAlex first, CrossRef fallback."""
     if not title or len(title) < 10:
         return None
 
-    # Try CrossRef title search
+    # OpenAlex title search
     try:
-        url = CROSSREF_WORKS_URL
-        params = {"query": title, "rows": 1}
-        r = request_with_retries(url, params=params, timeout=5)
-        if r and r.status_code == 200:
+        r = requests.get(OPENALEX_WORKS_URL,
+            params={"search": title, "per-page": 1}, headers=HEADERS, timeout=15)
+        if r.status_code == 200:
+            results = r.json().get("results", [])
+            if results:
+                fetched = results[0].get("title", "")
+                if fetched and title.lower()[:40] in fetched.lower():
+                    inv = results[0].get("abstract_inverted_index")
+                    if inv:
+                        return {"abstract": _reconstruct_openalex_abstract(inv), "source": "openalex_title"}
+    except Exception:
+        pass
+
+    time.sleep(SLEEP_S)
+
+    # CrossRef title search fallback
+    try:
+        r = requests.get(CROSSREF_WORKS_URL,
+            params={"query": title, "rows": 1}, headers=HEADERS, timeout=15)
+        if r.status_code == 200:
             items = r.json().get("message", {}).get("items", [])
             if items:
-                item = items[0]
-                # Simple title match: if similarity is high enough, return abstract
-                fetched_title = item.get("title", [title])[0] if isinstance(item.get("title"), list) else item.get("title", "")
-                if fetched_title.lower()[:30] == title.lower()[:30]:  # rough match on first 30 chars
-                    return {
-                        "abstract": item.get("abstract", ""),
-                        "title": fetched_title,
-                        "source": "crossref_title_search",
-                    }
+                fetched = items[0].get("title", [""])[0] if isinstance(items[0].get("title"), list) else ""
+                if fetched and title.lower()[:40] in fetched.lower():
+                    ab = items[0].get("abstract", "")
+                    if ab:
+                        return {"abstract": re.sub(r"<[^>]+>", "", ab).strip(), "source": "crossref_title"}
     except Exception:
         pass
-
-    time.sleep(SLEEP_S)
-
-    # Try Semantic Scholar title search
-    try:
-        url = f"{SEMANTIC_SCHOLAR_URL}search"
-        params = {"query": title, "limit": 1}
-        r = request_with_retries(url, params=params, timeout=5)
-        if r and r.status_code == 200:
-            data = r.json().get("data", [])
-            if data:
-                paper = data[0]
-                fetched_title = paper.get("title", title)
-                if fetched_title.lower()[:30] == title.lower()[:30]:
-                    return {
-                        "abstract": paper.get("abstract", ""),
-                        "title": fetched_title,
-                        "source": "semantic_scholar_title_search",
-                    }
-    except Exception:
-        pass
-
-    time.sleep(SLEEP_S)
 
     return None
 
 
 def retrieve_abstract(row: Dict) -> Dict:
-    """
-    Attempt to retrieve abstract for a Google Scholar record.
-    Returns row with added 'abstract', 'abstract_source', 'abstract_status'.
-    """
+    """Attempt abstract retrieval for a record. Returns row with status fields added."""
     row = row.copy()
     title = str(row.get("title", "")).strip()
     doi = normalize_doi(row.get("doi", ""))
@@ -141,35 +133,30 @@ def retrieve_abstract(row: Dict) -> Dict:
     abstract_source = ""
     abstract_status = "not_found"
 
-    # 1. If already has abstract, mark it
     if row.get("abstract", "").strip():
         abstract_status = "already_present"
-        abstract_source = "google_scholar_export"
-    # 2. Try DOI-based retrieval
+        abstract_source = "existing"
     elif doi:
         result = fetch_via_doi(doi)
         if result and result.get("abstract"):
             row["abstract"] = result["abstract"]
             abstract_source = result["source"]
             abstract_status = "retrieved_via_doi"
-            time.sleep(SLEEP_S)
-        # 3. Fall back to title search
         elif title:
+            time.sleep(SLEEP_S)
             result = fetch_via_title(title)
             if result and result.get("abstract"):
                 row["abstract"] = result["abstract"]
                 abstract_source = result["source"]
                 abstract_status = "retrieved_via_title"
-                time.sleep(SLEEP_S)
-    # 4. Title-only search
     elif title:
         result = fetch_via_title(title)
         if result and result.get("abstract"):
             row["abstract"] = result["abstract"]
             abstract_source = result["source"]
             abstract_status = "retrieved_via_title"
-            time.sleep(SLEEP_S)
 
+    time.sleep(SLEEP_S)
     row["abstract_source"] = abstract_source
     row["abstract_status"] = abstract_status
     return row
@@ -187,40 +174,61 @@ def run(config: dict) -> dict:
     step4b_dir = out_root / "step4b"
     step4b_dir.mkdir(parents=True, exist_ok=True)
 
-    # Input: Google Scholar records from step2b
-    gsch_input = step2b_dir / "step2b_google_scholar_pending.csv"
-    if not gsch_input.exists():
-        print(f"[step4b] No Google Scholar records to process: {gsch_input}")
+    # Input: all net-new records from step2b
+    net_new_csv = step2b_dir / "step2b_net_new.csv"
+    if not net_new_csv.exists():
+        print(f"[step4b] Net-new records not found: {net_new_csv} — run step2b first.")
         return {"error": "input file not found"}
 
-    print(f"[step4b] Loading Google Scholar records: {gsch_input}")
-    df = pd.read_csv(gsch_input, dtype=str).fillna("")
-    print(f"[step4b] Loaded {len(df):,} records")
+    df = pd.read_csv(net_new_csv, dtype=str).fillna("")
+    missing_mask = df["abstract"].str.strip() == ""
+    missing = df[missing_mask].copy()
 
-    # Retrieve abstracts
-    print(f"[step4b] Retrieving abstracts...")
+    print(f"[step4b] Net-new records: {len(df):,} total, {missing_mask.sum():,} missing abstracts")
+
+    if missing.empty:
+        print("[step4b] No missing abstracts — nothing to do.")
+        return {"total_records": len(df), "patched": 0}
+
+    # Skip IDB factsheets — confirmed no abstract section in source PDFs
+    to_try = missing[missing["source_db"] != "IDB"].copy()
+    skipped_idb = missing_mask.sum() - len(to_try)
+    print(f"[step4b] Skipping {skipped_idb} IDB factsheets (no abstract section in source)")
+    print(f"[step4b] Attempting retrieval for {len(to_try):,} records via CrossRef + Semantic Scholar...")
+
     records = []
-    for _, row in tqdm(df.iterrows(), total=len(df)):
+    for _, row in tqdm(to_try.iterrows(), total=len(to_try)):
         rec = retrieve_abstract(row.to_dict())
         records.append(rec)
 
-    df_out = pd.DataFrame(records)
+    df_patched = pd.DataFrame(records)
+    status_counts = df_patched["abstract_status"].value_counts().to_dict()
 
-    # Summary
-    status_counts = df_out["abstract_status"].value_counts().to_dict()
-    source_counts = df_out["abstract_source"].value_counts().to_dict()
+    # Patch abstracts back into the full net-new dataframe
+    patched_count = 0
+    for _, row in df_patched.iterrows():
+        if row.get("abstract", "").strip() and row.get("abstract_status") != "already_present":
+            mask = (df["record_key"] == row["record_key"])
+            if mask.any():
+                df.loc[mask, "abstract"] = row["abstract"]
+                patched_count += 1
 
-    # Write outputs
-    out_csv = step4b_dir / "step4b_google_scholar_with_abstracts.csv"
+    # Save updated net-new CSV in place
+    df.to_csv(net_new_csv, index=False)
+
+    # Save detailed results for audit
     summary_json = step4b_dir / "step4b_summary.json"
+    df_patched.to_csv(step4b_dir / "step4b_retrieval_log.csv", index=False)
 
-    df_out.to_csv(out_csv, index=False)
-
+    still_missing = (df["abstract"].str.strip() == "").sum()
     summary = {
-        "total_records": int(len(df_out)),
+        "total_net_new": int(len(df)),
+        "missing_before": int(missing_mask.sum()),
+        "skipped_idb": int(skipped_idb),
+        "attempted": int(len(to_try)),
+        "patched": int(patched_count),
+        "still_missing": int(still_missing),
         "abstract_status_counts": {str(k): int(v) for k, v in status_counts.items()},
-        "abstract_source_counts": {str(k): int(v) for k, v in source_counts.items()},
-        "output_csv": str(out_csv),
         "timestamp_utc": utc_now_iso(),
     }
 
@@ -230,8 +238,8 @@ def run(config: dict) -> dict:
     print(f"\n[step4b] ── Results ─────────────────────────────────")
     for status, count in status_counts.items():
         print(f"[step4b]   {status}: {count:,}")
-    print(f"[step4b]   Total: {len(df_out):,}")
-    print(f"[step4b]   Written to: {out_csv}")
+    print(f"[step4b]   Patched into net-new CSV: {patched_count:,}")
+    print(f"[step4b]   Still missing after retrieval: {still_missing:,}")
     print(f"[step4b] ─────────────────────────────────────────────")
     return summary
 

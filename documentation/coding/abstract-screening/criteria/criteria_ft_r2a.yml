@@ -1,0 +1,134 @@
+# Full-Text Screening Criteria — FT-R2a
+# Used in: step14 (full-text screening)
+# Based on: CODEBOOK_FT-R2a (2025-2026)
+# Note: stricter than abstract screening — full text available, so commit to decisions.
+#       "When in doubt" scenarios below are BINDING decision rules, not suggestions.
+
+hard_filters:
+  min_year: 2005
+
+criteria:
+  1_population:
+    name: "POPULATION (Smallholders)"
+    include: >
+      Individuals or households engaged in small-scale agricultural production (crop, livestock,
+      fisheries/aquaculture, agroforestry) in an LMIC. Also include marginalized producer groups
+      (women, youth, landless farmers, indigenous peoples, ethnic minorities, migrant/seasonal workers).
+    exclude: >
+      Large-scale commercial agriculture, agribusiness without smallholder focus, or
+      non-agricultural livelihoods only.
+    ft_r2a_include_guidelines: >
+      Mixed samples (smallholders + larger farms): INCLUDE if smallholders are mentioned AND
+      analyzed as a distinct group in the paper.
+      Generic "Farmers" label in LMIC contexts: INCLUDE unless the study clearly and
+      unambiguously focuses on commercial-scale operations.
+      Fishing and aquaculture communities, riparian/coastal communities in LMICs facing
+      climate hazards: INCLUDE as smallholder/subsistence producer populations.
+      Rural households adapting livelihoods to climate stress qualify even if the study
+      covers multiple livelihood strategies beyond agriculture alone.
+    ft_r2a_exclude_guidelines: >
+      Industrial or corporate agriculture: EXCLUDE.
+      Purely agronomic or biophysical crop trials where farmers are not the unit of analysis
+      (study focuses on plants, soils, or crop genetics — not producer-level behavior or welfare): EXCLUDE.
+      Large commercial farms or agribusiness with no smallholder component confirmed in full text: EXCLUDE.
+
+  2_concept:
+    name: "CONCEPT (Adaptation)"
+    include: >
+      Study assesses or documents adaptation processes (learning, decision-making, adoption,
+      participation, behavior change) OR adaptation outcomes (productivity, income, livelihoods,
+      wellbeing, resilience, risk reduction).
+    exclude: >
+      Climate impacts/vulnerability assessment ONLY (no adaptation action measured).
+      Mitigation only (reducing emissions). General development or agronomy without explicit
+      climate risk framing. Purely theoretical or conceptual (no intervention or measurement described).
+    ft_r2a_include_guidelines: >
+      Adoption/uptake of climate-smart agriculture or water management: INCLUDE.
+      Livelihood diversification in response to climate stress: INCLUDE.
+      Qualitative, ethnographic, or descriptive case studies examining real autonomous adaptation
+      behavior or farmer-led responses to climate stress: INCLUDE.
+      Seed variety choice, technology acceptance, and input adoption in smallholder contexts
+      under climate variability: INCLUDE (adoption/adaptation processes).
+      Studies on coping strategies, resilience building, or vulnerability reduction that include
+      some analysis of what producers DO (not just how vulnerable they are): INCLUDE.
+    ft_r2a_exclude_guidelines: >
+      Vulnerability index or risk score WITHOUT any coping/adaptation responses measured: EXCLUDE.
+      Farmer awareness/perception of climate change ALONE (no adoption behavior or adaptation
+      response measured): EXCLUDE.
+      Studies measuring climate IMPACTS on crops or income without assessing any adaptation
+      action or process (hazard impact only): EXCLUDE.
+      Systematic reviews, meta-analyses, or literature reviews: HARD EXCLUDE (criterion 4
+      also catches these — double exclusion is correct).
+
+  3_context:
+    name: "CONTEXT (Climate + Agriculture)"
+    include: >
+      Agricultural setting (crop, livestock, fisheries, agroforestry) with explicit climate hazard
+      link — drought, flooding, temperature extremes, rainfall variability, or other climate
+      stressors affecting production.
+    exclude: >
+      Non-agricultural sector. Agricultural study with no climate dimension. Climate mentioned
+      only as background (not driving the research question). Agricultural impacts/responses
+      unrelated to climate.
+    ft_r2a_include_guidelines: >
+      "Water scarcity" or "aridity" in semi-arid regions (implies climate): INCLUDE.
+      "Food insecurity" in LMIC rural contexts WITH adaptation responses: INCLUDE.
+      Agricultural water management addressing drought or salinity under variable climate:
+      INCLUDE even if "climate change" is not explicitly named, provided the climate-linked
+      hazard is clearly described as the driver.
+      Studies linking agricultural productivity changes to climate variability and examining
+      farmer responses: INCLUDE (climate-productivity-response chain is sufficient context).
+    ft_r2a_exclude_guidelines: >
+      Generic "livelihood change" in a non-climate context: EXCLUDE.
+      Agriculture + environmental change WITHOUT climate specificity: EXCLUDE.
+      Climate mentioned only incidentally or as background with no direct link to the research
+      question: EXCLUDE.
+      Generic terms such as "resilience", "environmental change", or "livelihood stress"
+      WITHOUT explicit climate linkage: insufficient for inclusion — EXCLUDE.
+
+  4_methodology:
+    name: "METHODOLOGY (Empirical Evidence)"
+    include: >
+      Study describes, evaluates, or applies a measurable method or framework to assess
+      adaptation (indicators, metrics, surveys, qualitative interviews, participatory assessments,
+      models with empirical data). Published from 2005 onwards.
+    exclude: >
+      Purely theoretical/conceptual (no method or data). Systematic reviews, meta-analyses, or
+      literature reviews. Pre-2005 publication. Opinion pieces or policy briefs without
+      empirical method.
+    ft_r2a_include_guidelines: >
+      Narrative case study of farmer adaptation: INCLUDE (qualitative empirical method).
+      Agent-based model with survey calibration: INCLUDE (model + empirical data).
+      Pilot application of an adaptation tool: INCLUDE.
+      Statistical or econometric models analyzing adoption rates or determinants: INCLUDE.
+      Participatory assessments of adaptation or vulnerability using real-world data: INCLUDE.
+      Qualitative, ethnographic, or descriptive empirical studies examining farmer responses
+      to climate stress: INCLUDE (no formal intervention or quantitative method required).
+    ft_r2a_exclude_guidelines: >
+      Crop variety trial WITHOUT farmer adoption analysis (tests technology performance only,
+      not producer-level behavior): EXCLUDE.
+      Biophysical crop models (DSSAT, APSIM) projecting yield under climate scenarios WITHOUT
+      farmer decision-making or adoption behavior: EXCLUDE.
+      Systematic reviews, literature reviews, meta-analyses: HARD EXCLUDE immediately.
+      Opinion pieces or policy briefs without empirical method or data: EXCLUDE.
+      Technology and system performance studies that evaluate only how a technology performs,
+      not how it is adopted or used by producers: EXCLUDE.
+
+  5_geography:
+    name: "GEOGRAPHY (LMIC)"
+    include: >
+      Study conducted in one or more Low- or Middle-Income Countries (LMICs) or Global South
+      countries. Single or multi-country studies OK if at least one LMIC is involved.
+    exclude: >
+      OECD high-income countries only (USA, UK, EU, Australia, Canada, Japan, South Korea, etc.)
+      with no LMIC component.
+    ft_r2a_include_guidelines: >
+      China (all provinces): INCLUDE — upper-middle-income country.
+      South Africa: INCLUDE — upper-middle-income country.
+      Multi-country study with at least one LMIC (e.g. Peru + Germany): INCLUDE — Peru qualifies.
+      Brazil, Vietnam, Thailand, Iran, Morocco, Tunisia, Indonesia, Bangladesh, India, Pakistan,
+      Ethiopia, Kenya, Ghana, Malawi, Tanzania, Uganda, Zambia, and all other African, Asian,
+      and Latin American countries not in the OECD high-income list: INCLUDE.
+    ft_r2a_exclude_guidelines: >
+      All study sites exclusively in OECD high-income countries with no LMIC component: EXCLUDE.
+      Do not exclude China, South Africa, or other upper-middle-income countries.
