@@ -104,7 +104,7 @@ Use the inclusion criteria below to make this decision. If you are unsure, enter
 
 ### 4. Methodology
 
-**Include if:** Study describes, evaluates, or applies a measurable method or framework to assess adaptation (indicators, metrics, surveys, qualitative interviews, participatory assessments, models with empirical data). Published between 2005–2026.
+**Include if:** Study describes, evaluates, or applies a measurable method or framework to assess adaptation (indicators, metrics, surveys, qualitative interviews, participatory assessments, models with empirical data). Published 2005 or later.
 
 **Exclude if:**
 - Purely theoretical/conceptual (no method or data)
