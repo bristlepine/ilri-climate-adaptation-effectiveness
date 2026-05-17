@@ -53,7 +53,7 @@ HUMAN_FILES = {
     "SZC": HERE / "coding_ft_r1a_SZC.csv",
     "JK":  HERE / "coding_ft_r1a_JK.xlsx",
     "LJ":  HERE / "coding_ft_r1a_LJ.xlsx",
-    "KK":  HERE / "coding_ft_r1a_KK.xlsx",
+    "KK":  HERE / "coding_ft_r1a_KK.csv",
 }
 
 llm = load(HERE.parent / "FT-R1b" / "coding_ft_r1b_LLM.csv").set_index("doi")
