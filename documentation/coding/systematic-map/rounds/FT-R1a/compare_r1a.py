@@ -95,7 +95,11 @@ ALL_FIELDS = CATEGORICAL + MULTIVALUE + FREETEXT
 def norm_str(v) -> str:
     if pd.isna(v):
         return ""
-    return str(v).strip().lower()
+    s = str(v).strip().lower()
+    # pandas reads int columns with NaNs as float: "2017.0" → "2017"
+    if s.endswith(".0") and s[:-2].lstrip("-").isdigit():
+        s = s[:-2]
+    return s
 
 def norm_set(v) -> frozenset:
     if pd.isna(v):
@@ -129,25 +133,28 @@ def get_val(df, doi, field):
 # All human-vs-LLM pairs + all human-vs-human pairs
 
 PAIRS = [
+    # CGS vs everyone
     ("CGS", "LLM"),
     ("CGS", "AZ"),
     ("CGS", "SZC"),
     ("CGS", "JK"),
     ("CGS", "LJ"),
+    ("CGS", "KK"),
+    # LLM vs everyone else
     ("LLM", "AZ"),
     ("LLM", "SZC"),
     ("LLM", "JK"),
     ("LLM", "LJ"),
+    ("LLM", "KK"),
+    # remaining human-vs-human
     ("AZ",  "SZC"),
     ("AZ",  "JK"),
     ("AZ",  "LJ"),
+    ("AZ",  "KK"),
     ("SZC", "JK"),
     ("SZC", "LJ"),
-    ("JK",  "LJ"),
-    ("CGS", "KK"),
-    ("LLM", "KK"),
-    ("AZ",  "KK"),
     ("SZC", "KK"),
+    ("JK",  "LJ"),
     ("JK",  "KK"),
     ("LJ",  "KK"),
 ]
