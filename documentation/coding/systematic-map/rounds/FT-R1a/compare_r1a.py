@@ -53,7 +53,7 @@ HUMAN_FILES = {
     "SZC": HERE / "coding_ft_r1a_SZC.csv",
     "JK":  HERE / "coding_ft_r1a_JK.xlsx",
     "LJ":  HERE / "coding_ft_r1a_LJ.xlsx",
-    "KK":  HERE / "coding_ft_r1a_KK.csv",
+    "SV":  HERE / "coding_ft_r1a_SV.xlsx",
 }
 
 llm = load(HERE.parent / "FT-R1b" / "coding_ft_r1b_LLM.csv").set_index("doi")
@@ -64,9 +64,9 @@ CODERS = {
     "CGS": humans["CGS"], "LLM": llm,
     "AZ":  humans["AZ"],  "SZC": humans["SZC"],
     "JK":  humans["JK"],  "LJ":  humans["LJ"],
-    "KK":  humans["KK"],
+    "SV":  humans["SV"],
 }
-HUMAN_NAMES = ["CGS", "AZ", "SZC", "JK", "LJ", "KK"]
+HUMAN_NAMES = ["CGS", "AZ", "SZC", "JK", "LJ", "SV"]
 
 # ── field definitions ─────────────────────────────────────────────────────────
 
@@ -139,24 +139,24 @@ PAIRS = [
     ("CGS", "SZC"),
     ("CGS", "JK"),
     ("CGS", "LJ"),
-    ("CGS", "KK"),
+    ("CGS", "SV"),
     # LLM vs everyone else
     ("LLM", "AZ"),
     ("LLM", "SZC"),
     ("LLM", "JK"),
     ("LLM", "LJ"),
-    ("LLM", "KK"),
+    ("LLM", "SV"),
     # remaining human-vs-human
     ("AZ",  "SZC"),
     ("AZ",  "JK"),
     ("AZ",  "LJ"),
-    ("AZ",  "KK"),
+    ("AZ",  "SV"),
     ("SZC", "JK"),
     ("SZC", "LJ"),
-    ("SZC", "KK"),
+    ("SZC", "SV"),
     ("JK",  "LJ"),
-    ("JK",  "KK"),
-    ("LJ",  "KK"),
+    ("JK",  "SV"),
+    ("LJ",  "SV"),
 ]
 PAIR_COLS = [f"{a}_vs_{b}" for a, b in PAIRS]
 

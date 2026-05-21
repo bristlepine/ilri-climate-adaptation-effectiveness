@@ -200,6 +200,11 @@ Country or countries where the study was conducted. Use a region label only if n
 
 **Where to look:** Check the **Methods / Study Area / Site Description section**—this is the most definitive place. Authors must clearly state whether their study focused on a single village, a district within a country, the entire country, multiple named countries, or a broad geographic region.
 
+**Boundary rules for common edge cases:**
+
+- **Local vs. sub-national:** If a study takes place across multiple villages within a single district, code `sub-national` — not `local`. Local means a single site or community.
+- **Multi-country vs. regional:** If the authors name the specific countries involved (e.g., Kenya, Uganda, Tanzania), code `multi-country`. Reserve `regional` strictly for papers that assess a broad area (e.g., "East Africa", "West Africa") without a country-level focus.
+
 ---
 
 ### 5. `producer_type`
@@ -217,11 +222,13 @@ Select all that apply; separate with semicolons.
 
 **Where to look:** Look in the Abstract and Introduction: Authors usually state their target population and main agricultural focus right away. If not, check the Methods / Study Area / Site Description sections: This is the most reliable place to look, as authors must describe the economic and agricultural baselines of the communities they are surveying.
 
+**Do not default to `undefined` based on the abstract alone.** If the abstract uses the generic term "smallholder farmers," check the Methods / Site Description section and any baseline summary statistics tables for mentions of crop or livestock assets before coding `undefined`.
+
 ---
 
 ### 6. `marginalized_subpopulations`
 
-Code only what is **explicitly stated** in the paper — do not infer. Select all that apply; separate with semicolons.
+Code only what is **explicitly stated** in the paper — do not infer. **Only code a group if the intervention specifically targets them, or if the study explicitly disaggregates its outcome results by that group.** Do not code a group simply because they appear in a baseline demographic table. Select all that apply; separate with semicolons.
 
 | Value | Meaning |
 |-------|---------|
@@ -249,7 +256,7 @@ Code only what is **explicitly stated** in the paper — do not infer. Select al
 
 ### 7. `adaptation_focus` *(free text)*
 
-The specific climate adaptation action, intervention, or practice the study tracks. Write 5–15 words based on what the paper describes.
+The specific climate adaptation action, intervention, or practice the study tracks. **Write 5–15 words maximum.** Write a single synthesised phrase — do not list every strategy mentioned. If a paper covers multiple strategies, describe the dominant one.
 
 **Examples:**
 - `crop varieties and genetics`
@@ -282,6 +289,8 @@ The specific climate adaptation action, intervention, or practice the study trac
 What the study measures. Select all that apply; separate with semicolons.
 
 **Rule:** Code only domains that are **explicitly measured** — not domains that could be inferred. If the paper measures yield but not income, code `yields_productivity` only.
+
+**DO NOT use free text here.** Enter only the valid code values from the table above. If a paper measures "food security," map it to `livelihoods`. If it measures "nutrition" or "dietary diversity," map it to `wellbeing`. Do not enter definitions, synonyms, or paraphrases.
 
 | Value | Meaning |
 |-------|---------|
@@ -382,9 +391,13 @@ Select all that apply; separate with semicolons.
 
 Select all that apply; separate with semicolons.
 
+**DO NOT use free text here.** Enter only the valid code values from the table below. Note the underscores — `secondary_data` not "secondary data". For mixed-methods studies, code **all** sources used, not just the first one you find.
+
+**Primary vs. secondary data:** Primary data is original information collected directly for the study (household surveys, expert interviews, participatory focus groups). Secondary data is pre-existing information the authors did not collect themselves (existing datasets, literature reviews, government records). Interviews and focus groups are primary data — map them to `surveys` or `participatory_methods` as appropriate.
+
 | Value | Meaning |
 |-------|---------|
-| `surveys` | Primary household or farm surveys |
+| `surveys` | Primary household or farm surveys, structured interviews |
 | `administrative_data` | Government or programme records |
 | `remote_sensing` | Satellite or aerial imagery |
 | `participatory_methods` | PRA, focus groups, photovoice as a data source |
@@ -440,6 +453,8 @@ Select all that apply; separate with semicolons.
 Author-reported strengths and limitations. Look in the Discussion, Conclusion, and Limitations sections. Extract verbatim where possible.
 
 **Format:** `Strength: <text>. Limitation: <text>.`
+
+**You must use this exact prefix format.** Do not use parentheses, dashes, or other formats. Do not write two-word summaries (e.g., "Strength: Mixed methods." is not acceptable — quote or closely paraphrase the author's actual words).
 
 **Where to look:**
 

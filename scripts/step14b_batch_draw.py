@@ -2,13 +2,18 @@
 """
 step14b_batch_draw.py — Draw random batches of papers for human full-text coding.
 
+Draw pool: ALL papers that passed abstract/title screening (step13_all_included.csv),
+regardless of whether a PDF has been retrieved.  After each draw the script checks
+every sampled paper's PDF and writes a _missing.csv for papers that need procuring
+before the batch can be assigned to a coder.
+
 Creates one folder per batch under scripts/outputs/step14b/{round}/ containing:
-  papers_{round}.csv            — sampled records (doi, title, year, file_path)
+  papers_{round}_missing.csv    — papers needing PDF procurement (status, doi, title, year)
   coding_{round}_template.csv  — blank coding template pre-filled with doi/title/year
   instruction_{round}.pdf      — one-page coder briefing (Drive link, how to code)
 
 Uploads to Google Drive ({round} subfolder under DRIVE_PARENT_ID):
-  instruction PDF + coding template + PDFs subfolder with full-text PDFs
+  instruction PDF + coding template + PDFs subfolder with available full-text PDFs
 
 Shared codebook (CODEBOOK_FT.pdf in the Drive parent folder) is uploaded
 separately via push_codebook_update.py — not touched here.
@@ -21,11 +26,13 @@ Assignments are tracked in:
   documentation/coding/systematic-map/rounds/assignments.csv  (local)
   DRIVE_PARENT_ID/assignments.csv                              (Drive, updated in-place)
 
+Round naming: FT-R3, FT-R4, FT-R5 … (FT-R1 = calibration, FT-R2x = legacy biased draws)
+
 Usage:
-  # Create 6 batches (auto-names FT-R2a … FT-R2f, seeds 42–47)
+  # Create 6 batches (auto-names FT-R3 … FT-R8, seeds 42–47)
   conda run -n ilri01 python scripts/step14b_batch_draw.py --rounds 6
 
-  # Create 1 more batch later (auto-detects FT-R2g, seed 48)
+  # Create 1 more batch later (auto-detects FT-R9, seed 48)
   conda run -n ilri01 python scripts/step14b_batch_draw.py --rounds 1
 
   # Dry-run to preview without uploading
@@ -34,7 +41,7 @@ Usage:
 Arguments:
   --rounds     Number of batches to create (required)
   --sample     Papers per batch (default 20)
-  --min-chars  Minimum extracted character count to accept a paper (default 2000)
+  --min-chars  Min extracted character count to consider a retrieved PDF legit (default 2000)
   --dry-run    Print what would happen; skip Drive upload
 """
 from __future__ import annotations
@@ -42,6 +49,7 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import shutil
 import string
 import sys
 from datetime import date
@@ -57,9 +65,10 @@ OUTPUTS_DIR    = SCRIPTS_DIR / "outputs"
 ROUNDS_DOC_DIR = REPO_ROOT / "documentation" / "coding" / "systematic-map" / "rounds"
 CREDS_DIR      = REPO_ROOT / "deliverables" / ".credentials"
 
-MANIFEST_CSV    = OUTPUTS_DIR / "step13" / "step13_manifest.csv"
-STEP14_RESULTS  = OUTPUTS_DIR / "step14" / "step14_results.csv"
-ASSIGNMENTS_CSV = OUTPUTS_DIR / "step14b" / "assignments.csv"
+MANIFEST_CSV          = OUTPUTS_DIR / "step13" / "step13_manifest.csv"
+STEP13_ALL_INCLUDED_CSV = OUTPUTS_DIR / "step13" / "step13_all_included.csv"
+STEP14_RESULTS        = OUTPUTS_DIR / "step14" / "step14_results.csv"
+ASSIGNMENTS_CSV       = OUTPUTS_DIR / "step14b" / "assignments.csv"
 
 DRIVE_PARENT_ID    = "13p22XfvB6sNtTtnMS-dkI1t-joMn-6Bo"
 CODEBOOK_LOCAL      = ROUNDS_DOC_DIR / "CODEBOOK_FT.pdf"
@@ -83,34 +92,46 @@ TEMPLATE_FIELDS = [
     "cost_data_reported", "strengths_and_limitations", "lessons_learned",
 ]
 
-MIN_FILE_SIZE_KB = 50  # fallback filter when step14 char count not available
+MIN_FILE_SIZE_KB = 50  # fallback quality threshold when step14 char count not available
 
 
 # ── pool helpers ───────────────────────────────────────────────────────────────
 
 def load_pool(min_chars: int) -> pd.DataFrame:
     """
-    Build the eligible draw pool from step13 manifest.
+    Build the eligible draw pool from ALL papers that passed abstract/title screening.
 
-    Keeps only records with a retrieved PDF. Applies character-count quality
-    filter using step14 extracted text lengths where available, falling back
-    to file size for records step14 hasn't processed yet.
+    Uses step13_all_included.csv as the base (unbiased — includes papers with and
+    without retrieved PDFs).  Merges manifest data so pdf_status can be assessed
+    per-paper after sampling without filtering anyone out of the draw.
     """
-    manifest = pd.read_csv(
-        MANIFEST_CSV,
-        usecols=["dedupe_key", "doi", "title", "year", "pub", "file_path",
-                 "file_size_kb", "status"],
+    pool = pd.read_csv(
+        STEP13_ALL_INCLUDED_CSV,
+        usecols=["dedupe_key", "doi", "title", "year", "coverDate"],
         low_memory=False,
     )
+    pool = pool.drop_duplicates("dedupe_key").reset_index(drop=True)
 
-    # Keep retrieved PDFs only
-    manifest = manifest[
-        (manifest["status"] == "retrieved") &
-        manifest["file_path"].str.endswith(".pdf", na=False)
-    ].copy()
-    manifest["file_size_kb"] = pd.to_numeric(manifest["file_size_kb"], errors="coerce").fillna(0)
+    # Year: prefer 'year' column, fall back to coverDate (format "YYYY-MM-DD")
+    pool["year"] = pd.to_numeric(pool["year"], errors="coerce")
+    pool["_cover_year"] = (
+        pd.to_datetime(pool["coverDate"], errors="coerce").dt.year
+    )
+    pool["year"] = pool["year"].fillna(pool["_cover_year"])
+    pool = pool.drop(columns=["coverDate", "_cover_year"])
 
-    # Enrich with step14 char counts and coverDate (year fallback) where available
+    # Merge manifest for PDF availability (left join — papers not in manifest get NaN)
+    manifest = pd.read_csv(
+        MANIFEST_CSV,
+        usecols=["dedupe_key", "file_path", "file_size_kb", "status"],
+        low_memory=False,
+    )
+    manifest = manifest.drop_duplicates("dedupe_key")
+    pool = pool.merge(manifest, on="dedupe_key", how="left")
+    pool["file_size_kb"] = pd.to_numeric(pool["file_size_kb"], errors="coerce").fillna(0)
+    pool["status"] = pool["status"].fillna("not_in_manifest")
+
+    # Enrich with step14 char counts + year fallback (LLM decision not used for pool filtering)
     if STEP14_RESULTS.exists():
         s14 = pd.read_csv(
             STEP14_RESULTS,
@@ -118,38 +139,35 @@ def load_pool(min_chars: int) -> pd.DataFrame:
             low_memory=False,
         )
         s14["s14_fulltext_chars"] = pd.to_numeric(s14["s14_fulltext_chars"], errors="coerce")
-        s14["s14_year"] = pd.to_numeric(s14["coverDate"], errors="coerce").apply(
-            lambda x: int(x) if pd.notna(x) else float("nan")
-        )
-        s14 = s14.drop(columns=["coverDate"])
-        manifest = manifest.merge(s14, on="dedupe_key", how="left")
-        # Fill missing manifest year from step14 coverDate
-        missing = manifest["year"].isna()
-        manifest.loc[missing, "year"] = manifest.loc[missing, "s14_year"]
-        manifest = manifest.drop(columns=["s14_year"])
+        s14["s14_year"] = pd.to_datetime(s14["coverDate"], errors="coerce").dt.year
+        s14 = s14.drop(columns=["coverDate"]).drop_duplicates("dedupe_key")
+        pool = pool.merge(s14, on="dedupe_key", how="left")
+        missing_yr = pool["year"].isna()
+        pool.loc[missing_yr, "year"] = pool.loc[missing_yr, "s14_year"]
+        pool = pool.drop(columns=["s14_year"])
     else:
-        manifest["s14_fulltext_chars"] = float("nan")
+        pool["s14_fulltext_chars"] = float("nan")
 
-    # Quality filter: prefer char count; fall back to file size
-    has_chars  = manifest["s14_fulltext_chars"].notna()
-    good_chars = has_chars & (manifest["s14_fulltext_chars"] >= min_chars)
-    good_size  = ~has_chars & (manifest["file_size_kb"] >= MIN_FILE_SIZE_KB)
-    manifest   = manifest[good_chars | good_size].copy()
+    pool = pool[~pool["doi"].isin(CALIBRATION_DOIS)]
+    pool = pool.drop_duplicates("dedupe_key").reset_index(drop=True)
 
-    manifest = manifest[~manifest["doi"].isin(CALIBRATION_DOIS)]
-    manifest = manifest.drop_duplicates("dedupe_key").reset_index(drop=True)
-
-    # Fill missing years from DOI (e.g. 10.1016/j.cosust.2016.03.003 → 2016)
+    # Fill missing year from DOI pattern as last resort (e.g. 10.1016/j.foo.2019.03.001)
     _doi_year = re.compile(r"\b(19|20)\d{2}\b")
     def _year_from_doi(row):
         if pd.notna(row["year"]):
             return row["year"]
         m = _doi_year.search(str(row.get("doi", "") or ""))
         return int(m.group()) if m else float("nan")
+    pool["year"] = pool.apply(_year_from_doi, axis=1)
 
-    manifest["year"] = manifest.apply(_year_from_doi, axis=1)
+    has_pdf = (pool["status"] == "retrieved") & pool["file_path"].str.endswith(".pdf", na=False)
+    print(
+        f"  [pool] Total eligible: {len(pool):,}  |  "
+        f"Have PDF: {has_pdf.sum():,}  |  "
+        f"Missing PDF: {(~has_pdf).sum():,}"
+    )
 
-    return manifest
+    return pool
 
 
 def load_already_sampled(exclude_round: str | None = None) -> set[str]:
@@ -158,20 +176,33 @@ def load_already_sampled(exclude_round: str | None = None) -> set[str]:
     """
     sampled: set[str] = set()
 
-    # New location: scripts/outputs/step14b/*/papers_*.csv
+    # New rounds: read DOIs from coding templates (papers_*.csv no longer generated)
+    for template_csv in (OUTPUTS_DIR / "step14b").glob("*/coding_*_template.csv"):
+        if exclude_round and template_csv.parent.name == exclude_round:
+            continue
+        df = pd.read_csv(template_csv, usecols=["doi"])
+        sampled.update(df["doi"].dropna().tolist())
+
+    # Legacy rounds (FT-R2x): papers_*.csv still present, read dedupe_key + doi
     for papers_csv in (OUTPUTS_DIR / "step14b").glob("*/papers_*.csv"):
         if exclude_round and papers_csv.parent.name == exclude_round:
             continue
-        df = pd.read_csv(papers_csv, usecols=["dedupe_key"])
-        sampled.update(df["dedupe_key"].dropna().tolist())
+        if "_missing" in papers_csv.name:
+            continue
+        df = pd.read_csv(papers_csv)
+        if "dedupe_key" in df.columns:
+            sampled.update(df["dedupe_key"].dropna().tolist())
+        if "doi" in df.columns:
+            sampled.update(df["doi"].dropna().tolist())
 
     # Legacy location: documentation/.../rounds/*/papers_*.csv
     for papers_csv in ROUNDS_DOC_DIR.glob("*/papers_*.csv"):
         round_name = papers_csv.parent.name
         if exclude_round and round_name == exclude_round:
             continue
+        if "_missing" in papers_csv.name:
+            continue
         df = pd.read_csv(papers_csv)
-        # Legacy files used DOI as key; add both doi and dedupe_key if present
         if "dedupe_key" in df.columns:
             sampled.update(df["dedupe_key"].dropna().tolist())
         if "doi" in df.columns:
@@ -182,7 +213,6 @@ def load_already_sampled(exclude_round: str | None = None) -> set[str]:
 
 def make_template(sample: pd.DataFrame) -> pd.DataFrame:
     tpl = sample[["doi", "title", "year"]].copy()
-    # Convert float years (e.g. 2021.0) to clean integers; leave blank if missing
     tpl["year"] = pd.to_numeric(tpl["year"], errors="coerce").apply(
         lambda x: str(int(x)) if pd.notna(x) else ""
     )
@@ -193,47 +223,62 @@ def make_template(sample: pd.DataFrame) -> pd.DataFrame:
     return tpl
 
 
-ROUND_PREFIX = "FT-R2"  # production batch prefix; R1 is reserved for calibration
+# ── PDF quality check ──────────────────────────────────────────────────────────
+
+def _check_pdf_quality(row: pd.Series, min_chars: int) -> str:
+    """
+    Returns 'ok', 'missing', or 'suspect'.
+
+    ok      — file present and passes content quality threshold
+    missing — no file_path recorded or file not found on disk
+    suspect — file present but too small / too little text (likely error page or cover only)
+    """
+    fp = row.get("file_path")
+    if not fp or (isinstance(fp, float) and pd.isna(fp)):
+        return "missing"
+    if not Path(str(fp)).exists():
+        return "missing"
+    # HTML files are not usable as coders need PDFs
+    if Path(str(fp)).suffix.lower() in (".html", ".htm"):
+        return "missing"
+    # File exists — quality check
+    chars = row.get("s14_fulltext_chars", float("nan"))
+    if pd.notna(chars):
+        return "ok" if float(chars) >= min_chars else "suspect"
+    # No char count available yet — fall back to file size
+    size_kb = row.get("file_size_kb", 0)
+    return "ok" if float(size_kb) >= MIN_FILE_SIZE_KB else "suspect"
+
+
+# ── round naming ───────────────────────────────────────────────────────────────
+
+# FT-R1 = calibration  |  FT-R2x = legacy biased draws  |  FT-R3+ = unbiased
+ROUND_NUMERIC_START = 3
 
 
 def next_round_names(n: int) -> tuple[list[str], int]:
     """
-    Auto-detect the next available round names and starting seed.
+    Auto-detect next available FT-R{N} round names (e.g. FT-R3, FT-R4, …).
 
-    Scans existing batch folders (new + legacy locations) to find the highest
-    suffix letter already used under ROUND_PREFIX, then returns n names
-    starting from the next letter and the corresponding base seed.
+    Scans existing batch folders for the highest FT-R{N} already used, then
+    returns n names starting from the next number (minimum ROUND_NUMERIC_START).
 
     Returns (round_names, base_seed).
     """
-    import re
-
-    used_letters: set[str] = set()
-    pattern = re.compile(rf"^{re.escape(ROUND_PREFIX)}([a-z])$")
+    pattern = re.compile(r"^FT-R(\d+)$")
+    used_nums: set[int] = set()
 
     for location in [OUTPUTS_DIR / "step14b", ROUNDS_DOC_DIR]:
         if location.exists():
             for child in location.iterdir():
                 m = pattern.match(child.name)
                 if m:
-                    used_letters.add(m.group(1))
+                    used_nums.add(int(m.group(1)))
 
-    # Also scan legacy papers CSVs in documentation rounds
-    for papers_csv in ROUNDS_DOC_DIR.glob(f"{ROUND_PREFIX}*/papers_*.csv"):
-        m = pattern.match(papers_csv.parent.name)
-        if m:
-            used_letters.add(m.group(1))
+    start = max(max(used_nums) + 1, ROUND_NUMERIC_START) if used_nums else ROUND_NUMERIC_START
+    base_seed = 42 + (start - ROUND_NUMERIC_START)  # seed 42 = FT-R3
 
-    start_idx = (string.ascii_lowercase.index(max(used_letters)) + 1) if used_letters else 0
-    base_seed = 42 + start_idx  # seed 42 = first batch ('a'), 43 = 'b', etc.
-
-    if start_idx + n > 26:
-        raise ValueError(
-            f"Cannot generate {n} more batches — only {26 - start_idx} letters remaining "
-            f"(already used: {sorted(used_letters)})"
-        )
-
-    names = [f"{ROUND_PREFIX}{string.ascii_lowercase[start_idx + i]}" for i in range(n)]
+    names = [f"FT-R{start + i}" for i in range(n)]
     return names, base_seed
 
 
@@ -555,6 +600,20 @@ def update_or_upload_file(
     return upload_file(service, local_path, drive_name, parent_id)
 
 
+def download_file(service, file_id: str, dest_path: Path) -> None:
+    """Download a Drive file to a local path."""
+    from googleapiclient.http import MediaIoBaseDownload
+    import io
+
+    request = service.files().get_media(fileId=file_id, supportsAllDrives=True)
+    fh = io.BytesIO()
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while not done:
+        _, done = downloader.next_chunk()
+    dest_path.write_bytes(fh.getvalue())
+
+
 # ── per-batch logic ────────────────────────────────────────────────────────────
 
 def draw_batch(
@@ -563,6 +622,7 @@ def draw_batch(
     already_sampled: set[str],
     sample_n: int,
     seed: int,
+    min_chars: int,
     dry_run: bool,
     service,  # Drive service or None in dry-run
 ) -> set[str]:
@@ -587,22 +647,53 @@ def draw_batch(
         print(f"  ERROR: only {len(available)} papers available, need {sample_n} — skipping")
         return set()
 
-    sample = available.sample(n=sample_n, random_state=seed).sort_values("dedupe_key")
+    sample = available.sample(n=sample_n, random_state=seed).sort_values("dedupe_key").copy()
 
-    papers_csv   = out_dir / f"papers_{round_name.lower()}.csv"
+    # ── PDF quality check ────────────────────────────────────────────────────
+    sample["pdf_status"] = sample.apply(
+        lambda r: _check_pdf_quality(r, min_chars), axis=1
+    )
+    status_counts = sample["pdf_status"].value_counts().to_dict()
+    print(f"  PDF status: { {k: status_counts.get(k, 0) for k in ['ok', 'missing', 'suspect']} }")
+
+    # ── Write local files ────────────────────────────────────────────────────
     template_csv = out_dir / f"coding_{round_name.lower()}_template.csv"
 
-    out = sample[["dedupe_key", "doi", "title", "year", "file_path"]].copy()
-    out["year"] = pd.to_numeric(out["year"], errors="coerce").apply(
-        lambda x: str(int(x)) if pd.notna(x) else ""
-    )
-    out.to_csv(papers_csv, index=False)
     make_template(sample).to_csv(template_csv, index=False)
-    print(f"  Written: {papers_csv.relative_to(REPO_ROOT)}")
     print(f"  Written: {template_csv.relative_to(REPO_ROOT)}")
 
+    # ── Missing/suspect papers list (for procurement) ────────────────────────
+    missing_csv = out_dir / f"papers_{round_name.lower()}_missing.csv"
+    needs_pdf = sample[sample["pdf_status"] != "ok"]
+    if not needs_pdf.empty:
+        miss_out = needs_pdf[["doi", "title", "year"]].copy()
+        miss_out["year"] = pd.to_numeric(miss_out["year"], errors="coerce").apply(
+            lambda x: str(int(x)) if pd.notna(x) else ""
+        )
+        miss_out.insert(0, "status", "")
+        miss_out.to_csv(missing_csv, index=False)
+        print(f"  Written: {missing_csv.relative_to(REPO_ROOT)}  ({len(miss_out)} papers need PDF)")
+    else:
+        print(f"  All {sample_n} PDFs present and passing quality check")
+
+    # ── Copy available PDFs into local batch pdfs folder ─────────────────────
+    pdfs_local_dir = out_dir / f"{round_name} pdfs"
+    pdfs_local_dir.mkdir(exist_ok=True)
+    n_copied = 0
+    for _, row in sample.iterrows():
+        if row.get("pdf_status") != "ok":
+            continue
+        fp = row.get("file_path")
+        if not fp or (isinstance(fp, float) and pd.isna(fp)):
+            continue
+        src = Path(str(fp))
+        if src.exists() and src.suffix.lower() == ".pdf":
+            shutil.copy2(src, pdfs_local_dir / src.name)
+            n_copied += 1
+    if n_copied:
+        print(f"  Copied {n_copied} PDFs → {pdfs_local_dir.relative_to(REPO_ROOT)}")
+
     if dry_run:
-        # Generate instruction PDF with placeholder link so it can be inspected
         instruction_pdf = out_dir / f"instruction_{round_name.lower()}.pdf"
         make_instruction_pdf(
             out_path=instruction_pdf,
@@ -616,14 +707,13 @@ def draw_batch(
         record_assignment(round_name, len(sample), drive_folder_id="DRY_RUN")
         return set(sample["dedupe_key"].tolist())
 
-    # Drive: find or create round folder
+    # ── Drive upload ─────────────────────────────────────────────────────────
     round_folder_id, created = get_or_create_folder(service, round_name, DRIVE_PARENT_ID)
     action = "Created" if created else "Using"
     print(f"  {action} Drive folder: {round_name}  (id={round_folder_id})")
 
     codebook_url = ensure_codebook_in_parent(service)
 
-    # Instruction PDF with real Drive link
     instruction_pdf = out_dir / f"instruction_{round_name.lower()}.pdf"
     make_instruction_pdf(
         out_path=instruction_pdf,
@@ -638,30 +728,47 @@ def draw_batch(
     tmpl_id  = update_or_upload_file(service, template_csv,    template_csv.name,    round_folder_id)
     print(f"  Uploaded: {instruction_pdf.name}  (id={instr_id})")
     print(f"  Uploaded: {template_csv.name}  (id={tmpl_id})")
+    if missing_csv.exists():
+        miss_id = update_or_upload_file(service, missing_csv, missing_csv.name, round_folder_id)
+        print(f"  Uploaded: {missing_csv.name}  (id={miss_id})")
 
-    # PDFs subfolder
+    # PDFs subfolder — upload only available PDFs; missing ones are tracked in _missing.csv
     pdfs_folder_name = f"{round_name} pdfs"
     pdfs_folder_id, _ = get_or_create_folder(service, pdfs_folder_name, round_folder_id)
 
-    print(f"  Uploading {len(sample)} PDFs to '{pdfs_folder_name}'...")
+    n_ok = status_counts.get("ok", 0)
+    print(f"  Uploading {n_ok} available PDFs to '{pdfs_folder_name}'...")
     errors: list[str] = []
     for i, (_, row) in enumerate(sample.iterrows(), 1):
-        pdf_path = Path(row["file_path"])
+        doi_or_key = row.get("doi") or row["dedupe_key"]
         label = f"[{i:3d}/{len(sample)}]"
-        if not pdf_path.exists():
-            print(f"    {label} MISSING: {pdf_path.name}")
-            errors.append(row.get("doi", row["dedupe_key"]))
+        fp = row.get("file_path")
+        if not fp or (isinstance(fp, float) and pd.isna(fp)):
+            print(f"    {label} NO PDF (not retrieved): {doi_or_key}")
+            errors.append(doi_or_key)
             continue
-        print(f"    {label} {pdf_path.name}", end=" ", flush=True)
-        upload_file(service, pdf_path, pdf_path.name, pdfs_folder_id)
+        pdf_path = Path(str(fp))
+        if not pdf_path.exists():
+            print(f"    {label} MISSING (file not found): {pdf_path.name}")
+            errors.append(doi_or_key)
+            continue
+        if pdf_path.suffix.lower() in (".html", ".htm"):
+            print(f"    {label} HTML only (skipping, needs PDF): {pdf_path.name}")
+            errors.append(doi_or_key)
+            continue
+        # Prefer the local batch copy if already copied there
+        local_copy = pdfs_local_dir / pdf_path.name
+        src = local_copy if local_copy.exists() else pdf_path
+        print(f"    {label} {src.name}", end=" ", flush=True)
+        update_or_upload_file(service, src, src.name, pdfs_folder_id)
         print("✓")
 
     record_assignment(round_name, len(sample), round_folder_id)
 
-    n_ok = len(sample) - len(errors)
-    print(f"  Done: {n_ok}/{len(sample)} PDFs uploaded")
+    n_uploaded = len(sample) - len(errors)
+    print(f"  Done: {n_uploaded}/{len(sample)} PDFs uploaded  |  {len(errors)} need procuring")
     if errors:
-        print(f"  Missing: {errors[:5]}{'...' if len(errors) > 5 else ''}")
+        print(f"  See: papers_{round_name.lower()}_missing.csv for procurement list")
     print(f"  Drive: https://drive.google.com/drive/folders/{round_folder_id}")
 
     return set(sample["dedupe_key"].tolist())
@@ -676,7 +783,7 @@ def push_dry_run_batches(service) -> None:
     For each pending batch:
       1. Re-generates the instruction PDF with the real Drive folder link.
       2. Uploads instruction PDF + coding template.
-      3. Uploads full-text PDFs.
+      3. Uploads available full-text PDFs (skips missing ones).
       4. Updates assignments.csv with the real folder ID.
     """
     rows = _read_assignments()
@@ -695,26 +802,22 @@ def push_dry_run_batches(service) -> None:
         round_name = row["round"]
         out_dir    = OUTPUTS_DIR / "step14b" / round_name
 
-        papers_csv   = out_dir / f"papers_{round_name.lower()}.csv"
         template_csv = out_dir / f"coding_{round_name.lower()}_template.csv"
 
-        if not papers_csv.exists() or not template_csv.exists():
-            print(f"\n  {round_name}: local files missing — skipping (re-run --rounds to recreate)")
+        if not template_csv.exists():
+            print(f"\n  {round_name}: coding template missing — skipping (re-run --rounds to recreate)")
             continue
 
-        papers = pd.read_csv(papers_csv)
-        n      = len(papers)
+        n = len(pd.read_csv(template_csv))
 
         print(f"\n{'─'*60}")
         print(f"  Pushing: {round_name}  ({n} papers)")
         print(f"{'─'*60}")
 
-        # Find or create Drive folder
         round_folder_id, created = get_or_create_folder(service, round_name, DRIVE_PARENT_ID)
         action = "Created" if created else "Using"
         print(f"  {action} Drive folder: {round_name}  (id={round_folder_id})")
 
-        # Re-generate instruction PDF with real Drive link
         instruction_pdf = out_dir / f"instruction_{round_name.lower()}.pdf"
         make_instruction_pdf(
             out_path=instruction_pdf,
@@ -730,28 +833,25 @@ def push_dry_run_batches(service) -> None:
         print(f"  Uploaded: {instruction_pdf.name}  (id={instr_id})")
         print(f"  Uploaded: {template_csv.name}  (id={tmpl_id})")
 
-        # PDFs subfolder
         pdfs_folder_name = f"{round_name} pdfs"
         pdfs_folder_id, _ = get_or_create_folder(service, pdfs_folder_name, round_folder_id)
 
-        print(f"  Uploading {n} PDFs to '{pdfs_folder_name}'...")
-        errors: list[str] = []
-        for i, (_, pr) in enumerate(papers.iterrows(), 1):
-            pdf_path = Path(pr["file_path"])
-            label    = f"[{i:3d}/{n}]"
-            if not pdf_path.exists():
-                print(f"    {label} MISSING: {pdf_path.name}")
-                errors.append(pr.get("doi", pr["dedupe_key"]))
-                continue
-            print(f"    {label} {pdf_path.name}", end=" ", flush=True)
-            upload_file(service, pdf_path, pdf_path.name, pdfs_folder_id)
+        pdfs_local_dir = out_dir / pdfs_folder_name
+        pdf_files = sorted(pdfs_local_dir.glob("*.pdf")) if pdfs_local_dir.exists() else []
+        print(f"  Uploading {len(pdf_files)} PDFs from local pdfs/ folder to '{pdfs_folder_name}'...")
+        for i, pdf_file in enumerate(pdf_files, 1):
+            label = f"[{i:3d}/{len(pdf_files)}]"
+            print(f"    {label} {pdf_file.name}", end=" ", flush=True)
+            update_or_upload_file(service, pdf_file, pdf_file.name, pdfs_folder_id)
             print("✓")
 
+        missing_csv = out_dir / f"papers_{round_name.lower()}_missing.csv"
+        if missing_csv.exists():
+            miss_id = update_or_upload_file(service, missing_csv, missing_csv.name, round_folder_id)
+            print(f"  Uploaded: {missing_csv.name}  (id={miss_id})")
+
         record_assignment(round_name, n, round_folder_id)
-        n_ok = n - len(errors)
-        print(f"  Done: {n_ok}/{n} PDFs uploaded")
-        if errors:
-            print(f"  Missing: {errors[:5]}{'...' if len(errors) > 5 else ''}")
+        print(f"  Done: {len(pdf_files)}/{n} PDFs uploaded")
         print(f"  Drive: https://drive.google.com/drive/folders/{round_folder_id}")
 
     print(f"\nUploading assignments.csv to Drive parent folder...")
@@ -759,6 +859,146 @@ def push_dry_run_batches(service) -> None:
     print(f"\n{'='*60}")
     print(f"  All done — {len(pending)} batch(es) pushed")
     print(f"{'='*60}\n")
+
+
+# ── deduplicate PDFs on Drive ─────────────────────────────────────────────────
+
+def dedupe_drive_pdfs(service, rounds: list[str] | None = None) -> None:
+    """
+    For each FT-R3+ round on Drive, find duplicate filenames in the pdfs subfolder
+    and trash all but the first (oldest) copy.
+
+    If rounds is given, only process those rounds; otherwise process all pushed rounds.
+    """
+    rows = _read_assignments()
+    live = [r for r in rows if r.get("drive_folder_id") not in ("", "DRY_RUN")]
+
+    pattern = re.compile(r"^FT-R(\d+)$")
+    live = [r for r in live if pattern.match(r["round"]) and int(pattern.match(r["round"]).group(1)) >= ROUND_NUMERIC_START]
+
+    if rounds:
+        live = [r for r in live if r["round"] in rounds]
+
+    if not live:
+        print("No eligible pushed rounds found.")
+        return
+
+    print(f"Checking {len(live)} round(s) for duplicate PDFs: {', '.join(r['round'] for r in live)}")
+    total_trashed = 0
+
+    for row in live:
+        round_name = row["round"]
+        folder_id  = row["drive_folder_id"]
+
+        pdfs_folder_name = f"{round_name} pdfs"
+        pdfs_folder_id = find_folder(service, pdfs_folder_name, folder_id)
+        if not pdfs_folder_id:
+            print(f"\n  {round_name}: '{pdfs_folder_name}' not found on Drive — skipping")
+            continue
+
+        # List ALL files (paginate in case >100)
+        all_files: list[dict] = []
+        page_token = None
+        while True:
+            resp = service.files().list(
+                q=(f"'{pdfs_folder_id}' in parents and trashed=false "
+                   f"and mimeType!='application/vnd.google-apps.folder'"),
+                fields="nextPageToken, files(id, name, createdTime)",
+                pageSize=1000,
+                supportsAllDrives=True,
+                includeItemsFromAllDrives=True,
+                pageToken=page_token,
+            ).execute()
+            all_files.extend(resp.get("files", []))
+            page_token = resp.get("nextPageToken")
+            if not page_token:
+                break
+
+        # Group by name, sort each group by createdTime (oldest first = keep)
+        from collections import defaultdict
+        by_name: dict[str, list[dict]] = defaultdict(list)
+        for f in all_files:
+            by_name[f["name"]].append(f)
+
+        dupes = {name: files for name, files in by_name.items() if len(files) > 1}
+        if not dupes:
+            print(f"\n  {round_name}: {len(all_files)} files, no duplicates")
+            continue
+
+        n_trashed = 0
+        print(f"\n  {round_name}: {len(all_files)} files, {len(dupes)} duplicate name(s)")
+        for name, files in sorted(dupes.items()):
+            files_sorted = sorted(files, key=lambda f: f.get("createdTime", ""))
+            keep = files_sorted[0]
+            trash_list = files_sorted[1:]
+            print(f"    '{name}': keeping oldest ({keep['id']}), trashing {len(trash_list)}")
+            for f in trash_list:
+                service.files().update(
+                    fileId=f["id"],
+                    body={"trashed": True},
+                    supportsAllDrives=True,
+                ).execute()
+                n_trashed += 1
+
+        print(f"  Trashed {n_trashed} duplicate(s) in {round_name}")
+        total_trashed += n_trashed
+
+    print(f"\nDone — {total_trashed} duplicate file(s) trashed across all rounds.")
+
+
+# ── pull PDFs from Drive ───────────────────────────────────────────────────────
+
+def pull_pdfs(service, round_name: str) -> None:
+    """
+    Download PDFs from the Drive round folder into the local pdfs/ subfolder.
+
+    Use this after Jenn has uploaded procured PDFs to the Drive round folder.
+    Already-present local files are skipped.
+    """
+    rows = _read_assignments()
+    row = next((r for r in rows if r.get("round") == round_name), None)
+    if not row:
+        print(f"ERROR: {round_name} not found in assignments.csv")
+        sys.exit(1)
+
+    folder_id = row.get("drive_folder_id", "")
+    if not folder_id or folder_id in ("DRY_RUN", ""):
+        print(f"ERROR: {round_name} has no real Drive folder (id={folder_id!r})")
+        sys.exit(1)
+
+    local_pdfs_dir = OUTPUTS_DIR / "step14b" / round_name / pdfs_folder_name
+    local_pdfs_dir.mkdir(parents=True, exist_ok=True)
+
+    pdfs_folder_name = f"{round_name} pdfs"
+    pdfs_folder_id = find_folder(service, pdfs_folder_name, folder_id)
+    if not pdfs_folder_id:
+        print(f"ERROR: '{pdfs_folder_name}' subfolder not found in Drive folder {folder_id}")
+        sys.exit(1)
+
+    resp = service.files().list(
+        q=(f"'{pdfs_folder_id}' in parents and trashed=false "
+           f"and mimeType!='application/vnd.google-apps.folder'"),
+        fields="files(id, name)",
+        supportsAllDrives=True,
+        includeItemsFromAllDrives=True,
+    ).execute()
+    drive_files = resp.get("files", [])
+
+    print(f"\n  Drive '{pdfs_folder_name}': {len(drive_files)} file(s)")
+    n_downloaded = n_skipped = 0
+    for f in drive_files:
+        dest = local_pdfs_dir / f["name"]
+        if dest.exists():
+            print(f"  Already local: {f['name']}")
+            n_skipped += 1
+            continue
+        print(f"  Downloading: {f['name']}...", end=" ", flush=True)
+        download_file(service, f["id"], dest)
+        print("✓")
+        n_downloaded += 1
+
+    print(f"\n  Done: {n_downloaded} downloaded, {n_skipped} already present")
+    print(f"  Local: {local_pdfs_dir.relative_to(REPO_ROOT)}")
 
 
 # ── main ───────────────────────────────────────────────────────────────────────
@@ -776,15 +1016,22 @@ def main() -> None:
     parser.add_argument("--sample",            type=int, default=20,
                         help="Papers per batch (default 20)")
     parser.add_argument("--min-chars",         type=int, default=2000,
-                        help="Min extracted character count (default 2000)")
+                        help="Min extracted char count to consider a retrieved PDF legit (default 2000)")
     parser.add_argument("--dry-run",           action="store_true")
     parser.add_argument("--fix-instructions",  action="store_true",
                         help="Re-upload codebook to Drive parent and regenerate instruction PDFs "
                              "for all already-pushed rounds")
+    parser.add_argument("--pull",              metavar="ROUND",
+                        help="Download PDFs from Drive for a round into its local pdfs/ folder "
+                             "(e.g. --pull FT-R3). Use after Jenn has uploaded procured PDFs.")
+    parser.add_argument("--dedupe",            action="store_true",
+                        help="Trash duplicate PDFs in Drive pdfs/ folders for all FT-R3+ rounds. "
+                             "Keeps the oldest copy of each filename.")
     args = parser.parse_args()
 
-    if not args.rounds and not args.push and not args.sync_assignments and not args.fix_instructions:
-        parser.error("provide --rounds N, --push, --sync-assignments, or --fix-instructions")
+    if not any([args.rounds, args.push, args.sync_assignments,
+                args.fix_instructions, args.pull, args.dedupe]):
+        parser.error("provide --rounds N, --push, --sync-assignments, --fix-instructions, or --pull ROUND")
 
     cleanup_stale_assignments()
 
@@ -800,11 +1047,25 @@ def main() -> None:
         print("Done.")
         return
 
+    if args.dedupe:
+        from googleapiclient.discovery import build
+        print("Connecting to Google Drive...")
+        service = build("drive", "v3", credentials=gdrive_auth())
+        dedupe_drive_pdfs(service)
+        return
+
     if args.push:
         from googleapiclient.discovery import build
         print("Connecting to Google Drive...")
         service = build("drive", "v3", credentials=gdrive_auth())
         push_dry_run_batches(service)
+        return
+
+    if args.pull:
+        from googleapiclient.discovery import build
+        print("Connecting to Google Drive...")
+        service = build("drive", "v3", credentials=gdrive_auth())
+        pull_pdfs(service, args.pull)
         return
 
     if args.fix_instructions:
@@ -822,11 +1083,11 @@ def main() -> None:
             round_name     = row["round"]
             folder_id      = row["drive_folder_id"]
             out_dir        = OUTPUTS_DIR / "step14b" / round_name
-            papers_csv     = out_dir / f"papers_{round_name.lower()}.csv"
-            if not papers_csv.exists():
-                print(f"  {round_name}: local papers CSV not found — skipping")
+            template_csv_fix = out_dir / f"coding_{round_name.lower()}_template.csv"
+            if not template_csv_fix.exists():
+                print(f"  {round_name}: coding template not found — skipping")
                 continue
-            n = len(pd.read_csv(papers_csv))
+            n = len(pd.read_csv(template_csv_fix))
             instruction_pdf = out_dir / f"instruction_{round_name.lower()}.pdf"
             print(f"\n  {round_name}: regenerating instruction PDF ({n} papers)...")
             make_instruction_pdf(
@@ -847,7 +1108,7 @@ def main() -> None:
     print(f"  step14b_batch_draw")
     print(f"  Creating {args.rounds} batch(es): {', '.join(rounds)}")
     print(f"  Sample/batch: {args.sample}   Seeds: {base_seed}–{base_seed + args.rounds - 1}")
-    print(f"  Min chars: {args.min_chars}   Dry-run: {args.dry_run}")
+    print(f"  Min chars (PDF quality): {args.min_chars}   Dry-run: {args.dry_run}")
     print(f"{'='*60}")
 
     # ── Build pool once ───────────────────────────────────────────────────────
@@ -855,9 +1116,10 @@ def main() -> None:
     already: set[str] = load_already_sampled(exclude_round=None)
     for r in rounds:
         already -= _keys_for_round(r)  # don't double-count rounds being recreated
-    print(f"\nPool (quality-filtered PDFs): {len(pool):,}")
-    print(f"Already assigned elsewhere:   {len(already):,}")
-    print(f"Available before first draw:  {len(pool) - sum(pool['dedupe_key'].isin(already)):,}")
+    n_already = int((pool["dedupe_key"].isin(already) | pool["doi"].isin(already)).sum())
+    print(f"\nPool (all abstract-screened papers): {len(pool):,}")
+    print(f"Already assigned elsewhere:          {n_already:,}")
+    print(f"Available before first draw:         {len(pool) - n_already:,}")
 
     # ── Connect to Drive once (skip in dry-run) ───────────────────────────────
     service = None
@@ -874,6 +1136,7 @@ def main() -> None:
             already_sampled=already,
             sample_n=args.sample,
             seed=base_seed + i,
+            min_chars=args.min_chars,
             dry_run=args.dry_run,
             service=service,
         )
@@ -890,8 +1153,14 @@ def main() -> None:
 
 
 def _keys_for_round(round_name: str) -> set[str]:
-    """Return dedupe_keys already on disk for a specific round (to allow re-running)."""
+    """Return DOIs/keys already on disk for a specific round (to allow re-running)."""
     keys: set[str] = set()
+    # New rounds: coding template is the source of truth
+    template_csv = OUTPUTS_DIR / "step14b" / round_name / f"coding_{round_name.lower()}_template.csv"
+    if template_csv.exists():
+        df = pd.read_csv(template_csv, usecols=["doi"])
+        keys.update(df["doi"].dropna())
+    # Legacy rounds: papers CSV (FT-R2x)
     for papers_csv in [
         OUTPUTS_DIR / "step14b" / round_name / f"papers_{round_name.lower()}.csv",
         ROUNDS_DOC_DIR / round_name / f"papers_{round_name.lower()}.csv",
