@@ -966,10 +966,9 @@ def pull_pdfs(service, round_name: str) -> None:
         print(f"ERROR: {round_name} has no real Drive folder (id={folder_id!r})")
         sys.exit(1)
 
+    pdfs_folder_name = f"{round_name} pdfs"
     local_pdfs_dir = OUTPUTS_DIR / "step14b" / round_name / pdfs_folder_name
     local_pdfs_dir.mkdir(parents=True, exist_ok=True)
-
-    pdfs_folder_name = f"{round_name} pdfs"
     pdfs_folder_id = find_folder(service, pdfs_folder_name, folder_id)
     if not pdfs_folder_id:
         print(f"ERROR: '{pdfs_folder_name}' subfolder not found in Drive folder {folder_id}")
@@ -999,6 +998,134 @@ def pull_pdfs(service, round_name: str) -> None:
 
     print(f"\n  Done: {n_downloaded} downloaded, {n_skipped} already present")
     print(f"  Local: {local_pdfs_dir.relative_to(REPO_ROOT)}")
+
+    # ── sync updated missing CSV from Drive ─────────────────────────────────
+    # Prefer a Google Sheets version (Jenn edits there); fall back to plain CSV.
+    missing_csv_name    = f"papers_{round_name.lower()}_missing.csv"
+    missing_sheets_name = f"papers_{round_name.lower()}_missing"   # no extension
+    local_missing = OUTPUTS_DIR / "step14b" / round_name / missing_csv_name
+
+    # Record current local statuses before overwriting
+    old_statuses: dict[str, str] = {}
+    if local_missing.exists():
+        try:
+            old_df = pd.read_csv(local_missing, dtype=str).fillna("")
+            for _, r in old_df.iterrows():
+                d = str(r.get("doi", "")).strip()
+                s = str(r.get("status", "")).strip()
+                if d:
+                    old_statuses[d] = s
+        except Exception:
+            pass
+
+    # Try Sheets version first
+    sheets_id = find_file(service, missing_sheets_name, folder_id)
+    if sheets_id:
+        meta = service.files().get(
+            fileId=sheets_id, fields="mimeType", supportsAllDrives=True,
+        ).execute()
+        if meta.get("mimeType") != "application/vnd.google-apps.spreadsheet":
+            sheets_id = None
+
+    if sheets_id:
+        content = service.files().export(
+            fileId=sheets_id, mimeType="text/csv",
+        ).execute()
+        if isinstance(content, bytes):
+            local_missing.write_bytes(content)
+        else:
+            local_missing.write_text(str(content), encoding="utf-8")
+        print(f"\n  Synced missing CSV from Google Sheets: {missing_sheets_name}")
+    else:
+        plain_id = find_file(service, missing_csv_name, folder_id)
+        if plain_id:
+            download_file(service, plain_id, local_missing)
+            print(f"\n  Synced missing CSV from Drive: {missing_csv_name}")
+        else:
+            print(f"\n  No missing CSV found on Drive — skipping.")
+            return  # nothing to reconcile
+
+    new_miss = pd.read_csv(local_missing, dtype=str).fillna("")
+    changed = []
+    for _, r in new_miss.iterrows():
+        doi   = str(r.get("doi", "")).strip()
+        new_st = str(r.get("status", "")).strip()
+        old_st = old_statuses.get(doi, "")
+        if new_st != old_st:
+            changed.append((doi, old_st, new_st))
+    if changed:
+        print(f"  Status changes ({len(changed)}):")
+        for doi, old_st, new_st in changed:
+            print(f"    {doi[:60]}  {old_st!r:10s} → {new_st!r}")
+    else:
+        print("  No status changes detected in missing CSV.")
+
+    # Update coding template with procurement_status column
+    _update_template_procurement_status(service, round_name,
+                                         OUTPUTS_DIR / "step14b" / round_name,
+                                         new_miss, folder_id)
+
+
+def _update_template_procurement_status(
+    service, round_name: str, local_dir: Path,
+    missing_df: pd.DataFrame, folder_id: str,
+) -> None:
+    """Add/update procurement_status column in coding template, then re-upload to Drive."""
+    template_csv = local_dir / f"coding_{round_name.lower()}_template.csv"
+    if not template_csv.exists():
+        print(f"  WARNING: {template_csv.name} not found — skipping template update.")
+        return
+
+    template_df = pd.read_csv(template_csv, dtype=str).fillna("")
+
+    doi_to_status: dict[str, str] = {}
+    for _, r in missing_df.iterrows():
+        doi = str(r.get("doi", "")).strip()
+        st  = str(r.get("status", "")).strip()
+        if doi:
+            doi_to_status[doi] = st
+
+    # Build normalised stem → DOI map from local pdfs folder
+    pdfs_dir = local_dir / f"{round_name} pdfs"
+    local_pdf_stems: list[str] = []
+    if pdfs_dir.exists():
+        for p in pdfs_dir.iterdir():
+            if p.suffix.lower() in (".pdf",):
+                stem = p.stem
+                if stem.lower().startswith("doi_"):
+                    stem = stem[4:]
+                local_pdf_stems.append(stem.replace("_", "").lower())
+
+    def _doi_has_local_pdf(doi: str) -> bool:
+        doi_norm = doi.replace("/", "").replace("_", "").lower()
+        return doi_norm in local_pdf_stems
+
+    def _status(doi: str) -> str:
+        doi = str(doi).strip()
+        if doi not in doi_to_status:
+            return ""           # had PDF from the start
+        jenn = doi_to_status[doi].strip()
+        if not jenn:
+            return "pdf_procured" if _doi_has_local_pdf(doi) else "missing"
+        jenn_lower = jenn.lower()
+        if jenn_lower == "done":
+            return "done"
+        if jenn_lower == "exclude":
+            return "exclude"
+        return f"Skip - {jenn}"
+
+    template_df["procurement_status"] = template_df["doi"].apply(_status)
+    template_df.to_csv(template_csv, index=False)
+    print(f"  Updated local template: {template_csv.relative_to(REPO_ROOT)}")
+
+    # Show summary
+    counts = template_df["procurement_status"].value_counts()
+    for val, cnt in counts.items():
+        print(f"    {val or '(had PDF from start)':30s} {cnt}")
+
+    # Re-upload updated template to Drive
+    tmpl_id = update_or_upload_file(service, template_csv, template_csv.name, folder_id)
+    print(f"  Re-uploaded template to Drive  (id={tmpl_id})")
 
 
 # ── main ───────────────────────────────────────────────────────────────────────
