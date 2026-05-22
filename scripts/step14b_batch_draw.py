@@ -1078,6 +1078,9 @@ def _update_template_procurement_status(
 
     template_df = pd.read_csv(template_csv, dtype=str).fillna("")
 
+    def _is_skip_or_exclude(ps: str) -> bool:
+        return ps.startswith("Skip -") or ps == "exclude"
+
     doi_to_status: dict[str, str] = {}
     for _, r in missing_df.iterrows():
         doi = str(r.get("doi", "")).strip()
@@ -1100,7 +1103,7 @@ def _update_template_procurement_status(
         doi_norm = doi.replace("/", "").replace("_", "").lower()
         return doi_norm in local_pdf_stems
 
-    def _status(doi: str) -> str:
+    def _compute_status(doi: str) -> str:
         doi = str(doi).strip()
         if doi not in doi_to_status:
             return ""           # had PDF from the start
@@ -1114,7 +1117,42 @@ def _update_template_procurement_status(
             return "exclude"
         return f"Skip - {jenn}"
 
-    template_df["procurement_status"] = template_df["doi"].apply(_status)
+    # Update procurement_status — never overwrite an existing Skip-*/exclude decision
+    # (those are manual finalisations that must survive repeated pulls).
+    for idx, row in template_df.iterrows():
+        existing = str(row.get("procurement_status", "")).strip()
+        if _is_skip_or_exclude(existing):
+            continue                        # preserve manual decision
+        template_df.at[idx, "procurement_status"] = _compute_status(str(row.get("doi", "")))
+
+    # For Skip-* / exclude rows: pre-fill confirmed_include=no so coders know to
+    # skip them. procurement_status carries the reason; notes gets a plain-English
+    # copy for analysts reading the coding data without the pipeline columns.
+    def _skip_note(status: str) -> str:
+        if status == "exclude":
+            return "Excluded during procurement"
+        s = status.removeprefix("Skip - ").strip()
+        s_lower = s.lower()
+        if s_lower == "na":
+            return "PDF could not be retrieved during procurement"
+        if s_lower == "book":
+            return "Full book — no individual chapter PDF available"
+        if s_lower.startswith("exclude"):
+            reason = s[len("exclude"):].lstrip(" -").strip()
+            return f"Excluded during procurement: {reason}" if reason else "Excluded during procurement"
+        return f"Skipped during procurement: {s}"
+
+    skip_mask = (
+        template_df["procurement_status"].str.startswith("Skip -", na=False)
+        | (template_df["procurement_status"] == "exclude")
+    )
+    template_df.loc[skip_mask, "confirmed_include"] = "no"
+    for idx in template_df[skip_mask].index:
+        note = _skip_note(template_df.at[idx, "procurement_status"])
+        existing = str(template_df.at[idx, "notes"]).strip()
+        if note not in existing:
+            template_df.at[idx, "notes"] = f"{existing}; {note}" if existing else note
+
     template_df.to_csv(template_csv, index=False)
     print(f"  Updated local template: {template_csv.relative_to(REPO_ROOT)}")
 
