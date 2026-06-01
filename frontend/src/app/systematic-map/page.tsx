@@ -59,12 +59,9 @@ export default function SystematicMapPage() {
     datasetMode === 'llm' ? `/map/${name}.png` : undefined;
 
   const staticFigures = [
-    { name: 'temporal_trends', fixedCats: true, json: figJson('temporal_trends'),  png: figPng('temporal_trends'),  csv: '/map/data/temporal_trends.csv',  title: 'Publications Over Time',     description: 'Number of included studies per publication year.' },
-    { name: 'producer_type',   fixedCats: true,  json: figJson('producer_type'),    png: figPng('producer_type_bar'), csv: '/map/data/producer_type.csv',    title: 'Producer Types',             description: 'Breakdown of studies by agricultural producer type.' },
-    { name: 'methodology',     fixedCats: true,  json: figJson('methodology'),      png: figPng('methodology_bar'),   csv: '/map/data/methodology.csv',      title: 'Methodological Approaches',  description: 'Primary methodological design across included studies.' },
-    { name: 'domain_type',     fixedCats: true,  json: figJson('domain_type'),      png: figPng('domain_type_bar'),   csv: '/map/data/domain_type.csv',      title: 'Adaptation Domain Type',     description: 'Studies assessing processes, outcomes, or both.' },
-    { name: 'equity',          fixedCats: true,  json: figJson('equity'),           png: figPng('equity_bar'),        csv: '/map/data/equity.csv',           title: 'Equity & Inclusion',         description: 'Equity and inclusion dimensions addressed in studies.' },
-    { name: 'domain_heatmap',  fixedCats: true,  json: figJson('domain_heatmap'),   png: figPng('domain_heatmap'),    csv: '/map/data/domain_heatmap.csv',   title: 'Process & Outcome Domains',  description: datasetMode === 'compare' ? 'Coverage difference (LLM% − Human%) per domain × producer cell. Teal = LLM leads · amber = Human leads.' : 'Adaptation process and outcome domains by producer type.' },
+    { name: 'temporal_trends', json: figJson('temporal_trends'), png: figPng('temporal_trends'),  csv: '/map/data/temporal_trends.csv',  title: 'Publications Over Time',       description: 'Number of included studies per publication year.' },
+    { name: 'methodology',     json: figJson('methodology'),     png: figPng('methodology_bar'),  csv: '/map/data/methodology.csv',      title: 'Methodological Approaches',    description: 'Primary methodological design across included studies.' },
+    { name: 'equity',          json: figJson('equity'),          png: figPng('equity_bar'),       csv: '/map/data/equity.csv',           title: 'Equity & Inclusion',           description: 'Equity and inclusion dimensions addressed in studies. Red bar = studies with no marginalized group focus.' },
   ];
 
   useEffect(() => {
@@ -179,6 +176,33 @@ export default function SystematicMapPage() {
         </div>
       </section>
 
+      {/* Key Findings */}
+      <section className="bg-white px-6 py-16 border-t border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-xs font-tagline uppercase tracking-widest text-green mb-3">What the evidence shows</p>
+          <h2 className="text-2xl font-logo font-bold text-charcoal mb-4">Key findings</h2>
+          <p className="font-tagline text-sm text-gray-600 leading-relaxed max-w-3xl mb-8">
+            Across 86 human-coded studies, the evidence base is recent, geographically concentrated, and skewed toward process outcomes and crop systems. Non-crop producers, marginalized groups, and cost data remain severely underrepresented.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { stat: '96%', label: 'A recent but thin evidence base', text: 'Published since 2015 (median: 2022). Growing fast but long-term outcome evidence is still missing.' },
+              { stat: '86%', label: 'Marginalized groups largely invisible', text: 'Most studies do not disaggregate by women, youth, or indigenous peoples — a critical equity gap.' },
+              { stat: '<6%', label: 'Non-crop producers underrepresented', text: 'Fisheries/aquaculture (5.9%) and agroforestry (4.5%) nearly absent. Evidence skews heavily toward crop systems.' },
+              { stat: '~80%', label: 'Cost data almost entirely absent', text: 'Most studies report no cost or efficiency data, making value-for-money assessment nearly impossible.' },
+              { stat: '28%', label: 'Three countries dominate', text: 'Ethiopia, Ghana, and Kenya account for 28% of all studies. Most LMICs — and most of Africa — remain uncovered.' },
+              { stat: '—', label: 'Process outcomes studied; impacts are not', text: 'Knowledge, adoption, and decision-making are well covered. Income, wellbeing, and resilience outcomes remain sparse.' },
+            ].map(item => (
+              <div key={item.label} className="bg-sand rounded-xl p-5 border border-gray-100">
+                <p className="text-sm font-logo font-bold text-charcoal leading-snug mb-2">{item.label}</p>
+                <p className="text-2xl font-logo font-bold text-green leading-none mb-2">{item.stat}</p>
+                <p className="text-xs font-tagline text-gray-500 leading-relaxed">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Evidence Gap Map */}
       <section className="bg-sand px-6 py-16">
         <div className="max-w-5xl mx-auto">
@@ -208,13 +232,14 @@ export default function SystematicMapPage() {
           </p>
           <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
             <PlotlyChart
-              src={figJson('evidence_gap_map')}
+              src={datasetMode === 'compare' ? '/map/data/compare/evidence_gap_map.json' : figJson('evidence_gap_map')}
               fallbackImg={figPng('evidence_gap_map')}
               pngSrc={figPng('evidence_gap_map')}
               csvSrc="/map/data/evidence_gap_map.csv"
               height={datasetMode === 'compare' ? 740 : 700}
             />
           </div>
+
         </div>
       </section>
 
@@ -255,13 +280,24 @@ export default function SystematicMapPage() {
           </div>
           <p className="font-tagline text-sm text-gray-500 mb-4">Countries by study count. Multi-country studies counted in each country.</p>
           <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
-            {geoView === 'map' ? (
+            {datasetMode === 'compare' ? (
+              <div className="flex divide-x divide-gray-100">
+                <div className="flex-1 min-w-0 relative">
+                  <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full pointer-events-none">Human (n=86)</div>
+                  <PlotlyChart src="/map/data/human/geographic_map.json" height={420} />
+                </div>
+                <div className="flex-1 min-w-0 relative">
+                  <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full pointer-events-none">LLM (n=2,368)</div>
+                  <PlotlyChart src="/map/data/geographic_map.json" height={420} />
+                </div>
+              </div>
+            ) : geoView === 'map' ? (
               <PlotlyChart
                 src={figJson('geographic_map')}
                 fallbackImg={figPng('geographic_map')}
                 pngSrc={figPng('geographic_map')}
                 csvSrc="/map/data/geographic_map.csv"
-                height={datasetMode === 'compare' ? 400 : 500}
+                height={500}
               />
             ) : (
               <PlotlyChart
@@ -375,7 +411,7 @@ export default function SystematicMapPage() {
 
       {/* Supporting Charts */}
       <section className="bg-sand px-6 py-16">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between gap-4 mb-1">
             <h2 className="text-2xl font-logo font-bold text-green shrink-0">Evidence Map</h2>
             <div className="flex-none flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
@@ -389,13 +425,40 @@ export default function SystematicMapPage() {
           </div>
           <p className="font-tagline text-xs text-gray-400 mb-0">{DATASET_DESCS[datasetMode]}</p>
           <p className="font-tagline text-sm text-gray-500 mb-1 mt-3">Use the <Maximize2 className="inline w-3.5 h-3.5 mx-0.5 text-gray-400" /> button to expand any chart for full interactive exploration.</p>
+
+          {/* Methodology bar chart — full width, own row, responds to dataset mode */}
+          <div className="mt-6 group rounded-xl overflow-hidden bg-white shadow-[0_2px_12px_rgba(202,194,181,0.25)] hover:shadow-[0_4px_16px_rgba(202,194,181,0.4)] transition-all duration-300">
+            <div className="relative overflow-hidden bg-white">
+              <PlotlyChart
+                src={figJson('methodology_bars')}
+                height={datasetMode === 'compare' ? 560 : 520}
+                className="w-full"
+              />
+              <button
+                onClick={() => setExpandedFig({ src: figJson('methodology_bars'), title: 'Quantitative vs Qualitative by Domain' })}
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-500 hover:text-green hover:border-green transition opacity-0 group-hover:opacity-100"
+                title="Expand chart"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="p-4 border-t border-gray-100">
+              <h3 className="font-logo font-bold text-charcoal text-base">Quantitative vs Qualitative by Domain</h3>
+              <p className="font-tagline text-xs text-gray-500 mt-1">
+                {datasetMode === 'compare'
+                  ? 'Dark = LLM (n=2,368) · Light = Human (n=86). Blue = process domains · Green = outcome domains.'
+                  : 'Blue = process domains · Green = outcome domains. Non-exclusive: mixed-method studies counted in both bars.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Remaining charts — 2-column grid */}
           <div className={`grid gap-6 mt-6 ${datasetMode === 'compare' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
             {staticFigures.map((fig) => (
               <div key={fig.name}
                 className="group rounded-xl overflow-hidden bg-white shadow-[0_2px_12px_rgba(202,194,181,0.25)] hover:shadow-[0_4px_16px_rgba(202,194,181,0.4)] transition-all duration-300 flex flex-col">
                 <div className="relative overflow-hidden bg-white">
-                  {datasetMode === 'compare' && !fig.fixedCats ? (
-                    /* Free-form / temporal: two charts side by side */
+                  {datasetMode === 'compare' ? (
                     <div className="flex divide-x divide-gray-100">
                       <div className="flex-1 min-w-0 relative">
                         <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full pointer-events-none">Human (n=86)</div>
@@ -407,14 +470,13 @@ export default function SystematicMapPage() {
                       </div>
                     </div>
                   ) : (
-                    /* Single chart: LLM, Human, or fixed-category compare (grouped bars) */
                     <>
                       <PlotlyChart
                         src={fig.json}
                         fallbackImg={datasetMode === 'llm' ? fig.png : undefined}
                         pngSrc={datasetMode === 'llm' ? fig.png : undefined}
                         csvSrc={fig.csv}
-                        height={datasetMode === 'compare' ? 360 : 320}
+                        height={320}
                         className="w-full"
                       />
                       <button

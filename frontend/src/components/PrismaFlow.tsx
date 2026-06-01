@@ -33,24 +33,24 @@ const Y2 = Y1 + BH1 + 22;       // 116
 const P1 = Y2 + BH + 18;        // 186 — end of Identification
 const Y3 = P1 + 14;             // 200
 const P2 = Y3 + BH + 18;        // 270 — end of Screening
-const Y4 = P2 + 14;             // 284
-const Y5 = Y4 + BH + 22;        // 358
-const P3 = Y5 + BH + 18;        // 428 — end of Eligibility
+const Y4 = P2 + 14;             // 284 — Full texts sought
+// P3 ends immediately after Y4 (human coding draws from sought pool, not retrieved)
+const P3 = Y4 + BH + 18;        // 354 — end of Eligibility
 
 // Two-track layout for INCLUDED section
 const TW     = 148;
 const TG     = 16;
-const LLM_X  = CX + (CW - 2 * TW - TG) / 2;  // centres both tracks in CW
+const LLM_X  = CX + (CW - 2 * TW - TG) / 2;
 const LLM_C  = LLM_X + TW / 2;
 const HUM_X  = LLM_X + TW + TG;
 const HUM_C  = HUM_X + TW / 2;
 
-const Y_FORK = P3 + 14;          // 442 — fork point
-const Y_R1   = Y_FORK + 32;      // 474 — Row 1: track overview boxes
-const R1_H   = 80;
-const Y_R2   = Y_R1 + R1_H + 22; // 576 — Row 2: result boxes
+const Y_FORK = P3 + 14;          // 368 — fork at base of Eligibility
+const Y_R1   = Y_FORK + 32;      // 400 — Row 1: LLM retrieved/screened | Human coding
+const R1_H   = 95;
+const Y_R2   = Y_R1 + R1_H + 22; // 517 — Row 2: included counts
 const R2_H   = 88;
-const H      = Y_R2 + R2_H + 20; // 684
+const H      = Y_R2 + R2_H + 20; // 625
 
 function Arrowhead({ id, color }: { id: string; color: string }) {
   return (
@@ -203,22 +203,11 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
 
       {/* Box 4 — Full texts sought */}
       <CenterBox y={Y4} label="Full texts sought for retrieval" n="n = 8,748" pct="33% of screened" />
-      <ExclusionBox y={Y4} label="Not retrieved" n="n = 5,243" pct="60% sought" />
+      <ExclusionBox y={Y4} label="Not retrieved" n="n = 5,243" pct="60% sought · LLM path only" />
       <RightArrow sourceY={Y4} />
-      <DownArrow y={Y4 + BH} />
 
-      {/* Box 5 — Full texts retrieved (auto-retrieved + manual procurement) */}
-      <CenterBox y={Y5}
-        label="Full texts retrieved (auto-retrieved + manual procurement)"
-        n="n = 3,505"
-        pct="40% of full texts sought"
-      />
-      <DownArrow y={Y5 + BH} />
-
-      {/* ── INCLUDED: two-track fork ─────────────────────────────── */}
-
-      {/* Vertical connector from arrow end to fork bar */}
-      <line x1={CM} y1={Y5 + BH + 16} x2={CM} y2={Y_FORK}
+      {/* Connector from Y4 down to fork (human track branches from sought pool) */}
+      <line x1={CM} y1={Y4 + BH} x2={CM} y2={Y_FORK}
         stroke={GREEN} strokeWidth={1.5} />
 
       {/* Horizontal fork bar spanning both track centres */}
@@ -231,42 +220,46 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       <line x1={HUM_C} y1={Y_FORK} x2={HUM_C} y2={Y_R1 - 1}
         stroke={AMBER_BDR} strokeWidth={1.5} markerEnd="url(#arr-hum)" />
 
-      {/* Row 1 — LLM track overview */}
+      {/* Row 1 — LLM track (retrieved + screened) */}
       <rect x={LLM_X} y={Y_R1} width={TW} height={R1_H} rx={5}
         fill={SUPP_BG} stroke={SUPP_BDR} strokeWidth={1.5} />
-      <text x={LLM_C} y={Y_R1 + R1_H * 0.18} textAnchor="middle"
+      <text x={LLM_C} y={Y_R1 + R1_H * 0.14} textAnchor="middle"
         fontSize={9} fill="#475569" fontWeight="700" fontFamily="Arial, sans-serif" letterSpacing="0.5">
         LLM SCREENING
       </text>
-      <text x={LLM_C} y={Y_R1 + R1_H * 0.38} textAnchor="middle"
-        fontSize={9.5} fill="#555" fontFamily="Arial, sans-serif">
-        n = 3,505 assessed
+      <text x={LLM_C} y={Y_R1 + R1_H * 0.32} textAnchor="middle"
+        fontSize={9} fill="#555" fontFamily="Arial, sans-serif">
+        retrieved: n = 3,505
       </text>
-      <text x={LLM_C} y={Y_R1 + R1_H * 0.57} textAnchor="middle"
+      <text x={LLM_C} y={Y_R1 + R1_H * 0.52} textAnchor="middle"
         fontSize={9.5} fill={EXC_TEXT} fontFamily="Arial, sans-serif">
         n = 1,096 excluded (31%)
       </text>
-      <text x={LLM_C} y={Y_R1 + R1_H * 0.80} textAnchor="middle"
+      <text x={LLM_C} y={Y_R1 + R1_H * 0.74} textAnchor="middle"
         fontSize={8.5} fill="#94a3b8" fontFamily="Arial, sans-serif">
         auto-retrieved corpus only
       </text>
 
-      {/* Row 1 — Human track overview */}
+      {/* Row 1 — Human track (sampled from sought pool) */}
       <rect x={HUM_X} y={Y_R1} width={TW} height={R1_H} rx={5}
         fill={AMBER_BG} stroke={AMBER_BDR} strokeWidth={1.5} />
-      <text x={HUM_C} y={Y_R1 + R1_H * 0.18} textAnchor="middle"
+      <text x={HUM_C} y={Y_R1 + R1_H * 0.13} textAnchor="middle"
         fontSize={9} fill={AMBER} fontWeight="700" fontFamily="Arial, sans-serif" letterSpacing="0.5">
         HUMAN CODING
       </text>
-      <text x={HUM_C} y={Y_R1 + R1_H * 0.38} textAnchor="middle"
-        fontSize={9.5} fill="#555" fontFamily="Arial, sans-serif">
+      <text x={HUM_C} y={Y_R1 + R1_H * 0.30} textAnchor="middle"
+        fontSize={8.5} fill="#555" fontFamily="Arial, sans-serif">
+        sampled from full texts sought
+      </text>
+      <text x={HUM_C} y={Y_R1 + R1_H * 0.50} textAnchor="middle"
+        fontSize={9} fill="#555" fontFamily="Arial, sans-serif">
         5 rounds · 100 coded
       </text>
-      <text x={HUM_C} y={Y_R1 + R1_H * 0.57} textAnchor="middle"
+      <text x={HUM_C} y={Y_R1 + R1_H * 0.68} textAnchor="middle"
         fontSize={9.5} fill={EXC_TEXT} fontFamily="Arial, sans-serif">
         n = 14 excluded (14%)
       </text>
-      <text x={HUM_C} y={Y_R1 + R1_H * 0.80} textAnchor="middle"
+      <text x={HUM_C} y={Y_R1 + R1_H * 0.87} textAnchor="middle"
         fontSize={8.5} fill="#94a3b8" fontFamily="Arial, sans-serif">
         incl. manually procured PDFs
       </text>
