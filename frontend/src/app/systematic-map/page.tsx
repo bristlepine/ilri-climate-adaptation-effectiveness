@@ -7,14 +7,21 @@ import PrismaFlow from "@/components/PrismaFlow";
 import { useState, useEffect } from "react";
 import { Download, Maximize2, X } from "lucide-react";
 
-const staticFigures = [
-  { file: '/map/temporal_trends.png',   json: '/map/data/temporal_trends.json',  csv: '/map/data/temporal_trends.csv',  title: 'Publications Over Time',     description: 'Number of included studies per publication year.' },
-  { file: '/map/producer_type_bar.png', json: '/map/data/producer_type.json',    csv: '/map/data/producer_type.csv',    title: 'Producer Types',             description: 'Breakdown of studies by agricultural producer type.' },
-  { file: '/map/methodology_bar.png',   json: '/map/data/methodology.json',      csv: '/map/data/methodology.csv',      title: 'Methodological Approaches',  description: 'Primary methodological design across included studies.' },
-  { file: '/map/domain_type_bar.png',   json: '/map/data/domain_type.json',      csv: '/map/data/domain_type.csv',      title: 'Adaptation Domain Type',     description: 'Studies assessing processes, outcomes, or both.' },
-  { file: '/map/equity_bar.png',        json: '/map/data/equity.json',           csv: '/map/data/equity.csv',           title: 'Equity & Inclusion',         description: 'Equity and inclusion dimensions addressed in studies.' },
-  { file: '/map/domain_heatmap.png',    json: '/map/data/domain_heatmap.json',   csv: '/map/data/domain_heatmap.csv',   title: 'Process & Outcome Domains',  description: 'Adaptation process and outcome domains by producer type.' },
-];
+type DatasetMode = 'llm' | 'human' | 'compare';
+
+const DATASET_LABELS: Record<DatasetMode, string> = {
+  human:   'Human  (n=86)',
+  llm:     'LLM  (n=2,368)',
+  compare: 'Compare',
+};
+
+const DATASET_DESCS: Record<DatasetMode, string> = {
+  human:   'Human-coded primary output — 86 records across 5 coding rounds.',
+  llm:     'LLM-screened reference corpus — 2,368 auto-extracted records.',
+  compare: 'Human (amber) vs LLM (teal) — % of studies for direct comparison.',
+};
+
+const DATASET_MODES: DatasetMode[] = ['human', 'llm', 'compare'];
 
 interface Study {
   doi: string;
@@ -41,6 +48,24 @@ export default function SystematicMapPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [geoView, setGeoView] = useState<'map' | 'bar'>('map');
   const [flowView, setFlowView] = useState<'sankey' | 'prisma'>('prisma');
+  const [datasetMode, setDatasetMode] = useState<DatasetMode>('llm');
+
+  const figJson = (name: string) => {
+    if (datasetMode === 'human')   return `/map/data/human/${name}.json`;
+    if (datasetMode === 'compare') return `/map/data/compare/${name}.json`;
+    return `/map/data/${name}.json`;
+  };
+  const figPng = (name: string) =>
+    datasetMode === 'llm' ? `/map/${name}.png` : undefined;
+
+  const staticFigures = [
+    { name: 'temporal_trends', fixedCats: true, json: figJson('temporal_trends'),  png: figPng('temporal_trends'),  csv: '/map/data/temporal_trends.csv',  title: 'Publications Over Time',     description: 'Number of included studies per publication year.' },
+    { name: 'producer_type',   fixedCats: true,  json: figJson('producer_type'),    png: figPng('producer_type_bar'), csv: '/map/data/producer_type.csv',    title: 'Producer Types',             description: 'Breakdown of studies by agricultural producer type.' },
+    { name: 'methodology',     fixedCats: true,  json: figJson('methodology'),      png: figPng('methodology_bar'),   csv: '/map/data/methodology.csv',      title: 'Methodological Approaches',  description: 'Primary methodological design across included studies.' },
+    { name: 'domain_type',     fixedCats: true,  json: figJson('domain_type'),      png: figPng('domain_type_bar'),   csv: '/map/data/domain_type.csv',      title: 'Adaptation Domain Type',     description: 'Studies assessing processes, outcomes, or both.' },
+    { name: 'equity',          fixedCats: true,  json: figJson('equity'),           png: figPng('equity_bar'),        csv: '/map/data/equity.csv',           title: 'Equity & Inclusion',         description: 'Equity and inclusion dimensions addressed in studies.' },
+    { name: 'domain_heatmap',  fixedCats: true,  json: figJson('domain_heatmap'),   png: figPng('domain_heatmap'),    csv: '/map/data/domain_heatmap.csv',   title: 'Process & Outcome Domains',  description: datasetMode === 'compare' ? 'Coverage difference (LLM% − Human%) per domain × producer cell. Teal = LLM leads · amber = Human leads.' : 'Adaptation process and outcome domains by producer type.' },
+  ];
 
   useEffect(() => {
     fetch('/map/data/studies.json')
@@ -98,7 +123,7 @@ export default function SystematicMapPage() {
       {/* Status Banner */}
       <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3">
         <p className="max-w-5xl mx-auto text-xs font-tagline text-yellow-800">
-          <strong>In progress — data extraction underway.</strong> 40,653 records identified across 27 sources → 26,182 after deduplication → 8,748 full texts sought → 3,505 assessed → 2,357 included. Figures update as records are coded. Final version expected May 2026.
+          <strong>In progress — data extraction underway.</strong> 40,653 records identified across 27 sources → 26,182 after deduplication → 8,748 full texts sought → 3,505 assessed → 2,368 included (LLM) · 86 included (Human). Figures update as records are coded. Final version expected May 2026.
         </p>
       </div>
 
@@ -157,25 +182,37 @@ export default function SystematicMapPage() {
       {/* Evidence Gap Map */}
       <section className="bg-sand px-6 py-16">
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-start justify-between mb-6 gap-4">
-            <div>
-              <h2 className="text-2xl font-logo font-bold text-green">Evidence Gap Map</h2>
-              <p className="font-tagline text-sm text-gray-500 mt-1">Bubble size indicates number of studies per domain–producer-type cell. Grey circles indicate evidence gaps.</p>
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <h2 className="text-2xl font-logo font-bold text-green shrink-0">Evidence Gap Map</h2>
+            <div className="flex-none flex items-center gap-2">
+              <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
+                {DATASET_MODES.map((mode, i) => (
+                  <button key={mode} onClick={() => setDatasetMode(mode)}
+                    className={`px-3 py-1.5 transition ${datasetMode === mode ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'} ${i > 0 ? 'border-l border-gray-200' : ''}`}>
+                    {DATASET_LABELS[mode]}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setExpandedFig({ src: figJson('evidence_gap_map'), pngSrc: figPng('evidence_gap_map'), csvSrc: '/map/data/evidence_gap_map.csv', title: 'Evidence Gap Map' })}
+                className="flex items-center gap-1.5 text-xs font-tagline font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-green hover:text-green transition bg-white"
+              >
+                <Maximize2 className="w-3.5 h-3.5" /> Fullscreen
+              </button>
             </div>
-            <button
-              onClick={() => setExpandedFig({ src: '/map/data/evidence_gap_map.json', pngSrc: '/map/evidence_gap_map.png', csvSrc: '/map/data/evidence_gap_map.csv', title: 'Evidence Gap Map' })}
-              className="shrink-0 flex items-center gap-1.5 text-xs font-tagline font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-green hover:text-green transition bg-white"
-            >
-              <Maximize2 className="w-3.5 h-3.5" /> Fullscreen
-            </button>
           </div>
+          <p className="font-tagline text-sm text-gray-500 mb-6">
+            {datasetMode === 'compare'
+              ? 'Left bubble = Human · right = LLM. Blue = process domains · green = outcome. Grey = evidence gap.'
+              : 'Bubble size indicates number of studies per domain–producer-type cell. Grey circles indicate evidence gaps.'}
+          </p>
           <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
             <PlotlyChart
-              src="/map/data/evidence_gap_map.json"
-              fallbackImg="/map/evidence_gap_map.png"
-              pngSrc="/map/evidence_gap_map.png"
+              src={figJson('evidence_gap_map')}
+              fallbackImg={figPng('evidence_gap_map')}
+              pngSrc={figPng('evidence_gap_map')}
               csvSrc="/map/data/evidence_gap_map.csv"
-              height={700}
+              height={datasetMode === 'compare' ? 740 : 700}
             />
           </div>
         </div>
@@ -184,33 +221,31 @@ export default function SystematicMapPage() {
       {/* Geographic Distribution */}
       <section className="bg-white px-6 py-16">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-start justify-between mb-4 gap-4">
-            <div>
-              <h2 className="text-2xl font-logo font-bold text-green">Geographic Distribution</h2>
-              <p className="font-tagline text-sm text-gray-500 mt-1">
-                Countries by study count. Multi-country studies counted in each country.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {/* View toggle */}
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <h2 className="text-2xl font-logo font-bold text-green shrink-0">Geographic Distribution</h2>
+            <div className="flex-none flex items-center gap-2">
               <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
-                <button
-                  onClick={() => setGeoView('map')}
-                  className={`px-3 py-1.5 transition ${geoView === 'map' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
-                >
+                {DATASET_MODES.map((mode, i) => (
+                  <button key={mode} onClick={() => setDatasetMode(mode)}
+                    className={`px-3 py-1.5 transition ${datasetMode === mode ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'} ${i > 0 ? 'border-l border-gray-200' : ''}`}>
+                    {DATASET_LABELS[mode]}
+                  </button>
+                ))}
+              </div>
+              <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
+                <button onClick={() => setGeoView('map')}
+                  className={`px-3 py-1.5 transition ${geoView === 'map' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
                   Map
                 </button>
-                <button
-                  onClick={() => setGeoView('bar')}
-                  className={`px-3 py-1.5 transition ${geoView === 'bar' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
-                >
+                <button onClick={() => setGeoView('bar')}
+                  className={`px-3 py-1.5 transition border-l border-gray-200 ${geoView === 'bar' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
                   Bar
                 </button>
               </div>
               <button
                 onClick={() => setExpandedFig(geoView === 'map'
-                  ? { src: '/map/data/geographic_map.json', pngSrc: '/map/geographic_map.png', csvSrc: '/map/data/geographic_map.csv', title: 'Geographic Distribution — Map' }
-                  : { src: '/map/data/geographic_bar.json', pngSrc: '/map/geographic_bar.png', csvSrc: '/map/data/geographic_map.csv', title: 'Geographic Distribution — Bar' }
+                  ? { src: figJson('geographic_map'), pngSrc: figPng('geographic_map'), csvSrc: '/map/data/geographic_map.csv', title: 'Geographic Distribution — Map' }
+                  : { src: figJson('geographic_bar'), pngSrc: figPng('geographic_bar'), csvSrc: '/map/data/geographic_map.csv', title: 'Geographic Distribution — Bar' }
                 )}
                 className="flex items-center gap-1.5 text-xs font-tagline font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-green hover:text-green transition bg-white"
               >
@@ -218,20 +253,21 @@ export default function SystematicMapPage() {
               </button>
             </div>
           </div>
+          <p className="font-tagline text-sm text-gray-500 mb-4">Countries by study count. Multi-country studies counted in each country.</p>
           <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
             {geoView === 'map' ? (
               <PlotlyChart
-                src="/map/data/geographic_map.json"
-                fallbackImg="/map/geographic_map.png"
-                pngSrc="/map/geographic_map.png"
+                src={figJson('geographic_map')}
+                fallbackImg={figPng('geographic_map')}
+                pngSrc={figPng('geographic_map')}
                 csvSrc="/map/data/geographic_map.csv"
-                height={500}
+                height={datasetMode === 'compare' ? 400 : 500}
               />
             ) : (
               <PlotlyChart
-                src="/map/data/geographic_bar.json"
-                fallbackImg="/map/geographic_bar.png"
-                pngSrc="/map/geographic_bar.png"
+                src={figJson('geographic_bar')}
+                fallbackImg={figPng('geographic_bar')}
+                pngSrc={figPng('geographic_bar')}
                 csvSrc="/map/data/geographic_map.csv"
                 height={500}
               />
@@ -340,30 +376,56 @@ export default function SystematicMapPage() {
       {/* Supporting Charts */}
       <section className="bg-sand px-6 py-16">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl font-logo font-bold text-green mb-2">Evidence Map</h2>
-          <p className="font-tagline text-sm text-gray-500 mb-1">Use the <Maximize2 className="inline w-3.5 h-3.5 mx-0.5 text-gray-400" /> button to expand any chart for full interactive exploration. Use the PNG and CSV buttons to download.</p>
-          <p className="font-tagline text-xs text-gray-400 mb-10">Note: chart n values reflect LLM-coded studies only and will increase as data extraction progresses. Field counts vary because not all fields are reported in every study.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex items-center justify-between gap-4 mb-1">
+            <h2 className="text-2xl font-logo font-bold text-green shrink-0">Evidence Map</h2>
+            <div className="flex-none flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
+              {DATASET_MODES.map((mode, i) => (
+                <button key={mode} onClick={() => setDatasetMode(mode)}
+                  className={`px-3 py-1.5 transition ${datasetMode === mode ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'} ${i > 0 ? 'border-l border-gray-200' : ''}`}>
+                  {DATASET_LABELS[mode]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="font-tagline text-xs text-gray-400 mb-0">{DATASET_DESCS[datasetMode]}</p>
+          <p className="font-tagline text-sm text-gray-500 mb-1 mt-3">Use the <Maximize2 className="inline w-3.5 h-3.5 mx-0.5 text-gray-400" /> button to expand any chart for full interactive exploration.</p>
+          <div className={`grid gap-6 mt-6 ${datasetMode === 'compare' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
             {staticFigures.map((fig) => (
-              <div key={fig.file}
+              <div key={fig.name}
                 className="group rounded-xl overflow-hidden bg-white shadow-[0_2px_12px_rgba(202,194,181,0.25)] hover:shadow-[0_4px_16px_rgba(202,194,181,0.4)] transition-all duration-300 flex flex-col">
                 <div className="relative overflow-hidden bg-white">
-                  <PlotlyChart
-                    src={fig.json}
-                    fallbackImg={fig.file}
-                    pngSrc={fig.file}
-                    csvSrc={fig.csv}
-                    height={320}
-                    className="w-full"
-                  />
-                  {/* Expand button */}
-                  <button
-                    onClick={() => setExpandedFig({ src: fig.json, pngSrc: fig.file, csvSrc: fig.csv, title: fig.title })}
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-500 hover:text-green hover:border-green transition opacity-0 group-hover:opacity-100"
-                    title="Expand chart"
-                  >
-                    <Maximize2 className="w-3.5 h-3.5" />
-                  </button>
+                  {datasetMode === 'compare' && !fig.fixedCats ? (
+                    /* Free-form / temporal: two charts side by side */
+                    <div className="flex divide-x divide-gray-100">
+                      <div className="flex-1 min-w-0 relative">
+                        <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full pointer-events-none">Human (n=86)</div>
+                        <PlotlyChart src={`/map/data/human/${fig.name}.json`} height={300} />
+                      </div>
+                      <div className="flex-1 min-w-0 relative">
+                        <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full pointer-events-none">LLM (n=2,368)</div>
+                        <PlotlyChart src={`/map/data/${fig.name}.json`} height={300} />
+                      </div>
+                    </div>
+                  ) : (
+                    /* Single chart: LLM, Human, or fixed-category compare (grouped bars) */
+                    <>
+                      <PlotlyChart
+                        src={fig.json}
+                        fallbackImg={datasetMode === 'llm' ? fig.png : undefined}
+                        pngSrc={datasetMode === 'llm' ? fig.png : undefined}
+                        csvSrc={fig.csv}
+                        height={datasetMode === 'compare' ? 360 : 320}
+                        className="w-full"
+                      />
+                      <button
+                        onClick={() => setExpandedFig({ src: fig.json, pngSrc: datasetMode === 'llm' ? fig.png : undefined, csvSrc: fig.csv, title: fig.title })}
+                        className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-500 hover:text-green hover:border-green transition opacity-0 group-hover:opacity-100"
+                        title="Expand chart"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
                 </div>
                 <div className="p-4 border-t border-gray-100">
                   <h3 className="font-logo font-bold text-charcoal text-base">{fig.title}</h3>

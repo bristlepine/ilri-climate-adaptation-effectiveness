@@ -72,6 +72,8 @@ DKGREY  = "#424242"
 PALETTE = [BLUE, TEAL, GREEN, ORANGE, RED, PURPLE, GREY,
            "#00BCD4", "#8BC34A", "#FF5722", "#3F51B5", "#795548"]
 
+HUMAN_COLOR  = "#E07B39"   # amber/orange — human coding track
+
 
 # =============================================================================
 # Evidence Gap Map constants
@@ -237,6 +239,13 @@ def _save_plotly(fig: Any, name: str, out_dir: Path) -> None:
         print(f"[step16] Interactive JSON -> interactive/{name}.json")
     except Exception as e:
         print(f"[step16] WARNING: Could not save interactive {name} — {e}")
+
+
+def _save_json_to(fig: Any, path: Path) -> None:
+    """Write a Plotly figure JSON to an exact path (used by human/compare figure functions)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.write_json(str(path))
+    print(f"[step16] -> {path.name}")
 
 
 def _save_csv(data: "pd.DataFrame", name: str, out_dir: Path) -> None:
@@ -1713,6 +1722,47 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     n_total_id       = n_scopus + sum(_db_imp[db] for db in _dbs)  # 39,113
     n_screened       = n_abs_inc + n_abs_exc                   # 25,208
 
+    # ── Human coding numbers (authoritative: step15_human.csv + step15b_summary.json) ──
+    # Prefer step15b_summary.json for totals (covers all rounds incl. legacy FT-R1x).
+    # Fall back to scanning step14b cleaned CSVs if the summary is absent.
+    _s15b_summary = out_root / "step15" / "step15b_summary.json"
+    _s15_human    = out_root / "step15" / "step15_human.csv"
+    n_h_screened = 0; n_h_included = 0; n_h_excluded = 0; n_h_batches = 0
+
+    if _s15b_summary.exists():
+        import json as _json
+        with open(_s15b_summary) as _f:
+            _s15b = _json.load(_f)
+        n_h_screened  = _s15b.get("total_coder_rows", 0)
+        n_h_included  = _s15b.get("final_human_records", 0)
+        n_h_excluded  = n_h_screened - n_h_included
+        n_h_batches   = _s15b.get("batches", 1)
+    elif _s15_human.exists():
+        _hdf = pd.read_csv(_s15_human, dtype=str).fillna("")
+        n_h_included  = len(_hdf)
+        n_h_screened  = n_h_included   # best estimate without raw files
+        n_h_batches   = _hdf["batch"].nunique() if "batch" in _hdf.columns else 1
+    else:
+        _step14b_dir = out_root / "step14b"
+        _coder_re    = re.compile(r"coding_ft-.+_([A-Za-z]{1,5})\.csv$", re.IGNORECASE)
+        _skip_names  = {"template", "llm", "reconciled", "fixed", "papers"}
+        if _step14b_dir.exists():
+            for _batch_csv in sorted(_step14b_dir.glob("FT-R*/coding_ft-*.csv")):
+                if any(s in _batch_csv.name.lower() for s in _skip_names):
+                    continue
+                if not _coder_re.search(_batch_csv.name):
+                    continue
+                try:
+                    _bdf = pd.read_csv(_batch_csv, dtype=str).fillna("")
+                    if _bdf["confirmed_include"].str.strip().eq("").all():
+                        continue
+                    n_h_screened += len(_bdf)
+                    n_h_included += (_bdf["confirmed_include"].str.lower() == "yes").sum()
+                    n_h_excluded += (_bdf["confirmed_include"].str.lower() == "no").sum()
+                except Exception:
+                    pass
+        n_h_batches = max(1, n_h_screened // 20)
+
     # ── Nodes ────────────────────────────────────────────────────────────────
     # All databases feed into a shared dedup pool, then a single pipeline:
     #   0          Scopus identified
@@ -1723,20 +1773,26 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     #   N+4        Abstract excluded [TERMINAL]
     #   N+5        Full texts retrieved
     #   N+6        Not retrievable [TERMINAL]
-    #   N+7        Included for coding
-    #   N+8        Full texts excluded [TERMINAL]
-    #   N+9        Pending: FT screening [TERMINAL]  (only if > 0)
+    #   N+7        LLM full-text screening: included
+    #   N+8        Full texts excluded by LLM [TERMINAL]
+    #   N+9        Pending: LLM FT screening [TERMINAL]
+    #   N+10       Human FT coding batches
+    #   N+11       Human confirmed included [TERMINAL — PRIMARY OUTPUT]
+    #   N+12       Human excluded [TERMINAL]
 
     N       = len(_dbs)
-    I_DUP   = N + 1
-    I_SCR   = N + 2   # abstract screening / unique records
-    I_INC   = N + 3
-    I_EXC   = N + 4
-    I_FTRET = N + 5
-    I_FTNR  = N + 6
-    I_CODED = N + 7
-    I_FTEXC = N + 8
-    I_PEND  = N + 9
+    I_DUP     = N + 1
+    I_SCR     = N + 2   # abstract screening / unique records
+    I_INC     = N + 3
+    I_EXC     = N + 4
+    I_FTRET   = N + 5
+    I_FTNR    = N + 6
+    I_CODED   = N + 7   # LLM included
+    I_FTEXC   = N + 8
+    I_PEND    = N + 9
+    I_H_BATCH = N + 10  # human coding batches
+    I_H_INC   = N + 11  # human confirmed included (PRIMARY)
+    I_H_EXC   = N + 12  # human excluded
 
     labels = (
         [f"Scopus<br>identified<br>n={n_scopus:,} ({_pct(n_scopus, n_total_id)})"]
@@ -1746,11 +1802,14 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
             f"Abstract screening<br>n={n_screened:,} ({_pct(n_screened, n_total_id)})",
             f"Abstract included<br>n={n_abs_inc:,} ({_pct(n_abs_inc, n_screened)})",
             f"Abstract excluded<br>n={n_abs_exc:,} ({_pct(n_abs_exc, n_screened)})",
-            f"Full texts retrieved<br>n={n_ft_retrieved_all:,} ({_pct(n_ft_retrieved_all, n_abs_inc)})",
+            f"Full texts retrieved<br>n={n_ft_retrieved_all:,} auto<br>+ manual procurement",
             f"Not retrievable<br>n={n_ft_not_ret_all:,} ({_pct(n_ft_not_ret_all, n_abs_inc)})",
-            f"Included for coding<br>n={n_ft_include:,} ({_pct(n_ft_include, n_ft_retrieved_all)})",
-            f"Full texts excluded<br>n={n_ft_exclude:,} ({_pct(n_ft_exclude, n_ft_retrieved_all)})",
-            f"Pending: FT screening<br>n={n_ft_pending_screen:,} ({_pct(n_ft_pending_screen, n_ft_retrieved_all)})",
+            f"LLM screening<br>(auto-retrieved only)<br>n={n_ft_include:,} included ({_pct(n_ft_include, n_ft_retrieved_all)})",
+            f"LLM excluded<br>n={n_ft_exclude:,} ({_pct(n_ft_exclude, n_ft_retrieved_all)})",
+            f"Pending LLM<br>n={n_ft_pending_screen:,}",
+            f"Human batches<br>{n_h_batches} rounds · n={n_h_screened:,}",
+            f"<b>Human included ★</b><br>n={n_h_included:,} ({_pct(n_h_included, n_h_screened)})<br>primary output",
+            f"Human excluded<br>n={n_h_excluded:,} ({_pct(n_h_excluded, n_h_screened)})",
         ]
     )
 
@@ -1759,22 +1818,28 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
     C_INC     = "#2d8f4e"   # forest green — abstract/FT included
     C_INC_LT  = "#5ab56e"   # medium green — FT retrieved
     C_EXC_LT  = "#9b59b6"   # purple      — FT excluded
-    C_INC_EXT = "#3cb371"   # sea green   — coded
+    C_INC_EXT = "#3cb371"   # sea green   — LLM coded
     C_PEND    = "#6baed6"   # sky blue    — pending
+    C_HUMAN   = "#d4772a"   # amber/orange — human coding (primary)
+    C_H_INC   = "#b85c00"   # dark amber  — human confirmed included
+    C_H_EXC   = "#c0392b"   # crimson     — human excluded
 
     node_colors = (
         [C_ENTRY]         # 0   Scopus
         + [C_ENTRY] * N   # 1…N other databases
         + [
-            C_EXC,        # N+1 Duplicates removed
-            C_ENTRY,      # N+2 Abstract screening
-            C_INC,        # N+3 Abstract included
-            C_EXC,        # N+4 Abstract excluded
-            C_INC_LT,     # N+5 FT retrieved
-            C_PEND,       # N+6 Not retrievable
-            C_INC_EXT,    # N+7 Included for coding
-            C_EXC_LT,     # N+8 FT excluded
-            C_PEND,       # N+9 Pending FT screening
+            C_EXC,        # N+1  Duplicates removed
+            C_ENTRY,      # N+2  Abstract screening
+            C_INC,        # N+3  Abstract included
+            C_EXC,        # N+4  Abstract excluded
+            C_INC_LT,     # N+5  FT retrieved
+            C_PEND,       # N+6  Not retrievable
+            C_INC_EXT,    # N+7  LLM included
+            C_EXC_LT,     # N+8  LLM FT excluded
+            C_PEND,       # N+9  Pending LLM
+            C_HUMAN,      # N+10 Human batches
+            C_H_INC,      # N+11 Human confirmed included (PRIMARY)
+            C_H_EXC,      # N+12 Human excluded
         ]
     )
 
@@ -1809,39 +1874,54 @@ def _roses_interactive(out_root: Path, out_dir: Path) -> None:
         f"Full texts retrieved: {n_ft_retrieved_all:,}")
     add(I_INC,   I_FTNR,  n_ft_not_ret_all, "rgba(107,174,214,0.22)",
         f"Not retrievable: {n_ft_not_ret_all:,}")
-    add(I_FTRET, I_CODED, n_ft_include,     "rgba(45,143,78,0.32)",
-        f"Included for coding: {n_ft_include:,}" + (f"<br>Top criteria: {excl14_text}" if excl14_text else ""))
-    add(I_FTRET, I_FTEXC, n_ft_exclude,     "rgba(155,89,182,0.22)",
-        f"Full texts excluded: {n_ft_exclude:,}")
-    add(I_FTRET, I_PEND,  n_ft_pending_screen, "rgba(107,174,214,0.20)",
-        f"Pending FT screening: {n_ft_pending_screen:,}")
+    # LLM track (automated, auto-retrieved papers only)
+    add(I_FTRET, I_CODED, n_ft_include,       "rgba(45,143,78,0.32)",
+        f"LLM included: {n_ft_include:,}" + (f"<br>Top criteria: {excl14_text}" if excl14_text else ""))
+    add(I_FTRET, I_FTEXC, n_ft_exclude,       "rgba(155,89,182,0.22)",
+        f"LLM full texts excluded: {n_ft_exclude:,}")
+    add(I_FTRET, I_PEND,  n_ft_pending_screen,"rgba(107,174,214,0.20)",
+        f"Pending LLM screening: {n_ft_pending_screen:,}")
+
+    # Human track (primary — all retrieved incl. manually procured, sampled batches)
+    add(I_FTRET,   I_H_BATCH, n_h_screened, "rgba(212,119,42,0.35)",
+        f"Human FT coding: {n_h_screened:,} papers assigned ({n_h_batches} batches)")
+    add(I_H_BATCH, I_H_INC,   n_h_included, "rgba(184,92,0,0.45)",
+        f"Human confirmed included: {n_h_included:,} (PRIMARY)")
+    add(I_H_BATCH, I_H_EXC,   n_h_excluded, "rgba(192,57,43,0.25)",
+        f"Human excluded: {n_h_excluded:,}")
 
     # ── Explicit node positions (freeform layout) ────────────────────────────
-    # DB source column spread top-to-bottom; pipeline nodes placed by flow logic;
-    # final column (Included / Excluded / Pending) spread across full height.
+    # DB source column; shared pipeline; LLM track (lower); human track (upper-right).
+    # Human nodes occupy the top-right of the final column to visually indicate
+    # they are the primary output. LLM nodes sit below as the supporting track.
     n_db = N + 1  # Scopus + N other-DB nodes
     _db_ys = [round(0.02 + i * 0.96 / max(n_db - 1, 1), 4) for i in range(n_db)]
 
-    _X = dict(db=0.01, dup=0.18, scr=0.28, abс=0.50, ft=0.72, final=0.92)
+    _X = dict(db=0.01, dup=0.18, scr=0.28, abs=0.50, ft=0.68, llm=0.81, human=0.87, final=0.97)
     node_x = (
         [_X["db"]] * n_db
-        + [_X["dup"],                        # I_DUP
-           _X["scr"],                        # I_SCR
-           _X["abс"],  _X["abс"],            # I_INC, I_EXC
-           _X["ft"],   _X["ft"],             # I_FTRET, I_FTNR
-           _X["final"], _X["final"], _X["final"]]  # I_CODED, I_FTEXC, I_PEND
+        + [_X["dup"],                            # I_DUP
+           _X["scr"],                            # I_SCR
+           _X["abs"],  _X["abs"],                # I_INC, I_EXC
+           _X["ft"],   _X["ft"],                 # I_FTRET, I_FTNR
+           _X["llm"],  _X["llm"],  _X["llm"],    # I_CODED, I_FTEXC, I_PEND  (LLM track)
+           _X["human"],                          # I_H_BATCH
+           _X["final"], _X["final"]]             # I_H_INC, I_H_EXC
     )
     node_y = (
         _db_ys
-        + [0.50,   # I_DUP: center (receives from all non-Scopus DBs)
+        + [0.50,   # I_DUP: center
            0.50,   # I_SCR: center
            0.35,   # I_INC: upper
            0.82,   # I_EXC: lower
-           0.22,   # I_FTRET: upper
-           0.72,   # I_FTNR: lower
-           0.12,   # I_CODED: near top — spread final column
-           0.60,   # I_FTEXC: lower-middle
-           0.90]   # I_PEND: near bottom
+           0.28,   # I_FTRET: upper-center (feeds both LLM and human tracks)
+           0.78,   # I_FTNR: lower
+           0.58,   # I_CODED: LLM included — mid
+           0.76,   # I_FTEXC: LLM excluded — lower
+           0.90,   # I_PEND: LLM pending — bottom
+           0.10,   # I_H_BATCH: human batches — near top
+           0.03,   # I_H_INC: human included — TOP (primary output)
+           0.22]   # I_H_EXC: human excluded — upper
     )
 
     fig = go.Figure(go.Sankey(
@@ -2133,7 +2213,854 @@ def _sync_frontend(out_dir: Path, out_root: Path) -> None:
     # db_summary.json — generated from pipeline metadata
     _generate_db_summary(out_root, data_dir)
 
+    # Human and compare subdirs
+    import shutil as _shutil
+    for subdir in ["human", "compare"]:
+        src_sub = int_dir / subdir
+        dst_sub = data_dir / subdir
+        if src_sub.exists():
+            dst_sub.mkdir(exist_ok=True)
+            n_sub = 0
+            for f in src_sub.glob("*.json"):
+                _shutil.copy2(f, dst_sub / f.name)
+                n_sub += 1
+            print(f"[step16] Synced {n_sub} {subdir}/ JSONs -> {dst_sub}")
+
     print(f"[step16] Synced to frontend: {n_png} PNGs + {n_json} JSONs + {n_csv} CSVs -> {_FRONTEND_MAP}")
+
+
+# =============================================================================
+# LLM vs Human comparison figure
+# =============================================================================
+
+# Maps human CSV column → LLM _value column, display label, field type
+_LVH_FIELDS = [
+    ("producer_type",          "producer_type_value",          "Producer Type",          "multi"),
+    ("methodological_approach","methodological_approach_value", "Methodology",            "multi"),
+    ("geographic_scale",       "geographic_scale_value",        "Geographic Scale",       "cat"),
+    ("publication_type",       "publication_type_value",        "Publication Type",       "cat"),
+    ("temporal_coverage",      "temporal_coverage_value",       "Temporal Coverage",      "cat"),
+    ("process_outcome_domains","process_outcome_domains_value", "Process/Outcome Domains","multi"),
+]
+
+
+def _lvh_counts(series: pd.Series, multi: bool) -> pd.Series:
+    """Return value counts normalised to % from a series of (possibly semi-colon-joined) values."""
+    if multi:
+        items = _split_multi(series)
+    else:
+        items = [v.strip().lower() for v in series.dropna().astype(str)
+                 if v.strip().lower() not in _SKIP]
+    if not items:
+        return pd.Series(dtype=float)
+    counts = pd.Series(items).value_counts()
+    return (counts / counts.sum() * 100).round(1)
+
+
+def _llm_vs_human_comparison(llm_df: pd.DataFrame, out_root: Path, out_dir: Path) -> None:
+    """Grouped bar chart: LLM distribution vs human-coded distribution for key fields."""
+    human_path = out_root / "step15" / "step15_human.csv"
+    if not human_path.exists():
+        print("[step16] step15_human.csv not found — skipping LLM vs human comparison")
+        return
+
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as mpatches
+        import numpy as np
+    except ImportError:
+        return
+
+    human_df = pd.read_csv(human_path, dtype=str).fillna("")
+
+    n_panels = len(_LVH_FIELDS)
+    fig, axes = plt.subplots(1, n_panels, figsize=(4.5 * n_panels, 7))
+    if n_panels == 1:
+        axes = [axes]
+
+    COLOR_LLM   = TEAL
+    COLOR_HUMAN = "#E07B39"
+
+    for ax, (human_col, llm_col, label, ftype) in zip(axes, _LVH_FIELDS):
+        multi = ftype == "multi"
+
+        llm_pct   = _lvh_counts(llm_df[llm_col]   if llm_col   in llm_df.columns   else pd.Series(dtype=str), multi)
+        human_pct = _lvh_counts(human_df[human_col] if human_col in human_df.columns else pd.Series(dtype=str), multi)
+
+        if llm_pct.empty and human_pct.empty:
+            ax.set_visible(False)
+            continue
+
+        all_cats = sorted(set(llm_pct.index) | set(human_pct.index),
+                          key=lambda c: -(llm_pct.get(c, 0) + human_pct.get(c, 0)))[:12]
+
+        y      = np.arange(len(all_cats))
+        height = 0.35
+        llm_v   = [llm_pct.get(c, 0)   for c in all_cats]
+        human_v = [human_pct.get(c, 0) for c in all_cats]
+
+        ax.barh(y + height / 2, llm_v,   height, color=COLOR_LLM,   label=f"LLM (n={len(llm_df):,})")
+        ax.barh(y - height / 2, human_v, height, color=COLOR_HUMAN, label=f"Human (n={len(human_df):,})")
+
+        ax.set_yticks(y)
+        ax.set_yticklabels(all_cats, fontsize=8)
+        ax.set_xlabel("% of studies", fontsize=9)
+        ax.set_title(label, fontsize=10, fontweight="bold")
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.invert_yaxis()
+
+    # Shared legend
+    llm_patch   = mpatches.Patch(color=COLOR_LLM,   label=f"LLM (n={len(llm_df):,})")
+    human_patch = mpatches.Patch(color=COLOR_HUMAN, label=f"Human (n={len(human_df):,})")
+    fig.legend(handles=[llm_patch, human_patch], loc="upper center",
+               ncol=2, fontsize=10, bbox_to_anchor=(0.5, 1.01))
+
+    fig.suptitle("LLM vs Human Coding — Distribution Comparison", fontsize=13,
+                 fontweight="bold", y=1.04)
+    plt.tight_layout()
+    _save(fig, out_dir / "llm_vs_human.png")
+
+
+# =============================================================================
+# Human-only and LLM-vs-Human comparison interactive figures
+# =============================================================================
+
+# Column mapping: human CSV col → LLM _value col
+_HUMAN_COL_MAP = {
+    "country_region":              "country_region_value",
+    "methodological_approach":     "methodological_approach_value",
+    "producer_type":               "producer_type_value",
+    "process_outcome_domains":     "process_outcome_domains_value",
+    "marginalized_subpopulations": "marginalized_subpopulations_value",
+    "publication_year":            "publication_year_value",
+    "geographic_scale":            "geographic_scale_value",
+    "adaptation_focus":            "adaptation_focus_value",
+}
+
+_SKIP_H = {"nan", "", "not_found", "n/a", "none", "unknown", "unclear", "not_reported"}
+_SKIP_GEO = {
+    "global", "sub-saharan africa", "east africa", "west africa",
+    "central africa", "southern africa", "north africa",
+    "south asia", "south-east asia", "southeast asia", "latin america",
+    "caribbean", "lmics", "low-income countries", "not_reported", "",
+}
+
+
+def _normalize_human_df(df: pd.DataFrame) -> pd.DataFrame:
+    """Rename human CSV columns to _value equivalents for reuse of figure logic."""
+    rename = {k: v for k, v in _HUMAN_COL_MAP.items()
+              if k in df.columns and v not in df.columns}
+    return df.rename(columns=rename)
+
+
+def _split_h(series: pd.Series) -> List[str]:
+    out: List[str] = []
+    for val in series.dropna().astype(str):
+        for p in val.split(";"):
+            p = p.strip()
+            if p and p.lower() not in _SKIP_H:
+                out.append(p)
+    return out
+
+
+def _geo_counts(df: pd.DataFrame, col: str) -> Dict[str, int]:
+    cc: Dict[str, int] = {}
+    if col not in df.columns:
+        return cc
+    for val in df[col].dropna().astype(str):
+        for c in val.split(";"):
+            c = c.strip()
+            if c and c.lower() not in _SKIP_GEO:
+                cc[c] = cc.get(c, 0) + 1
+    return cc
+
+
+def _cell_counts_egm(df: pd.DataFrame) -> Dict[Tuple[str, str], int]:
+    cc: Dict[Tuple[str, str], int] = {}
+    dom_col  = "process_outcome_domains_value"
+    prod_col = "producer_type_value"
+    if dom_col not in df.columns or prod_col not in df.columns:
+        return cc
+    for _, row in df.iterrows():
+        domains   = [d.strip() for d in str(row.get(dom_col, "")).split(";")
+                     if d.strip() and d.strip().lower() not in _SKIP_H]
+        prodtypes = [p.strip() for p in str(row.get(prod_col, "")).split(";")
+                     if p.strip() and p.strip().lower() not in _SKIP_H]
+        for d in domains:
+            for p in prodtypes:
+                cc[(d, p)] = cc.get((d, p), 0) + 1
+    return cc
+
+
+def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
+    """Generate all human-only interactive Plotly figures to out_dir/interactive/human/."""
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        return
+
+    h = _normalize_human_df(human_df)
+    n = len(h)
+    target = out_dir / "interactive" / "human"
+    target.mkdir(parents=True, exist_ok=True)
+    print(f"[step16] Generating human figures (n={n}) -> {target.name}")
+
+    # ── Temporal ──────────────────────────────────────────────────────────────
+    col = "publication_year_value"
+    if col in h.columns:
+        years = pd.to_numeric(h[col], errors="coerce").dropna().astype(int)
+        years = years[(years >= 2005) & (years <= 2027)]
+        if not years.empty:
+            counts = years.value_counts().sort_index()
+            fig = go.Figure(go.Bar(
+                x=counts.index.tolist(), y=counts.values.tolist(),
+                marker_color=HUMAN_COLOR,
+                hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
+            ))
+            fig.update_layout(
+                title=dict(text=f"<b>Publications Over Time (Human-coded)</b><br><sup>n={len(years):,}</sup>",
+                           x=0.5, xanchor="center", font=dict(size=14)),
+                height=380, xaxis_title="Publication Year", yaxis_title="Number of Studies",
+                plot_bgcolor="white", paper_bgcolor="white",
+                font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+                margin=dict(l=60, r=40, t=100, b=60),
+            )
+            _save_json_to(fig, target / "temporal_trends.json")
+
+    # ── Producer type ─────────────────────────────────────────────────────────
+    col = "producer_type_value"
+    if col in h.columns:
+        items = _split_h(h[col])
+        if items:
+            counts = pd.Series(items).value_counts()
+            fig = go.Figure(go.Bar(
+                x=counts.values.tolist(), y=counts.index.tolist(), orientation="h",
+                marker_color=HUMAN_COLOR,
+                hovertemplate="<b>%{y}</b><br>Studies: %{x}<extra></extra>",
+            ))
+            fig.update_layout(
+                title=dict(text=f"<b>Producer Types Studied (Human-coded)</b><br><sup>n={n:,}</sup>",
+                           x=0.5, xanchor="center", font=dict(size=14)),
+                height=380, xaxis_title="Number of Studies",
+                yaxis=dict(autorange="reversed"),
+                plot_bgcolor="white", paper_bgcolor="white",
+                font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+                margin=dict(l=180, r=40, t=100, b=60),
+            )
+            _save_json_to(fig, target / "producer_type.json")
+
+    # ── Methodology ───────────────────────────────────────────────────────────
+    col = "methodological_approach_value"
+    if col in h.columns:
+        items = _split_h(h[col])
+        if items:
+            counts = pd.Series(items).value_counts()
+            fig = go.Figure(go.Bar(
+                x=counts.values.tolist(), y=counts.index.tolist(), orientation="h",
+                marker_color=PALETTE[:len(counts)],
+                hovertemplate="<b>%{y}</b><br>Studies: %{x}<extra></extra>",
+            ))
+            fig.update_layout(
+                title=dict(text=f"<b>Methodological Approach (Human-coded)</b><br><sup>n={n:,}</sup>",
+                           x=0.5, xanchor="center", font=dict(size=14)),
+                height=380, xaxis_title="Number of Studies",
+                yaxis=dict(autorange="reversed"),
+                plot_bgcolor="white", paper_bgcolor="white",
+                font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+                margin=dict(l=200, r=40, t=100, b=60),
+            )
+            _save_json_to(fig, target / "methodology.json")
+
+    # ── Process/Outcome domains ───────────────────────────────────────────────
+    col = "process_outcome_domains_value"
+    if col in h.columns:
+        items = _split_h(h[col])
+        if items:
+            counts = pd.Series(items).value_counts()
+            bar_colors = [BLUE if i % 2 == 0 else GREEN for i in range(len(counts))]
+            fig = go.Figure(go.Bar(
+                x=counts.index.tolist(), y=counts.values.tolist(),
+                marker_color=bar_colors,
+                hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
+            ))
+            fig.update_layout(
+                title=dict(text=f"<b>Process/Outcome Domains (Human-coded)</b><br><sup>n={n:,}</sup>",
+                           x=0.5, xanchor="center", font=dict(size=14)),
+                height=420, yaxis_title="Number of Studies",
+                xaxis=dict(tickangle=-35),
+                plot_bgcolor="white", paper_bgcolor="white",
+                font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+                margin=dict(l=60, r=40, t=110, b=120),
+            )
+            _save_json_to(fig, target / "domain_type.json")
+
+    # ── Equity ────────────────────────────────────────────────────────────────
+    col = "marginalized_subpopulations_value"
+    if col in h.columns:
+        items = [i for i in _split_h(h[col]) if i.lower() not in ("none_reported",)]
+        if items:
+            counts = pd.Series(items).value_counts()
+            fig = go.Figure(go.Bar(
+                x=counts.index.tolist(), y=counts.values.tolist(),
+                marker_color=PURPLE,
+                hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
+            ))
+            fig.update_layout(
+                title=dict(text=f"<b>Equity & Inclusion (Human-coded)</b><br><sup>n={n:,}</sup>",
+                           x=0.5, xanchor="center", font=dict(size=14)),
+                height=380, yaxis_title="Number of Studies",
+                plot_bgcolor="white", paper_bgcolor="white",
+                font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+                margin=dict(l=60, r=40, t=100, b=80),
+            )
+            _save_json_to(fig, target / "equity.json")
+
+    # ── Domain heatmap ────────────────────────────────────────────────────────
+    dom_col = "process_outcome_domains_value"
+    prod_col = "producer_type_value"
+    if dom_col in h.columns and prod_col in h.columns:
+        rows: List[dict] = []
+        for _, row in h.iterrows():
+            domains   = [d.strip() for d in str(row.get(dom_col, "")).split(";")
+                         if d.strip() and d.strip().lower() not in _SKIP_H]
+            prodtypes = [p.strip() for p in str(row.get(prod_col, "")).split(";")
+                         if p.strip() and p.strip().lower() not in _SKIP_H]
+            for d in domains:
+                for p in prodtypes:
+                    rows.append({"domain": d, "producer": p})
+        if rows:
+            ct = pd.DataFrame(rows).pivot_table(
+                index="domain", columns="producer", aggfunc="size", fill_value=0)
+            if not ct.empty:
+                fig = go.Figure(go.Heatmap(
+                    z=ct.values.tolist(), x=ct.columns.tolist(), y=ct.index.tolist(),
+                    colorscale="YlOrRd",
+                    hovertemplate="<b>%{y}</b><br>%{x}<br>Studies: %{z}<extra></extra>",
+                    text=ct.values.tolist(), texttemplate="%{text}",
+                ))
+                fig.update_layout(
+                    title=dict(text=f"<b>Domains × Producer Type (Human-coded)</b><br><sup>n={n:,}</sup>",
+                               x=0.5, xanchor="center", font=dict(size=14)),
+                    height=max(400, ct.shape[0] * 28 + 150),
+                    xaxis=dict(tickangle=-30, side="top"),
+                    yaxis=dict(autorange="reversed"),
+                    plot_bgcolor="white", paper_bgcolor="white",
+                    font=dict(family="Lato, Arial, sans-serif", size=10, color=DKGREY),
+                    margin=dict(l=240, r=40, t=130, b=60),
+                )
+                _save_json_to(fig, target / "domain_heatmap.json")
+
+    # ── Geographic map + bar ──────────────────────────────────────────────────
+    cc = _geo_counts(h, "country_region_value")
+    if cc:
+        fig_map = go.Figure(go.Choropleth(
+            locations=list(cc.keys()), z=list(cc.values()),
+            locationmode="country names", colorscale="YlOrRd", colorbar_title="Studies",
+            hovertemplate="<b>%{location}</b><br>Studies: %{z}<extra></extra>",
+        ))
+        fig_map.update_layout(
+            title=dict(text=f"<b>Geographic Distribution (Human-coded)</b><br><sup>n={n:,}</sup>",
+                       x=0.5, xanchor="center", font=dict(size=14)),
+            geo=dict(showframe=False, showcoastlines=True, projection_type="natural earth",
+                     showland=True, landcolor="#F5F5F5", showocean=True, oceancolor="#EBF4FB",
+                     showcountries=True, countrycolor="#D0D0D0"),
+            height=480, paper_bgcolor="white",
+            font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+            margin=dict(l=0, r=0, t=90, b=0),
+        )
+        _save_json_to(fig_map, target / "geographic_map.json")
+
+        sorted_c = sorted(cc.items(), key=lambda x: -x[1])
+        countries, values = [c for c, _ in sorted_c], [v for _, v in sorted_c]
+        fig_bar = go.Figure(go.Bar(
+            x=values, y=countries, orientation="h",
+            marker_color=HUMAN_COLOR,
+            hovertemplate="<b>%{y}</b><br>Studies: %{x}<extra></extra>",
+            text=values, textposition="outside",
+        ))
+        fig_bar.update_layout(
+            title=dict(text=f"<b>Studies by Country (Human-coded)</b><br><sup>n={n:,}</sup>",
+                       x=0.5, xanchor="center", font=dict(size=14)),
+            height=max(400, len(countries) * 22 + 120),
+            xaxis_title="Number of Studies",
+            yaxis=dict(autorange="reversed"),
+            plot_bgcolor="white", paper_bgcolor="white",
+            font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+            margin=dict(l=160, r=60, t=80, b=40),
+            showlegend=False,
+        )
+        _save_json_to(fig_bar, target / "geographic_bar.json")
+
+    # ── Evidence Gap Map ──────────────────────────────────────────────────────
+    cell_cc = _cell_counts_egm(h)
+    if cell_cc:
+        max_n = max(cell_cc.values(), default=1)
+        d_labels = [DOMAIN_LABELS.get(d, d) for d in ALL_DOMAINS]
+        p_labels  = [PRODUCER_LABELS.get(p, p) for p in PRODUCER_TYPES]
+        n_cont = sum(1 for _, row in h.iterrows() if any(
+            d.strip() for d in str(row.get("process_outcome_domains_value", "")).split(";")
+            if d.strip() and d.strip().lower() not in _SKIP_H))
+
+        traces = []
+        for d_set, color, name_sfx in [
+            (PROCESS_DOMAINS, BLUE,  "Process domain"),
+            (OUTCOME_DOMAINS, GREEN, "Outcome domain"),
+        ]:
+            xs, ys, sizes, texts = [], [], [], []
+            for d in d_set:
+                dl = DOMAIN_LABELS.get(d, d)
+                for p in PRODUCER_TYPES:
+                    pl = PRODUCER_LABELS.get(p, p)
+                    nv = cell_cc.get((d, p), 0)
+                    if nv > 0:
+                        xs.append(pl); ys.append(dl); sizes.append(nv)
+                        texts.append(f"<b>{dl}</b><br>Producer: {pl}<br>Studies: {nv}")
+            if xs:
+                traces.append(go.Scatter(
+                    x=xs, y=ys, mode="markers+text", name=name_sfx,
+                    marker=dict(size=sizes, sizemode="area", sizeref=max_n/(38**2), sizemin=10,
+                                color=color, opacity=0.85, line=dict(color="white", width=1.5)),
+                    text=[str(s) for s in sizes],
+                    textposition="middle center", textfont=dict(size=10, color="white"),
+                    hovertext=texts, hoverinfo="text", showlegend=False,
+                ))
+
+        gap_x, gap_y, gap_t = [], [], []
+        for d in ALL_DOMAINS:
+            dl = DOMAIN_LABELS.get(d, d)
+            for p in PRODUCER_TYPES:
+                pl = PRODUCER_LABELS.get(p, p)
+                if cell_cc.get((d, p), 0) == 0:
+                    gap_x.append(pl); gap_y.append(dl)
+                    gap_t.append(f"<b>{dl}</b><br>Producer: {pl}<br><i>No studies — evidence gap</i>")
+        if gap_x:
+            traces.append(go.Scatter(x=gap_x, y=gap_y, mode="markers", name="Evidence gap",
+                marker=dict(size=14, color="#E0E0E0", line=dict(color="#BDBDBD", width=1)),
+                hovertext=gap_t, hoverinfo="text", showlegend=False))
+
+        for cat, color in [("Process domain", BLUE), ("Outcome domain", GREEN)]:
+            traces.append(go.Scatter(x=[None], y=[None], name=cat, mode="markers",
+                marker=dict(size=14, color=color, opacity=0.85, line=dict(color="white", width=1.5)),
+                showlegend=True))
+        traces.append(go.Scatter(x=[None], y=[None], name="Evidence gap", mode="markers",
+            marker=dict(size=10, color="#E0E0E0", line=dict(color="#BDBDBD", width=1)),
+            showlegend=True))
+
+        fig = go.Figure(data=traces)
+        _n_out = len(OUTCOME_DOMAINS)
+        fig.add_shape(type="line", xref="paper", yref="y", x0=0, x1=1,
+            y0=_n_out - 0.5, y1=_n_out - 0.5,
+            line=dict(color="#9E9E9E", width=1.5, dash="dot"))
+        fig.update_layout(
+            title=dict(
+                text=f"<b>Evidence Gap Map (Human-coded)</b><br><sup>Bubble size = number of studies (n={n_cont:,})</sup>",
+                x=0.5, xanchor="center", font=dict(size=14)),
+            height=700,
+            xaxis=dict(title=dict(text="Producer Type", standoff=20), side="top",
+                       categoryorder="array", categoryarray=p_labels,
+                       showgrid=True, gridcolor="#F0F0F0", tickfont=dict(size=12, color=DKGREY)),
+            yaxis=dict(categoryorder="array", categoryarray=list(reversed(d_labels)),
+                       showgrid=True, gridcolor="#F0F0F0", tickfont=dict(size=11, color=DKGREY)),
+            plot_bgcolor="white", paper_bgcolor="white",
+            font=dict(family="Lato, Arial, sans-serif", color=DKGREY),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.14, xanchor="center", x=0.5),
+            hovermode="closest", margin=dict(l=210, r=80, t=130, b=80),
+        )
+        _save_json_to(fig, target / "evidence_gap_map.json")
+
+    print(f"[step16] Human figures done: {len(list(target.glob('*.json')))} files")
+
+
+def _compare_figures_all(llm_df: pd.DataFrame, human_df: pd.DataFrame, out_dir: Path) -> None:
+    """Generate LLM-vs-Human comparison Plotly figures to out_dir/interactive/compare/."""
+    try:
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+    except ImportError:
+        return
+
+    h = _normalize_human_df(human_df)
+    n_llm = len(llm_df)
+    n_hum = len(h)
+    target = out_dir / "interactive" / "compare"
+    target.mkdir(parents=True, exist_ok=True)
+    print(f"[step16] Generating compare figures (LLM n={n_llm}, Human n={n_hum}) -> {target.name}")
+
+    def vcounts(df: pd.DataFrame, col: str, multi: bool = True) -> pd.Series:
+        if col not in df.columns:
+            return pd.Series(dtype=int)
+        items = _split_h(df[col]) if multi else [
+            v.strip() for v in df[col].dropna().astype(str) if v.strip().lower() not in _SKIP_H]
+        return pd.Series(items).value_counts() if items else pd.Series(dtype=int)
+
+    def to_pct(s: pd.Series) -> pd.Series:
+        """Convert counts to % of total (rounded to 1 dp)."""
+        total = s.sum()
+        return (s / total * 100).round(1) if total > 0 else s * 0.0
+
+    def grouped_h_bar_pct(llm_c: pd.Series, hum_c: pd.Series, title: str, hl: int = 380) -> "go.Figure":
+        llm_p = to_pct(llm_c)
+        hum_p = to_pct(hum_c)
+        all_cats = sorted(set(llm_c.index.tolist()) | set(hum_c.index.tolist()),
+                          key=lambda c: -(hum_p.get(c, 0) + llm_p.get(c, 0)))[:15]
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            name=f"Human (n={n_hum:,})", y=all_cats,
+            x=[round(float(hum_p.get(c, 0)), 1) for c in all_cats],
+            orientation="h", marker_color=HUMAN_COLOR,
+            hovertemplate="<b>%{y}</b><br>Human: %{x:.1f}%<extra></extra>",
+        ))
+        fig.add_trace(go.Bar(
+            name=f"LLM (n={n_llm:,})", y=all_cats,
+            x=[round(float(llm_p.get(c, 0)), 1) for c in all_cats],
+            orientation="h", marker_color=TEAL,
+            hovertemplate="<b>%{y}</b><br>LLM: %{x:.1f}%<extra></extra>",
+        ))
+        fig.update_layout(
+            title=dict(text=f"<b>{title}</b><br><sup>Human (n={n_hum:,}) vs LLM (n={n_llm:,}) — % of studies in each corpus</sup>",
+                       x=0.5, xanchor="center", font=dict(size=14)),
+            barmode="group", height=hl,
+            xaxis_title="% of Studies",
+            xaxis=dict(ticksuffix="%"),
+            yaxis=dict(autorange="reversed"),
+            plot_bgcolor="white", paper_bgcolor="white",
+            font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.22, xanchor="center", x=0.5),
+            margin=dict(l=200, r=40, t=110, b=90),
+        )
+        return fig
+
+    # ── Grouped bar comparisons (%) ───────────────────────────────────────────
+    for llm_col, hum_col, fig_name, title, hl in [
+        ("producer_type_value",              "producer_type_value",              "producer_type",
+         "Producer Types — Human vs LLM", 400),
+        ("methodological_approach_value",    "methodological_approach_value",    "methodology",
+         "Methodology — Human vs LLM", 420),
+        ("marginalized_subpopulations_value","marginalized_subpopulations_value","equity",
+         "Equity & Inclusion — Human vs LLM", 400),
+        ("process_outcome_domains_value",    "process_outcome_domains_value",    "domain_type",
+         "Process/Outcome Domains — Human vs LLM", 500),
+    ]:
+        lc = vcounts(llm_df, llm_col)
+        hc = vcounts(h,      hum_col)
+        if not lc.empty or not hc.empty:
+            _save_json_to(grouped_h_bar_pct(lc, hc, title, hl=hl), target / f"{fig_name}.json")
+
+    # ── Temporal ──────────────────────────────────────────────────────────────
+    def yr_counts(df: pd.DataFrame, col: str) -> pd.Series:
+        if col not in df.columns:
+            return pd.Series(dtype=int)
+        years = pd.to_numeric(df[col], errors="coerce").dropna().astype(int)
+        years = years[(years >= 2005) & (years <= 2027)]
+        return years.value_counts().sort_index() if not years.empty else pd.Series(dtype=int)
+
+    ly = yr_counts(llm_df, "publication_year_value")
+    hy = yr_counts(h,      "publication_year_value")
+    all_yrs = sorted(set(ly.index.tolist()) | set(hy.index.tolist()))
+    if all_yrs:
+        ly_p = to_pct(ly); hy_p = to_pct(hy)
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            name=f"Human (n={n_hum:,})", x=all_yrs,
+            y=[round(float(hy_p.get(y, 0)), 1) for y in all_yrs], marker_color=HUMAN_COLOR,
+            hovertemplate="<b>%{x}</b><br>Human: %{y:.1f}%<extra></extra>",
+        ))
+        fig.add_trace(go.Bar(
+            name=f"LLM (n={n_llm:,})", x=all_yrs,
+            y=[round(float(ly_p.get(y, 0)), 1) for y in all_yrs], marker_color=TEAL,
+            hovertemplate="<b>%{x}</b><br>LLM: %{y:.1f}%<extra></extra>",
+        ))
+        fig.update_layout(
+            title=dict(text=f"<b>Publications Over Time — Human vs LLM</b><br><sup>Human (n={n_hum:,}) vs LLM (n={n_llm:,}) — % of studies per year</sup>",
+                       x=0.5, xanchor="center", font=dict(size=14)),
+            barmode="group", height=400,
+            xaxis_title="Publication Year",
+            yaxis_title="% of Studies", yaxis=dict(ticksuffix="%"),
+            plot_bgcolor="white", paper_bgcolor="white",
+            font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.22, xanchor="center", x=0.5),
+            margin=dict(l=60, r=40, t=110, b=90),
+        )
+        _save_json_to(fig, target / "temporal_trends.json")
+
+    # ── Domain heatmap (side-by-side subplots) ────────────────────────────────
+    dom_col  = "process_outcome_domains_value"
+    prod_col = "producer_type_value"
+    if dom_col in llm_df.columns and prod_col in llm_df.columns and dom_col in h.columns:
+        def heatmap_ct(df: pd.DataFrame) -> pd.DataFrame:
+            rws: List[dict] = []
+            for _, row in df.iterrows():
+                doms  = [d.strip() for d in str(row.get(dom_col, "")).split(";")
+                         if d.strip() and d.strip().lower() not in _SKIP_H]
+                prods = [p.strip() for p in str(row.get(prod_col, "")).split(";")
+                         if p.strip() and p.strip().lower() not in _SKIP_H]
+                for d in doms:
+                    for p in prods:
+                        rws.append({"domain": d, "producer": p})
+            if not rws:
+                return pd.DataFrame()
+            return pd.DataFrame(rws).pivot_table(
+                index="domain", columns="producer", aggfunc="size", fill_value=0)
+
+        ct_l = heatmap_ct(llm_df)
+        ct_h = heatmap_ct(h)
+
+        if not ct_l.empty or not ct_h.empty:
+            all_d = sorted(set(ct_l.index.tolist() if not ct_l.empty else []) |
+                           set(ct_h.index.tolist() if not ct_h.empty else []))
+            all_p = sorted(set(ct_l.columns.tolist() if not ct_l.empty else []) |
+                           set(ct_h.columns.tolist() if not ct_h.empty else []))
+
+            def _pct(ct: pd.DataFrame, d: str, p: str, n_tot: int) -> float:
+                if ct.empty or d not in ct.index or p not in ct.columns or n_tot == 0:
+                    return 0.0
+                return float(ct.loc[d, p]) / n_tot * 100
+
+            # Difference matrix: LLM% − Human%
+            diff_z = [[round(_pct(ct_l, d, p, n_llm) - _pct(ct_h, d, p, n_hum), 2)
+                        for p in all_p] for d in all_d]
+            # customdata for rich hover: [[llm_pct, hum_pct], ...]
+            cdata = [[[round(_pct(ct_l, d, p, n_llm), 1), round(_pct(ct_h, d, p, n_hum), 1)]
+                       for p in all_p] for d in all_d]
+            abs_max = max((abs(v) for row in diff_z for v in row), default=1.0)
+            diff_cs = [[0.0, HUMAN_COLOR], [0.5, "#FFFFFF"], [1.0, TEAL]]
+
+            fig_diff = go.Figure(go.Heatmap(
+                z=diff_z, x=all_p, y=all_d,
+                colorscale=diff_cs, zmid=0, zmin=-abs_max, zmax=abs_max,
+                colorbar=dict(title="LLM%−Human%", ticksuffix="%"),
+                customdata=cdata,
+                hovertemplate=(
+                    "<b>%{y}</b><br>%{x}<br>"
+                    "LLM: %{customdata[0]:.1f}%<br>"
+                    "Human: %{customdata[1]:.1f}%<br>"
+                    "Diff: %{z:+.1f}%<extra></extra>"
+                ),
+            ))
+            fig_diff.update_layout(
+                title=dict(
+                    text=(f"<b>Coverage Difference: LLM minus Human</b><br>"
+                          f"<sup>Teal = LLM covers more · amber = Human covers more"
+                          f" · hover for exact % (LLM n={n_llm:,}, Human n={n_hum:,})</sup>"),
+                    x=0.5, xanchor="center", font=dict(size=14)),
+                height=max(500, len(all_d) * 35 + 220),
+                plot_bgcolor="white", paper_bgcolor="white",
+                font=dict(family="Lato, Arial, sans-serif", size=10, color=DKGREY),
+                margin=dict(l=210, r=80, t=140, b=60),
+            )
+            fig_diff.update_xaxes(tickangle=-30, side="top")
+            fig_diff.update_yaxes(autorange="reversed")
+            _save_json_to(fig_diff, target / "domain_heatmap.json")
+
+    # ── Geographic map (two choropleth subplots) ──────────────────────────────
+    cc_l = _geo_counts(llm_df, "country_region_value")
+    cc_h = _geo_counts(h,      "country_region_value")
+    if cc_l or cc_h:
+        tot_h = sum(cc_h.values()) or 1
+        tot_l = sum(cc_l.values()) or 1
+        all_geo_countries = set(cc_l.keys()) | set(cc_h.keys())
+        max_geo_pct = max(
+            max((v / tot_l * 100 for v in cc_l.values()), default=1.0),
+            max((v / tot_h * 100 for v in cc_h.values()), default=1.0),
+            1.0,
+        )
+        geo_sref = max_geo_pct / (50 ** 2)
+
+        fig_gmap = go.Figure()
+        # LLM bubbles first (background) — teal
+        if cc_l:
+            fig_gmap.add_trace(go.Scattergeo(
+                locations=list(cc_l.keys()),
+                locationmode="country names",
+                mode="markers",
+                name=f"LLM (n={n_llm:,})",
+                marker=dict(
+                    size=[v / tot_l * 100 for v in cc_l.values()],
+                    sizemode="area", sizeref=geo_sref, sizemin=5,
+                    color=TEAL, opacity=0.60,
+                    line=dict(color="white", width=0.5),
+                ),
+                text=[f"LLM: {v/tot_l*100:.1f}% (n={v})" for v in cc_l.values()],
+                hovertemplate="<b>%{location}</b><br>%{text}<extra></extra>",
+            ))
+        # Human bubbles on top — amber
+        if cc_h:
+            fig_gmap.add_trace(go.Scattergeo(
+                locations=list(cc_h.keys()),
+                locationmode="country names",
+                mode="markers",
+                name=f"Human (n={n_hum:,})",
+                marker=dict(
+                    size=[v / tot_h * 100 for v in cc_h.values()],
+                    sizemode="area", sizeref=geo_sref, sizemin=5,
+                    color=HUMAN_COLOR, opacity=0.85,
+                    line=dict(color="white", width=1),
+                ),
+                text=[f"Human: {v/tot_h*100:.1f}% (n={v})" for v in cc_h.values()],
+                hovertemplate="<b>%{location}</b><br>%{text}<extra></extra>",
+            ))
+        fig_gmap.update_geos(
+            showframe=False, showcoastlines=True, projection_type="natural earth",
+            showland=True, landcolor="#F5F5F5", showocean=True, oceancolor="#EBF4FB",
+            showcountries=True, countrycolor="#D0D0D0",
+        )
+        fig_gmap.update_layout(
+            title=dict(
+                text=(f"<b>Geographic Distribution — Human vs LLM</b><br>"
+                      f"<sup>Bubble size = % of corpus on the same scale · "
+                      f"amber = Human (n={n_hum:,}) · teal = LLM (n={n_llm:,})</sup>"),
+                x=0.5, xanchor="center", font=dict(size=14)),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.1, xanchor="center", x=0.5),
+            height=460, paper_bgcolor="white",
+            font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+            margin=dict(l=0, r=0, t=100, b=40),
+        )
+        _save_json_to(fig_gmap, target / "geographic_map.json")
+
+        # Bar compare (% of each corpus)
+        cc_l_s = pd.Series(cc_l); cc_h_s = pd.Series(cc_h)
+        cc_l_p = (cc_l_s / cc_l_s.sum() * 100).round(1) if cc_l_s.sum() > 0 else cc_l_s
+        cc_h_p = (cc_h_s / cc_h_s.sum() * 100).round(1) if cc_h_s.sum() > 0 else cc_h_s
+        all_c = sorted(set(cc_l.keys()) | set(cc_h.keys()),
+                       key=lambda c: -(cc_l_p.get(c, 0.0) + cc_h_p.get(c, 0.0)))[:30]
+        bar_fig = go.Figure()
+        bar_fig.add_trace(go.Bar(
+            name=f"Human (n={n_hum:,})", y=all_c,
+            x=[round(float(cc_h_p.get(c, 0.0)), 1) for c in all_c],
+            orientation="h", marker_color=HUMAN_COLOR,
+            hovertemplate="<b>%{y}</b><br>Human: %{x:.1f}%<extra></extra>",
+        ))
+        bar_fig.add_trace(go.Bar(
+            name=f"LLM (n={n_llm:,})", y=all_c,
+            x=[round(float(cc_l_p.get(c, 0.0)), 1) for c in all_c],
+            orientation="h", marker_color=TEAL,
+            hovertemplate="<b>%{y}</b><br>LLM: %{x:.1f}%<extra></extra>",
+        ))
+        bar_fig.update_layout(
+            title=dict(text=f"<b>Studies by Country — Human vs LLM</b><br><sup>Human (n={n_hum:,}) vs LLM (n={n_llm:,}) — % of studies in each corpus</sup>",
+                       x=0.5, xanchor="center", font=dict(size=14)),
+            barmode="group", height=max(500, len(all_c) * 32 + 160),
+            xaxis_title="% of Studies", xaxis=dict(ticksuffix="%"),
+            yaxis=dict(autorange="reversed"),
+            plot_bgcolor="white", paper_bgcolor="white",
+            font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.1, xanchor="center", x=0.5),
+            margin=dict(l=160, r=40, t=110, b=80),
+        )
+        _save_json_to(bar_fig, target / "geographic_bar.json")
+
+    # ── Evidence Gap Map (side-by-side bubbles per cell) ─────────────────────
+    dom_col  = "process_outcome_domains_value"
+    prod_col = "producer_type_value"
+    if (dom_col in llm_df.columns and prod_col in llm_df.columns
+            and dom_col in h.columns and prod_col in h.columns):
+        cc_l_egm = _cell_counts_egm(llm_df)
+        cc_h_egm = _cell_counts_egm(h)
+        max_pct_egm = max(
+            max((v / n_llm * 100 for v in cc_l_egm.values()), default=1.0),
+            max((v / n_hum * 100 for v in cc_h_egm.values()), default=1.0),
+            1.0,
+        )
+        sref_egm = max_pct_egm / (36 ** 2)
+
+        d_labels = [DOMAIN_LABELS.get(d, d) for d in ALL_DOMAINS]
+        p_labels  = [PRODUCER_LABELS.get(p, p) for p in PRODUCER_TYPES]
+        # Numeric x positions so LLM and Human can be offset within each cell
+        p_pos = {p: i for i, p in enumerate(PRODUCER_TYPES)}
+        OFFSET = 0.22
+        BLUE_LIGHT  = "#90CAF9"   # lighter blue  — Human process
+        GREEN_LIGHT = "#A5D6A7"   # lighter green — Human outcome
+
+        traces_cmp = []
+        for d_set, color_llm, color_hum, domain_lbl in [
+            (PROCESS_DOMAINS, BLUE,  BLUE_LIGHT,  "Process"),
+            (OUTCOME_DOMAINS, GREEN, GREEN_LIGHT, "Outcome"),
+        ]:
+            xs_l, ys_l, szs_l, txts_l = [], [], [], []
+            xs_h, ys_h, szs_h, txts_h = [], [], [], []
+            for d in d_set:
+                dl = DOMAIN_LABELS.get(d, d)
+                for p in PRODUCER_TYPES:
+                    pl = PRODUCER_LABELS.get(p, p)
+                    pos = p_pos[p]
+                    nv_l = cc_l_egm.get((d, p), 0)
+                    nv_h = cc_h_egm.get((d, p), 0)
+                    pct_h = round(nv_h / n_hum * 100, 1)
+                    pct_l = round(nv_l / n_llm * 100, 1)
+                    if nv_h > 0:
+                        xs_h.append(pos - OFFSET); ys_h.append(dl)
+                        szs_h.append(pct_h)
+                        txts_h.append(f"<b>{dl}</b><br>{pl}<br>Human: {pct_h}% (n={nv_h})")
+                    if nv_l > 0:
+                        xs_l.append(pos + OFFSET); ys_l.append(dl)
+                        szs_l.append(pct_l)
+                        txts_l.append(f"<b>{dl}</b><br>{pl}<br>LLM: {pct_l}% (n={nv_l})")
+            if xs_h:
+                traces_cmp.append(go.Scatter(
+                    x=xs_h, y=ys_h, mode="markers+text",
+                    name=f"Human — {domain_lbl}",
+                    marker=dict(size=szs_h, sizemode="area", sizeref=sref_egm, sizemin=9,
+                                color=color_hum, opacity=0.85, line=dict(color="white", width=1.5)),
+                    text=[f"{s:.1f}%" for s in szs_h],
+                    textposition="middle center", textfont=dict(size=9, color=DKGREY),
+                    hovertext=txts_h, hoverinfo="text", showlegend=True,
+                ))
+            if xs_l:
+                traces_cmp.append(go.Scatter(
+                    x=xs_l, y=ys_l, mode="markers+text",
+                    name=f"LLM — {domain_lbl}",
+                    marker=dict(size=szs_l, sizemode="area", sizeref=sref_egm, sizemin=9,
+                                color=color_llm, opacity=0.80, line=dict(color="white", width=1)),
+                    text=[f"{s:.1f}%" for s in szs_l],
+                    textposition="middle center", textfont=dict(size=9, color="white"),
+                    hovertext=txts_l, hoverinfo="text", showlegend=True,
+                ))
+
+        # Gaps (neither LLM nor Human)
+        all_egm = set(cc_l_egm.keys()) | set(cc_h_egm.keys())
+        gx, gy, gt = [], [], []
+        for d in ALL_DOMAINS:
+            dl = DOMAIN_LABELS.get(d, d)
+            for p in PRODUCER_TYPES:
+                pl = PRODUCER_LABELS.get(p, p)
+                if (d, p) not in all_egm:
+                    gx.append(p_pos[p]); gy.append(dl)
+                    gt.append(f"<b>{dl}</b><br>{pl}<br><i>No studies in either</i>")
+        if gx:
+            traces_cmp.append(go.Scatter(x=gx, y=gy, mode="markers", name="Gap (both)",
+                marker=dict(size=10, color="#E0E0E0", line=dict(color="#BDBDBD", width=1)),
+                hovertext=gt, hoverinfo="text", showlegend=True))
+
+        fig = go.Figure(data=traces_cmp)
+        _n_out = len(OUTCOME_DOMAINS)
+        fig.add_shape(type="line", xref="paper", yref="y", x0=0, x1=1,
+            y0=_n_out - 0.5, y1=_n_out - 0.5,
+            line=dict(color="#9E9E9E", width=1.5, dash="dot"))
+        fig.update_layout(
+            title=dict(
+                text=(f"<b>Evidence Gap Map — LLM vs Human</b><br>"
+                      f"<sup>Left bubble = Human (n={n_hum:,}, lighter) · right = LLM (n={n_llm:,}, darker) · blue = process · green = outcome</sup>"),
+                x=0.5, xanchor="center", font=dict(size=14)),
+            height=740,
+            xaxis=dict(
+                title=dict(text="Producer Type", standoff=20), side="top",
+                tickmode="array",
+                tickvals=list(range(len(PRODUCER_TYPES))),
+                ticktext=p_labels,
+                range=[-0.6, len(PRODUCER_TYPES) - 0.4],
+                showgrid=True, gridcolor="#F0F0F0", tickfont=dict(size=12, color=DKGREY)),
+            yaxis=dict(categoryorder="array", categoryarray=list(reversed(d_labels)),
+                       showgrid=True, gridcolor="#F0F0F0", tickfont=dict(size=11, color=DKGREY)),
+            plot_bgcolor="white", paper_bgcolor="white",
+            font=dict(family="Lato, Arial, sans-serif", color=DKGREY),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.18, xanchor="center", x=0.5),
+            hovermode="closest", margin=dict(l=210, r=80, t=140, b=110),
+        )
+        _save_json_to(fig, target / "evidence_gap_map.json")
+
+    print(f"[step16] Compare figures done: {len(list(target.glob('*.json')))} files")
 
 
 # =============================================================================
@@ -2213,6 +3140,32 @@ def run(config: dict) -> dict:
             figures_saved.append("studies.csv")
         except Exception as e:
             print(f"[step16] WARNING: studies.csv failed — {e}")
+
+        try:
+            print("[step16] Producing LLM vs human comparison figure...")
+            _llm_vs_human_comparison(df, out_root, out_dir)
+            figures_saved.append("llm_vs_human.png")
+        except Exception as e:
+            print(f"[step16] WARNING: llm_vs_human.png failed — {type(e).__name__}: {e}")
+
+        # Human-only and comparison interactive figures
+        _human_path = out_root / "step15" / "step15_human.csv"
+        if _human_path.exists():
+            try:
+                _human_df = pd.read_csv(_human_path, dtype=str).fillna("")
+                print(f"[step16] Producing human interactive figures (n={len(_human_df)})...")
+                _human_figures_all(_human_df, out_dir)
+                figures_saved.append("human/")
+            except Exception as e:
+                print(f"[step16] WARNING: human figures failed — {type(e).__name__}: {e}")
+            try:
+                print("[step16] Producing LLM-vs-human compare interactive figures...")
+                _compare_figures_all(df, _human_df, out_dir)
+                figures_saved.append("compare/")
+            except Exception as e:
+                print(f"[step16] WARNING: compare figures failed — {type(e).__name__}: {e}")
+        else:
+            print("[step16] step15_human.csv not found — skipping human/compare interactive figures")
 
     # Sync to frontend
     try:

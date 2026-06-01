@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-step14c_compare_coding.py
+step14d_compare_coding.py
 
 Compare human coder outputs against LLM coding for any round.
 Generalises compare_r1a.py to work with all rounds (calibration and production).
@@ -13,18 +13,18 @@ LLM data comes from:
   scripts/outputs/step14/step14_results.csv   — screening decision
   scripts/outputs/step15/step15_coded.csv     — extraction fields
 
-Outputs per round go to: scripts/outputs/step14c/{round}/
+Outputs per round go to: scripts/outputs/step14d/{round}/
   comparison_{round}.csv   — long-format rows: doi × field → values + agree flags
   summary_{round}.csv      — agreement rates by field
   comparison_{round}.html  — colour-coded HTML table
   comparison_{round}.pdf   — PDF version
 
-Cross-round summary: scripts/outputs/step14c/summary_all_rounds.csv/.html
+Cross-round summary: scripts/outputs/step14d/summary_all_rounds.csv/.html
 
 Usage:
-  python scripts/step14c_compare_coding.py --round FT-R1a
-  python scripts/step14c_compare_coding.py --round FT-R2a --round FT-R2b
-  python scripts/step14c_compare_coding.py --all
+  python scripts/step14d_compare_coding.py --round FT-R1a
+  python scripts/step14d_compare_coding.py --round FT-R2a --round FT-R2b
+  python scripts/step14d_compare_coding.py --all
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ ROUNDS_DOC_DIR = REPO_ROOT / "documentation" / "coding" / "systematic-map" / "ro
 
 STEP14_CSV = OUTPUTS_DIR / "step14" / "step14_results.csv"
 STEP15_CSV = OUTPUTS_DIR / "step15" / "step15_coded.csv"
-OUT_DIR    = OUTPUTS_DIR / "step14c"
+OUT_DIR    = OUTPUTS_DIR / "step14d"
 
 # ── field definitions ──────────────────────────────────────────────────────────
 
@@ -643,7 +643,7 @@ def main() -> None:
         sys.exit(0)
 
     print(f"\n{'='*60}")
-    print(f"  step14c_compare_coding")
+    print(f"  step14d_compare_coding")
     print(f"  Rounds: {', '.join(rounds)}")
     print(f"{'='*60}")
 
