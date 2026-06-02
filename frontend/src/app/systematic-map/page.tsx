@@ -186,12 +186,12 @@ export default function SystematicMapPage() {
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              { stat: '96%', label: 'A recent but thin evidence base', text: 'Published since 2015 (median: 2022). Growing fast but long-term outcome evidence is still missing.' },
-              { stat: '86%', label: 'Marginalized groups largely invisible', text: 'Most studies do not disaggregate by women, youth, or indigenous peoples — a critical equity gap.' },
-              { stat: '<6%', label: 'Non-crop producers underrepresented', text: 'Fisheries/aquaculture (5.9%) and agroforestry (4.5%) nearly absent. Evidence skews heavily toward crop systems.' },
-              { stat: '~80%', label: 'Cost data almost entirely absent', text: 'Most studies report no cost or efficiency data, making value-for-money assessment nearly impossible.' },
-              { stat: '28%', label: 'Three countries dominate', text: 'Ethiopia, Ghana, and Kenya account for 28% of all studies. Most LMICs — and most of Africa — remain uncovered.' },
-              { stat: '—', label: 'Process outcomes studied; impacts are not', text: 'Knowledge, adoption, and decision-making are well covered. Income, wellbeing, and resilience outcomes remain sparse.' },
+              { stat: '96%', label: 'Studies published since 2015', text: 'The evidence is growing fast, but most studies are too recent to measure long-term impact. Multi-year outcome evidence is nearly absent.' },
+              { stat: '86%', label: 'Studies report no equity disaggregation', text: '86% of studies do not break down results by gender, age, ethnicity, or disability. We cannot tell who adaptation is actually benefiting.' },
+              { stat: '<6%', label: 'Fisheries and agroforestry combined', text: 'Fisheries/aquaculture (5.9%) and agroforestry (4.5%) together cover less than 6% of studies. Evidence is heavily skewed toward crop farming.' },
+              { stat: '~80%', label: 'Studies report no cost data', text: '~80% of studies collect no cost or value-for-money data, making it nearly impossible to compare the efficiency of adaptation interventions.' },
+              { stat: '28%', label: 'Studies in three countries (ETH/GHA/KEN)', text: 'Ethiopia, Ghana, and Kenya account for 28% of all studies. Most LMICs — and most of Africa, Asia, and Latin America — remain uncovered.' },
+              { stat: '—', label: 'Adoption measured; impact is not', text: 'Studies reliably capture whether farmers adopted a practice. Almost none measure whether adaptation improved incomes, wellbeing, or resilience.' },
             ].map(item => (
               <div key={item.label} className="bg-sand rounded-xl p-5 border border-gray-100">
                 <p className="text-sm font-logo font-bold text-charcoal leading-snug mb-2">{item.label}</p>

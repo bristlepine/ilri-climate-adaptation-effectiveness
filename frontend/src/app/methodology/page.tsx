@@ -75,6 +75,7 @@ const navItems = [
   { id: 'step4', label: '4 · Screening' },
   { id: 'step5', label: '5 · Full-text' },
   { id: 'step6', label: '6 · Coding' },
+  { id: 'step6c', label: '6c · Saturation' },
   { id: 'step7', label: '7 · Map' },
 ];
 
@@ -518,6 +519,29 @@ export default function MethodologyPage() {
             </div>
 
           </div>
+        </div>
+      </section>
+
+      {/* 6c. Information saturation */}
+      <section id="step6c" className="bg-white px-6 py-16">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeading
+            label="Step 6c"
+            title="Information saturation"
+            subtitle="Human coding continues until the distribution of key evidence characteristics stops changing — not until all papers are coded."
+          />
+          <p className="font-tagline text-sm text-gray-600 leading-relaxed max-w-3xl mb-6">
+            At each batch, we track how many new canonical codebook categories appear across three key dimensions: process/outcome domains (13 canonical values), methodological approaches (5), and producer types (5). Values entered outside the codebook are treated as a single &quot;other&quot; category. As more papers are coded, the rate of discovery drops — eventually reaching zero, indicating that additional coding is unlikely to reveal new evidence structures. In this study, all three dimensions reached saturation by batch FT-R2c (49 papers coded), with zero new canonical categories added across the final two batches (R2d and R3, covering an additional 37 papers). This confirms that the extracted evidence space is well-characterised by the human sample without needing to code the full corpus.
+          </p>
+          <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
+            <PlotlyChart
+              src="/map/data/saturation.json"
+              height={520}
+            />
+          </div>
+          <p className="mt-3 text-xs font-tagline text-gray-400">
+            Top panel: cumulative unique categories as a percentage of final total, by papers coded. Dashed line marks the 95% saturation threshold. Bottom panel: new categories discovered per batch. All three tracked dimensions plateau by 49 papers.
+          </p>
         </div>
       </section>
 

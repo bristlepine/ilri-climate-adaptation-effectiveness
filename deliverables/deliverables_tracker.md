@@ -25,7 +25,7 @@ Last updated: 2026-04-27
 | **D2** | Draft Systematic Map Protocol | Dec 2025 | ✓ | [v3 (GDoc)](https://docs.google.com/document/d/1uMRf7ZN2yzOusklRAPAwnou16hPH4A1SHzkH1qC3keA/edit) | — | — |
 | **D3** | Final Systematic Map Protocol + Protocol Amendment (D5.7) | Jan 2026 | ✓ | [v1 (GDoc)](https://docs.google.com/document/d/1XN0YdGPnOBEMVLxvekGQ-ztYngOQkx84kn7r2v0Y2qU/edit) · [v02 (GDoc)](https://docs.google.com/document/d/1yLnB2b--XOtrMSQ1ekgBu6XKGcDWQ1Ggvn7mKQqjaqg/edit) · [v03/D5.7 (GDoc)](https://docs.google.com/document/d/1Jqhy5LYm2FniFaTuQPkA8HXKZ1C4sSPMyGed0efGas4/edit) | [10.5281/zenodo.19811629](https://zenodo.org/records/19811629) | — |
 | **D4** | First Draft Systematic Map (preliminary) | 14 Apr 2026 | ✓ | [v01 (GDoc)](https://docs.google.com/document/d/1i2dQUoXuNPwjvV_fT5CMiy0fvADy8oWCGK3sdHGApCs/edit) · [v02 (GDoc)](https://docs.google.com/document/d/14Hejjfr63HdxH21bqBxLZe3AsXxmLBrXYqJJk7ZbBxU/edit) | [10.5281/zenodo.19811622](https://zenodo.org/records/19811622) | — |
-| **D5** | Final Systematic Map | 1 May 2026 | ⏳ | — | — | — |
+| **D5** | Final Systematic Map | 1 May 2026 | 🔄 | [v01 (GDoc)](https://docs.google.com/document/d/1Dhi15o2pq-Bq4kvIsBYVzdgPnzIHJcW-lNaTHxiDpDI/edit) | — | — |
 | **D6** | Draft SR/Meta-analysis Protocol | 15 May 2026 | ⏳ | — | — | — |
 | **D7** | Final SR/Meta-analysis Protocol | 29 May 2026 | ⏳ | — | — | — |
 | **D8** | Draft SR/Meta-analysis | 26 Jun 2026 | ⏳ | — | — | — |

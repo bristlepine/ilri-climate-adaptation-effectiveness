@@ -527,19 +527,152 @@ def _producer_type_bar(df: pd.DataFrame, out_dir: Path) -> None:
 # =============================================================================
 
 _METHOD_LABELS: Dict[str, str] = {
-    "quantitative":                       "Quantitative",
-    "qualitative":                        "Qualitative",
-    "participatory":                      "Participatory",
-    "participatory_methods":              "Participatory",
-    "modeling_with_empirical_validation": "Modelling",
-    "experimental":                       "Experimental / RCT",
-    "secondary_data":                     "Secondary data",
-    "remote_sensing":                     "Remote sensing / GIS",
-    "surveys":                            "Survey / Questionnaire",
-    "longitudinal":                       "Longitudinal / Panel",
-    "mixed-methods":                      "Mixed methods",
+    # Quantitative
+    "quantitative":                            "Quantitative",
+    "surveys":                                 "Quantitative",
+    "survey":                                  "Quantitative",
+    "econometric":                             "Quantitative",
+    "longitudinal":                            "Quantitative",
+    "longitudinal_panel":                      "Quantitative",
+    # Qualitative
+    "qualitative":                             "Qualitative",
+    "interviews":                              "Qualitative",
+    "interview":                               "Qualitative",
+    "semi_structured_interviews":              "Qualitative",
+    "semi-structured interviews":              "Qualitative",
+    "focus_groups":                            "Qualitative",
+    "ethnographic":                            "Qualitative",
+    "constant_comparative_methods":            "Qualitative",
+    "case_study":                              "Qualitative",
+    # Participatory
+    "participatory":                           "Participatory",
+    "participatory_methods":                   "Participatory",
+    "participatory_action_research":           "Participatory",
+    # Experimental / RCT
+    "experimental":                            "Experimental / RCT",
+    "rct":                                     "Experimental / RCT",
+    "quasi_experimental":                      "Experimental / RCT",
+    "quasi-experimental":                      "Experimental / RCT",
+    # Mixed methods
+    "mixed_methods":                           "Mixed methods",
+    "mixed-methods":                           "Mixed methods",
+    "mixed_method":                            "Mixed methods",
+    "mixed methods":                           "Mixed methods",
+    "mixed method":                            "Mixed methods",
+    # Modelling
+    "modeling_with_empirical_validation":      "Modelling",
+    "modelling_with_empirical_validation":     "Modelling",
+    "emperical_validation_modeling":           "Modelling",
+    "modelling_with_emperical_validation":     "Modelling",
+    "modeling_with_emperical_validation":      "Modelling",
+    "biophysical_model":                       "Modelling",
+    "agent_based_model":                       "Modelling",
+    "simulation":                              "Modelling",
+    # Secondary data
+    "secondary_data":                          "Secondary data",
+    "literature_review":                       "Secondary data",
+    "meta_analysis":                           "Secondary data",
+    # Remote sensing / GIS
+    "remote_sensing":                          "Remote sensing / GIS",
+    "gis":                                     "Remote sensing / GIS",
+    # Additional typos / free-text variants from human coders
+    "sureys":                                  "Quantitative",
+    "surey":                                   "Quantitative",
+    "quanitative":                             "Quantitative",
+    "experimentation":                         "Experimental / RCT",
+    "experimental_design":                     "Experimental / RCT",
+    "rct_experimental":                        "Experimental / RCT",
+    "review":                                  "Secondary data",
+    "desk_review":                             "Secondary data",
+    "document_review":                         "Secondary data",
+    "action_research":                         "Participatory",
+    "focus_group_discussions":                 "Qualitative",
+    "key_informant_interviews":                "Qualitative",
+    "field_observation":                       "Qualitative",
+    "observation":                             "Qualitative",
+    # Other
+    "other":                                   "Other",
+}
+
+# =============================================================================
+# 5. EQUITY / MARGINALIZED SUBPOPULATIONS
+# =============================================================================
+
+_EQUITY_LABELS: Dict[str, str] = {
+    # Women / gender
+    "women":                              "Women / Gender",
+    "women_farmers":                      "Women / Gender",
+    "female":                             "Women / Gender",
+    "female_farmers":                     "Women / Gender",
+    "gender":                             "Women / Gender",
+    # Men (separate dimension — track explicitly)
+    "men":                                "Men / Gender",
+    "male":                               "Men / Gender",
+    "male_decision_making":               "Men / Gender",
+    # Youth
+    "youth":                              "Youth",
+    "young_farmers":                      "Youth",
+    "children":                           "Youth",
+    # Indigenous peoples
+    "indigenous_people":                  "Indigenous peoples",
+    "indigenous_peoples":                 "Indigenous peoples",
+    "indigenous":                         "Indigenous peoples",
+    "maasai_pastoralists":                "Indigenous peoples",
+    "maasai pastoralists":                "Indigenous peoples",
+    "pastoralists":                       "Indigenous peoples",
+    # People with disabilities
+    "people_with_disabilities":           "People with disabilities",
+    "disability":                         "People with disabilities",
+    "disabled":                           "People with disabilities",
+    # Elderly
+    "elders":                             "Elderly",
+    "elderly":                            "Elderly",
+    "older_adults":                       "Elderly",
+    # Ethnic minorities / marginalised communities
+    "ethnic_minorities":                  "Ethnic minorities",
+    "caste":                              "Ethnic minorities",
+    "minority_groups":                    "Ethnic minorities",
+    # Migrant / seasonal workers
+    "migrant_seasonal_workers":           "Migrant / seasonal workers",
+    "migrants":                           "Migrant / seasonal workers",
+    "seasonal_workers":                   "Migrant / seasonal workers",
+    # Landless / land-poor
+    "landless":                           "Landless",
+    "land_poor":                          "Landless",
+    "poor_rural_farmers":                 "Landless",
+    # Other
+    "others":                             "Other",
     "other":                              "Other",
 }
+
+# Values that are NOT equity dimensions (skip silently)
+_EQUITY_SKIP = {
+    "none_reported", "nan", "", "not_found", "n/a", "none", "unknown", "unclear",
+    "in_doubt", "in doubt", "adults", "medium", "poor", "rich", "rural",
+    "small_holder_farmers", "small_holder_farmer", "smallholder_rural_farmers",
+    "smallholder rural farmers", "smallholder_farmers", "farmers",
+    "poor rural farmers", "poor_rural_farmers",
+}
+
+
+def _equity_label(raw: str) -> str | None:
+    """Canonical label for a raw equity value. Returns None for skip values."""
+    key = raw.lower().strip()
+    if key in _EQUITY_SKIP:
+        return None
+    # Try underscore form first, then space-normalised form
+    label = _EQUITY_LABELS.get(key) or _EQUITY_LABELS.get(key.replace(" ", "_"))
+    if label:
+        return label
+    # Fallback: title-case the raw value
+    return raw.replace("_", " ").title()
+
+
+def _method_label(raw: str) -> str:
+    """Canonical label for a raw methodology value."""
+    key = raw.lower().strip()
+    label = _METHOD_LABELS.get(key) or _METHOD_LABELS.get(key.replace(" ", "_"))
+    return label or raw.replace("_", " ").title()
 
 
 def _methodology_bar(df: pd.DataFrame, out_dir: Path) -> None:
@@ -565,7 +698,7 @@ def _methodology_bar(df: pd.DataFrame, out_dir: Path) -> None:
     # Merge synonyms via label map
     merged: Dict[str, int] = {}
     for raw, n in raw_counts.items():
-        label = _METHOD_LABELS.get(raw.lower().strip(), raw.replace("_", " ").title())
+        label = _method_label(raw)
         merged[label] = merged.get(label, 0) + n
     counts = pd.Series(merged).sort_values(ascending=False).head(12)
 
@@ -832,15 +965,21 @@ def _equity_bar(df: pd.DataFrame, out_dir: Path) -> None:
     if col is None:
         return
 
-    items = [i for i in _split_multi(df[col])
-             if i.lower() not in ("none_reported", "nan", "", "other")]
-    if not items:
+    raw_items = [i for i in _split_multi(df[col])
+                 if i.lower() not in _EQUITY_SKIP]
+    if not raw_items:
         return
+    merged_eq: Dict[str, int] = {}
+    for raw in raw_items:
+        label = _equity_label(raw)
+        if label is None:
+            label = raw.replace("_", " ").title()
+        merged_eq[label] = merged_eq.get(label, 0) + 1
+    eq_series = pd.Series(merged_eq).sort_values(ascending=False).head(12)
 
     import textwrap as _tw
-    counts = pd.Series(items).value_counts().head(12)
-    wrapped = ["\n".join(_tw.wrap(k.replace("_", " ").title(), width=16))
-               for k in counts.index]
+    counts = eq_series
+    wrapped = ["\n".join(_tw.wrap(k, width=16)) for k in counts.index]
 
     fig, ax = plt.subplots(figsize=(10, 5))
     bars = ax.bar(range(len(counts)), counts.values,
@@ -1539,12 +1678,14 @@ def _equity_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     if df.empty or col not in df.columns:
         return
 
-    items = [i for i in _split_multi(df[col])
-             if i.lower() not in ("none_reported", "nan", "")]
-    if not items:
+    raw_items = [i for i in _split_multi(df[col]) if i.lower() not in _EQUITY_SKIP]
+    if not raw_items:
         return
-
-    counts = pd.Series(items).value_counts()
+    merged_eq: Dict[str, int] = {}
+    for raw in raw_items:
+        label = _equity_label(raw) or raw.replace("_", " ").title()
+        merged_eq[label] = merged_eq.get(label, 0) + 1
+    counts = pd.Series(merged_eq).sort_values(ascending=False)
 
     fig = go.Figure(go.Bar(
         x=counts.index.tolist(),
@@ -2434,7 +2575,17 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
     if col in h.columns:
         items = _split_h(h[col])
         if items:
-            counts = pd.Series(items).value_counts()
+            raw_counts = pd.Series(items).value_counts()
+            merged: Dict[str, int] = {}
+            for raw, nv in raw_counts.items():
+                label = PRODUCER_LABELS.get(raw.lower().strip(), None)
+                if label is None:
+                    continue  # skip undefined / unrecognised
+                merged[label] = merged.get(label, 0) + nv
+            counts = pd.Series(merged).sort_values(ascending=False)
+            if counts.empty:
+                counts = raw_counts.head(8).rename(
+                    lambda r: r.replace("_", " ").title())
             fig = go.Figure(go.Bar(
                 x=counts.values.tolist(), y=counts.index.tolist(), orientation="h",
                 marker_color=HUMAN_COLOR,
@@ -2456,7 +2607,12 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
     if col in h.columns:
         items = _split_h(h[col])
         if items:
-            counts = pd.Series(items).value_counts()
+            raw_counts = pd.Series(items).value_counts()
+            merged_m: Dict[str, int] = {}
+            for raw, nv in raw_counts.items():
+                label = _method_label(raw)
+                merged_m[label] = merged_m.get(label, 0) + nv
+            counts = pd.Series(merged_m).sort_values(ascending=False).head(12)
             fig = go.Figure(go.Bar(
                 x=counts.values.tolist(), y=counts.index.tolist(), orientation="h",
                 marker_color=PALETTE[:len(counts)],
@@ -2478,8 +2634,18 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
     if col in h.columns:
         items = _split_h(h[col])
         if items:
-            counts = pd.Series(items).value_counts()
-            bar_colors = [BLUE if i % 2 == 0 else GREEN for i in range(len(counts))]
+            raw_counts = pd.Series(items).value_counts()
+            merged_d: Dict[str, int] = {}
+            for raw, nv in raw_counts.items():
+                label = DOMAIN_LABELS.get(raw.lower().strip(),
+                                          raw.replace("_", " ").title())
+                merged_d[label] = merged_d.get(label, 0) + nv
+            counts = pd.Series(merged_d)
+            # Preserve canonical domain order
+            ordered = [DOMAIN_LABELS[d] for d in ALL_DOMAINS if DOMAIN_LABELS[d] in merged_d]
+            counts = counts.reindex(ordered).fillna(0).astype(int)
+            bar_colors = [BLUE if d in [DOMAIN_LABELS[x] for x in PROCESS_DOMAINS]
+                          else GREEN for d in counts.index]
             fig = go.Figure(go.Bar(
                 x=counts.index.tolist(), y=counts.values.tolist(),
                 marker_color=bar_colors,
@@ -2499,9 +2665,15 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
     # ── Equity ────────────────────────────────────────────────────────────────
     col = "marginalized_subpopulations_value"
     if col in h.columns:
-        items = [i for i in _split_h(h[col]) if i.lower() not in ("none_reported",)]
+        raw_eq = [i for i in _split_h(h[col]) if i.lower() not in _EQUITY_SKIP]
+        if raw_eq:
+            merged_eq_h: Dict[str, int] = {}
+            for raw in raw_eq:
+                label = _equity_label(raw) or raw.replace("_", " ").title()
+                merged_eq_h[label] = merged_eq_h.get(label, 0) + 1
+            counts = pd.Series(merged_eq_h).sort_values(ascending=False)
+        items = raw_eq  # for the `if items:` guard below
         if items:
-            counts = pd.Series(items).value_counts()
             fig = go.Figure(go.Bar(
                 x=counts.index.tolist(), y=counts.values.tolist(),
                 marker_color=PURPLE,
@@ -2523,16 +2695,23 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
     if dom_col in h.columns and prod_col in h.columns:
         rows: List[dict] = []
         for _, row in h.iterrows():
-            domains   = [d.strip() for d in str(row.get(dom_col, "")).split(";")
+            domains   = [DOMAIN_LABELS.get(d.strip().lower(), None)
+                         for d in str(row.get(dom_col, "")).split(";")
                          if d.strip() and d.strip().lower() not in _SKIP_H]
-            prodtypes = [p.strip() for p in str(row.get(prod_col, "")).split(";")
+            prodtypes = [PRODUCER_LABELS.get(p.strip().lower(), None)
+                         for p in str(row.get(prod_col, "")).split(";")
                          if p.strip() and p.strip().lower() not in _SKIP_H]
             for d in domains:
                 for p in prodtypes:
-                    rows.append({"domain": d, "producer": p})
+                    if d and p:
+                        rows.append({"domain": d, "producer": p})
         if rows:
             ct = pd.DataFrame(rows).pivot_table(
                 index="domain", columns="producer", aggfunc="size", fill_value=0)
+            # Reindex to canonical order
+            d_order = [DOMAIN_LABELS[d] for d in ALL_DOMAINS if DOMAIN_LABELS[d] in ct.index]
+            p_order = [PRODUCER_LABELS[p] for p in PRODUCER_TYPES if PRODUCER_LABELS[p] in ct.columns]
+            ct = ct.reindex(index=d_order, columns=p_order, fill_value=0)
             if not ct.empty:
                 fig = go.Figure(go.Heatmap(
                     z=ct.values.tolist(), x=ct.columns.tolist(), y=ct.index.tolist(),
