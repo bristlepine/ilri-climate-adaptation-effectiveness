@@ -647,24 +647,33 @@ _EQUITY_LABELS: Dict[str, str] = {
 
 # Values that are NOT equity dimensions (skip silently)
 _EQUITY_SKIP = {
-    "none_reported", "nan", "", "not_found", "n/a", "none", "unknown", "unclear",
+    "nan", "", "not_found", "n/a", "unknown", "unclear",
     "in_doubt", "in doubt", "adults", "medium", "poor", "rich", "rural",
     "small_holder_farmers", "small_holder_farmer", "smallholder_rural_farmers",
     "smallholder rural farmers", "smallholder_farmers", "farmers",
     "poor rural farmers", "poor_rural_farmers",
 }
 
+_EQUITY_NONE_VALUES = {
+    "none_reported", "none reported", "none", "not_reported",
+    "no marginalized groups", "no_marginalized_groups",
+    "none identified", "none_identified",
+}
+
 
 def _equity_label(raw: str) -> str | None:
-    """Canonical label for a raw equity value. Returns None for skip values."""
+    """Canonical label for a raw equity value.
+    Returns 'No marginalized groups' for none_reported.
+    Returns None for values that should be silently skipped.
+    """
     key = raw.lower().strip()
+    if key in _EQUITY_NONE_VALUES:
+        return "No marginalized groups"
     if key in _EQUITY_SKIP:
         return None
-    # Try underscore form first, then space-normalised form
     label = _EQUITY_LABELS.get(key) or _EQUITY_LABELS.get(key.replace(" ", "_"))
     if label:
         return label
-    # Fallback: title-case the raw value
     return raw.replace("_", " ").title()
 
 
@@ -1593,12 +1602,14 @@ def _methodology_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     if df.empty or col not in df.columns:
         return
 
-    vals = df[col].dropna().astype(str).str.strip()
-    vals = vals[vals.str.lower().isin(["", "nan", "not_found"]) == False]
-    if vals.empty:
+    raw_items = _split_multi(df[col])
+    if not raw_items:
         return
-
-    counts = vals.value_counts()
+    merged_mi: Dict[str, int] = {}
+    for raw in raw_items:
+        label = _method_label(raw)
+        merged_mi[label] = merged_mi.get(label, 0) + 1
+    counts = pd.Series(merged_mi).sort_values(ascending=False).head(12)
 
     fig = go.Figure(go.Bar(
         x=counts.values.tolist(),
@@ -1609,7 +1620,7 @@ def _methodology_interactive(df: pd.DataFrame, out_dir: Path) -> None:
     ))
     fig.update_layout(
         title=dict(
-            text=f"<b>Methodological Approach</b><br><sup>Primary study design, multi-select (n={len(vals):,})</sup>",
+            text=f"<b>Methodological Approach</b><br><sup>Primary study design, multi-select (n={len(df):,})</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
         height=380,
@@ -1687,15 +1698,18 @@ def _equity_interactive(df: pd.DataFrame, out_dir: Path) -> None:
         merged_eq[label] = merged_eq.get(label, 0) + 1
     counts = pd.Series(merged_eq).sort_values(ascending=False)
 
+    eq_colors_llm = [RED if c == "No marginalized groups" else PURPLE
+                     for c in counts.index]
     fig = go.Figure(go.Bar(
         x=counts.index.tolist(),
         y=counts.values.tolist(),
-        marker_color=PURPLE,
+        marker_color=eq_colors_llm,
         hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
     ))
     fig.update_layout(
         title=dict(
-            text=f"<b>Equity & Inclusion Dimensions Reported</b><br><sup>Multi-select: studies may address multiple dimensions (n={len(df):,})</sup>",
+            text=f"<b>Equity & Inclusion Dimensions Reported</b><br>"
+                 f"<sup>Red = no marginalized group focus. Multi-select (n={len(df):,})</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
         height=380,
@@ -2674,13 +2688,16 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
             counts = pd.Series(merged_eq_h).sort_values(ascending=False)
         items = raw_eq  # for the `if items:` guard below
         if items:
+            eq_colors = [RED if c == "No marginalized groups" else PURPLE
+                         for c in counts.index]
             fig = go.Figure(go.Bar(
                 x=counts.index.tolist(), y=counts.values.tolist(),
-                marker_color=PURPLE,
+                marker_color=eq_colors,
                 hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
             ))
             fig.update_layout(
-                title=dict(text=f"<b>Equity & Inclusion (Human-coded)</b><br><sup>n={n:,}</sup>",
+                title=dict(text=f"<b>Equity & Inclusion (Human-coded)</b><br>"
+                               f"<sup>Red = no marginalized group focus. Multi-select (n={n:,})</sup>",
                            x=0.5, xanchor="center", font=dict(size=14)),
                 height=380, yaxis_title="Number of Studies",
                 plot_bgcolor="white", paper_bgcolor="white",
