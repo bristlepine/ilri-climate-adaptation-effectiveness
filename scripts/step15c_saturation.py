@@ -248,18 +248,21 @@ def build_figure(rows: list[dict]) -> dict:
             "range": [0, 108],
             "showgrid": True,
             "gridcolor": "#F3F4F6",
-            "domain": [0.38, 1.0],
+            "domain": [0.42, 1.0],
         },
         "xaxis2": {
             "title": {"text": "Batch", "font": {"size": 11}},
             "showgrid": False,
             "domain": [0, 1],
+            "tickangle": -30,
+            "tickfont": {"size": 11},
         },
         "yaxis2": {
             "title": {"text": "New categories", "font": {"size": 11}},
             "showgrid": True,
             "gridcolor": "#F3F4F6",
-            "domain": [0, 0.30],
+            "domain": [0, 0.33],
+            "dtick": 1,
         },
         "legend": {
             "x": 0.55,

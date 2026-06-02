@@ -20,8 +20,8 @@ AMB_BDR = "#f6ad55"
 GREY    = "#9ca3af"
 BLACK   = "#1a1a1a"
 
-FW, FH = 13, 12         # figure width, height (inches)
-DPI     = 180
+FW, FH = 14, 13         # figure width, height (inches)
+DPI     = 200
 
 fig, ax = plt.subplots(figsize=(FW, FH))
 ax.set_xlim(0, FW)
@@ -69,7 +69,7 @@ def phase_band(y_bot, y_top, text):
                        edgecolor=MID_GRN, facecolor=L_GREEN, zorder=1)
     ax.add_patch(p)
     ax.text(0.50, (y_bot + y_top) / 2, text, ha="center", va="center",
-            fontsize=8, color=GREEN, fontweight="bold", rotation=90,
+            fontsize=9.5, color=GREEN, fontweight="bold", rotation=90,
             fontfamily="DejaVu Sans")
 
 # ── layout constants ───────────────────────────────────────────────────────────
@@ -120,13 +120,13 @@ phase_band(P_INCLD_BOT, P_INCLD_TOP, "INCLUDED")
 rect(CX, Y_BOX1, CW, BH_TALL)
 label(CX, Y_BOX1, CW, BH_TALL,
       ["Records identified", "n = 40,653  (29 sources)"],
-      [10, 12], [BLACK, GREEN], [False, True])
+      [11.5, 13.5], [BLACK, GREEN], [False, True])
 
 # ── Box 2: After dedup ────────────────────────────────────────────────────────
 rect(CX, Y_BOX2, CW, BH_STD)
 label(CX, Y_BOX2, CW, BH_STD,
       ["Records after deduplication", "n = 26,182"],
-      [10, 12], [BLACK, GREEN], [False, True])
+      [11.5, 13.5], [BLACK, GREEN], [False, True])
 
 # arrow 1 → 2
 down_arrow(CM, Y_BOX1, Y_BOX2 + BH_STD)
@@ -136,14 +136,14 @@ EY_DED = Y_BOX2 + BH_STD / 2
 rect(EX, EY_DED - 0.38, EW, 0.76, bg=RED_BG, ec=RED_BDR)
 label(EX, EY_DED - 0.38, EW, 0.76,
       ["Duplicates removed", "n = 14,471"],
-      [9.5, 10.5], [RED_TXT, RED_TXT], [False, True])
+      [11, 12.5], [RED_TXT, RED_TXT], [False, True])
 right_arrow(CX + CW, EX, EY_DED)
 
 # ── Box 3: T&A screening ──────────────────────────────────────────────────────
 rect(CX, Y_BOX3, CW, BH_STD)
 label(CX, Y_BOX3, CW, BH_STD,
       ["Records screened (title & abstract)", "n = 26,182"],
-      [10, 12], [BLACK, GREEN], [False, True])
+      [11.5, 13.5], [BLACK, GREEN], [False, True])
 
 # arrow 2 → 3
 down_arrow(CM, Y_BOX2, Y_BOX3 + BH_STD)
@@ -154,7 +154,7 @@ rect(EX, EY_SCR - 0.52, EW, 1.04, bg=RED_BG, ec=RED_BDR)
 label(EX, EY_SCR - 0.52, EW, 1.04,
       ["Records excluded", "n = 17,429  (67%)",
        "concept, methodology, context,", "population, geography"],
-      [9.5, 10.5, 8.5, 8.5], [RED_TXT, RED_TXT, RED_TXT, RED_TXT],
+      [11, 12.5, 10, 10], [RED_TXT, RED_TXT, RED_TXT, RED_TXT],
       [False, True, False, False])
 right_arrow(CX + CW, EX, EY_SCR)
 
@@ -162,7 +162,7 @@ right_arrow(CX + CW, EX, EY_SCR)
 rect(CX, Y_BOX4, CW, BH_STD)
 label(CX, Y_BOX4, CW, BH_STD,
       ["Full texts sought", "n = 8,748  (33% of screened)"],
-      [10, 12], [BLACK, GREEN], [False, True])
+      [11.5, 13.5], [BLACK, GREEN], [False, True])
 
 # arrow 3 → 4
 down_arrow(CM, Y_BOX3, Y_BOX4 + BH_STD)
@@ -172,7 +172,7 @@ EY_FT = Y_BOX4 + BH_STD / 2
 rect(EX, EY_FT - 0.42, EW, 0.84, bg=RED_BG, ec=RED_BDR)
 label(EX, EY_FT - 0.42, EW, 0.84,
       ["Not retrieved (paywall / no DOI)", "n = 5,243  (60%)"],
-      [9.5, 10.5], [RED_TXT, RED_TXT], [False, True])
+      [11, 12.5], [RED_TXT, RED_TXT], [False, True])
 right_arrow(CX + CW, EX, EY_FT)
 
 # ── Fork: arrow from Box 4 down to fork point ─────────────────────────────────
@@ -189,13 +189,13 @@ down_arrow(HC, Y_FORK, Y_TRACK + BH_TRK)
 rect(LX, Y_TRACK, TW, BH_TRK, bg="#f8fafc", ec="#94a3b8")
 label(LX, Y_TRACK, TW, BH_TRK,
       ["LLM SCREENING", "retrieved: n = 3,505  (40%)", "excluded: n = 1,096  (31%)"],
-      [9, 10, 9], ["#475569", "#1e40af", "#475569"], [True, True, False])
+      [10.5, 11.5, 10.5], ["#475569", "#1e40af", "#475569"], [True, True, False])
 
 # ── Human track (right) ───────────────────────────────────────────────────────
 rect(HX, Y_TRACK, TW, BH_TRK, bg=AMB_BG, ec=AMB_BDR)
 label(HX, Y_TRACK, TW, BH_TRK,
       ["HUMAN CODING  (primary)", "sampled: n = 100", "excluded: n = 14  (14%)"],
-      [9, 10, 9], [AMBER, "#92400e", AMBER], [True, True, False])
+      [10.5, 11.5, 10.5], [AMBER, "#92400e", AMBER], [True, True, False])
 
 # ── Arrows to included boxes ──────────────────────────────────────────────────
 down_arrow(LC, Y_TRACK, Y_INC + BH_INC)
@@ -205,13 +205,13 @@ down_arrow(HC, Y_TRACK, Y_INC + BH_INC)
 rect(LX, Y_INC, TW, BH_INC, bg="#f8fafc", ec="#94a3b8")
 label(LX, Y_INC, TW, BH_INC,
       ["LLM INCLUDED", "n = 2,368  (68%)", "exploratory reference"],
-      [9, 12, 8.5], ["#475569", "#1e40af", "#64748b"], [True, True, False])
+      [10.5, 13, 10], ["#475569", "#1e40af", "#64748b"], [True, True, False])
 
 # ── Human included ────────────────────────────────────────────────────────────
 rect(HX, Y_INC, TW, BH_INC, bg=AMB_BG, ec=AMBER, lw=2.0)
 label(HX, Y_INC, TW, BH_INC,
       ["HUMAN INCLUDED", "n = 86  (86%)", "PRIMARY OUTPUT"],
-      [9, 12, 9], [AMBER, AMBER, GREEN], [True, True, True])
+      [10.5, 13, 10.5], [AMBER, AMBER, GREEN], [True, True, True])
 
 plt.tight_layout(pad=0.2)
 plt.savefig(str(OUT), dpi=DPI, bbox_inches="tight", facecolor="white")
