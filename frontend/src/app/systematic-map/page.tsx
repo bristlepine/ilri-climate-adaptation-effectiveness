@@ -6,6 +6,7 @@ import PlotlyChart from "@/components/PlotlyChart";
 import PrismaFlow from "@/components/PrismaFlow";
 import { useState, useEffect } from "react";
 import { Download, Maximize2, X } from "lucide-react";
+import SectionHeading from "@/components/SectionHeading";
 
 type DatasetMode = 'llm' | 'human' | 'compare';
 
@@ -125,11 +126,11 @@ export default function SystematicMapPage() {
       </div>
 
       {/* ROSES Flow Diagram */}
-      <section className="bg-white px-6 py-16">
+      <section id="flow-diagram" className="bg-white px-6 py-16">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
             <div>
-              <h2 className="text-2xl font-logo font-bold text-green">ROSES Flow Diagram</h2>
+              <SectionHeading id="flow-diagram" className="text-2xl font-logo font-bold text-green">ROSES Flow Diagram</SectionHeading>
               <p className="font-tagline text-sm text-gray-500 mt-1">Record flow across all 27 sources and screening stages, following ROSES reporting standards.</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -177,10 +178,10 @@ export default function SystematicMapPage() {
       </section>
 
       {/* Key Findings */}
-      <section className="bg-white px-6 py-16 border-t border-gray-100">
+      <section id="key-findings" className="bg-white px-6 py-16 border-t border-gray-100">
         <div className="max-w-5xl mx-auto">
           <p className="text-xs font-tagline uppercase tracking-widest text-green mb-3">What the evidence shows</p>
-          <h2 className="text-2xl font-logo font-bold text-charcoal mb-4">Key findings</h2>
+          <SectionHeading id="key-findings" className="text-2xl font-logo font-bold text-charcoal mb-4">Key findings</SectionHeading>
           <p className="font-tagline text-sm text-gray-600 leading-relaxed max-w-3xl mb-8">
             Across 86 human-coded studies, the evidence base is recent, geographically concentrated, and skewed toward process outcomes and crop systems. Non-crop producers, marginalized groups, and cost data remain severely underrepresented.
           </p>
@@ -204,10 +205,10 @@ export default function SystematicMapPage() {
       </section>
 
       {/* Evidence Gap Map */}
-      <section className="bg-sand px-6 py-16">
+      <section id="evidence-gap-map" className="bg-sand px-6 py-16">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between gap-4 mb-2">
-            <h2 className="text-2xl font-logo font-bold text-green shrink-0">Evidence Gap Map</h2>
+            <SectionHeading id="evidence-gap-map" className="text-2xl font-logo font-bold text-green shrink-0">Evidence Gap Map</SectionHeading>
             <div className="flex-none flex items-center gap-2">
               <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
                 {DATASET_MODES.map((mode, i) => (
@@ -244,10 +245,10 @@ export default function SystematicMapPage() {
       </section>
 
       {/* Geographic Distribution */}
-      <section className="bg-white px-6 py-16">
+      <section id="geographic-distribution" className="bg-white px-6 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between gap-4 mb-2">
-            <h2 className="text-2xl font-logo font-bold text-green shrink-0">Geographic Distribution</h2>
+            <SectionHeading id="geographic-distribution" className="text-2xl font-logo font-bold text-green shrink-0">Geographic Distribution</SectionHeading>
             <div className="flex-none flex items-center gap-2">
               <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
                 {DATASET_MODES.map((mode, i) => (
@@ -313,7 +314,7 @@ export default function SystematicMapPage() {
       </section>
 
       {/* Searchable Database */}
-      <section className="relative px-6 py-16 overflow-hidden">
+      <section id="searchable-database" className="relative px-6 py-16 overflow-hidden">
         <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-[-1]">
           <source src="https://bristlepine.s3.us-east-2.amazonaws.com/2994205-uhd_3840_2160_30fps_clip.mp4" type="video/mp4" />
         </video>
@@ -321,7 +322,7 @@ export default function SystematicMapPage() {
         <div className="relative z-10 max-w-5xl mx-auto">
           <div className="flex items-start justify-between mb-6 gap-4">
             <div>
-              <h2 className="text-2xl font-logo font-bold text-sand">Searchable Database</h2>
+              <SectionHeading id="searchable-database" className="text-2xl font-logo font-bold text-sand">Searchable Database</SectionHeading>
               <p className="font-tagline text-sm text-clay mt-1">All included studies with key metadata. Search across all fields.</p>
             </div>
             <a href="/map/data/studies.csv" download
@@ -410,10 +411,10 @@ export default function SystematicMapPage() {
       </section>
 
       {/* Supporting Charts */}
-      <section className="bg-sand px-6 py-16">
+      <section id="evidence-map" className="bg-sand px-6 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between gap-4 mb-1">
-            <h2 className="text-2xl font-logo font-bold text-green shrink-0">Evidence Map</h2>
+            <SectionHeading id="evidence-map" className="text-2xl font-logo font-bold text-green shrink-0">Evidence Map</SectionHeading>
             <div className="flex-none flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
               {DATASET_MODES.map((mode, i) => (
                 <button key={mode} onClick={() => setDatasetMode(mode)}
