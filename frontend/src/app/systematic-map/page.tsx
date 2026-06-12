@@ -11,15 +11,15 @@ import SectionHeading from "@/components/SectionHeading";
 type DatasetMode = 'llm' | 'human' | 'compare';
 
 const DATASET_LABELS: Record<DatasetMode, string> = {
-  human:   'Human  (n=86)',
+  human:   'Human  (n=154)',
   llm:     'LLM  (n=2,368)',
   compare: 'Compare',
 };
 
 const DATASET_DESCS: Record<DatasetMode, string> = {
-  human:   'Human-coded primary output — 86 records across 5 coding rounds.',
-  llm:     'LLM-screened reference corpus — 2,368 auto-extracted records.',
-  compare: 'Human (amber) vs LLM (teal) — % of studies for direct comparison.',
+  human:   'Human-coded primary output — 154 records across 9 coding rounds.',
+  llm:     'Automated screening reference corpus — 2,368 records (exploratory only).',
+  compare: 'Human (amber) vs automated screening (teal) — % of studies for direct comparison.',
 };
 
 const DATASET_MODES: DatasetMode[] = ['human', 'llm', 'compare'];
@@ -49,7 +49,7 @@ export default function SystematicMapPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [geoView, setGeoView] = useState<'map' | 'bar'>('map');
   const [flowView, setFlowView] = useState<'sankey' | 'prisma'>('prisma');
-  const [datasetMode, setDatasetMode] = useState<DatasetMode>('llm');
+  const [datasetMode, setDatasetMode] = useState<DatasetMode>('human');
 
   const figJson = (name: string) => {
     if (datasetMode === 'human')   return `/map/data/human/${name}.json`;
@@ -121,7 +121,7 @@ export default function SystematicMapPage() {
       {/* Status Banner */}
       <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3">
         <p className="max-w-5xl mx-auto text-xs font-tagline text-yellow-800">
-          <strong>In progress — data extraction underway.</strong> 40,653 records identified across 27 sources → 26,182 after deduplication → 8,748 full texts sought → 3,505 assessed → 2,368 included (LLM) · 86 included (Human). Figures update as records are coded. Final version expected May 2026.
+          <strong>Final systematic map — June 2026.</strong> 40,653 records identified across 29 sources → 26,173 after deduplication → 8,753 full texts sought → 154 human-coded studies across 9 rounds. Human-coded figures are the primary output. Automated screening corpus (n=2,368) available as exploratory reference via the toggle above.
         </p>
       </div>
 
@@ -284,7 +284,7 @@ export default function SystematicMapPage() {
             {datasetMode === 'compare' ? (
               <div className="flex divide-x divide-gray-100">
                 <div className="flex-1 min-w-0 relative">
-                  <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full pointer-events-none">Human (n=86)</div>
+                  <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full pointer-events-none">Human (n=154)</div>
                   <PlotlyChart src="/map/data/human/geographic_map.json" height={420} />
                 </div>
                 <div className="flex-1 min-w-0 relative">
@@ -447,7 +447,7 @@ export default function SystematicMapPage() {
               <h3 className="font-logo font-bold text-charcoal text-base">Quantitative vs Qualitative by Domain</h3>
               <p className="font-tagline text-xs text-gray-500 mt-1">
                 {datasetMode === 'compare'
-                  ? 'Dark = LLM (n=2,368) · Light = Human (n=86). Blue = process domains · Green = outcome domains.'
+                  ? 'Dark = automated screening (n=2,368) · Light = Human (n=154). Blue = process domains · Green = outcome domains.'
                   : 'Blue = process domains · Green = outcome domains. Non-exclusive: mixed-method studies counted in both bars.'}
               </p>
             </div>
@@ -462,7 +462,7 @@ export default function SystematicMapPage() {
                   {datasetMode === 'compare' ? (
                     <div className="flex divide-x divide-gray-100">
                       <div className="flex-1 min-w-0 relative">
-                        <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full pointer-events-none">Human (n=86)</div>
+                        <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full pointer-events-none">Human (n=154)</div>
                         <PlotlyChart src={`/map/data/human/${fig.name}.json`} height={300} />
                       </div>
                       <div className="flex-1 min-w-0 relative">
