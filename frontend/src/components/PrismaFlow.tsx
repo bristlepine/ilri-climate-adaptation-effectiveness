@@ -243,25 +243,25 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       {/* Row 1 — Human track (sampled from sought pool) */}
       <rect x={HUM_X} y={Y_R1} width={TW} height={R1_H} rx={5}
         fill={AMBER_BG} stroke={AMBER_BDR} strokeWidth={1.5} />
-      <text x={HUM_C} y={Y_R1 + R1_H * 0.13} textAnchor="middle"
+      <text x={HUM_C} y={Y_R1 + R1_H * 0.12} textAnchor="middle"
         fontSize={9} fill={AMBER} fontWeight="700" fontFamily="Arial, sans-serif" letterSpacing="0.5">
         HUMAN CODING
       </text>
-      <text x={HUM_C} y={Y_R1 + R1_H * 0.30} textAnchor="middle"
+      <text x={HUM_C} y={Y_R1 + R1_H * 0.28} textAnchor="middle"
         fontSize={8.5} fill="#555" fontFamily="Arial, sans-serif">
         sampled from full texts sought
       </text>
-      <text x={HUM_C} y={Y_R1 + R1_H * 0.50} textAnchor="middle"
+      <text x={HUM_C} y={Y_R1 + R1_H * 0.46} textAnchor="middle"
         fontSize={9} fill="#555" fontFamily="Arial, sans-serif">
-        5 rounds · 100 coded
+        9 rounds · n = 180
       </text>
-      <text x={HUM_C} y={Y_R1 + R1_H * 0.68} textAnchor="middle"
-        fontSize={9.5} fill={EXC_TEXT} fontFamily="Arial, sans-serif">
-        n = 14 excluded (14%)
+      <text x={HUM_C} y={Y_R1 + R1_H * 0.63} textAnchor="middle"
+        fontSize={8.5} fill={EXC_TEXT} fontFamily="Arial, sans-serif">
+        not retrievable: n = 5 (3%)
       </text>
-      <text x={HUM_C} y={Y_R1 + R1_H * 0.87} textAnchor="middle"
-        fontSize={8.5} fill="#94a3b8" fontFamily="Arial, sans-serif">
-        incl. manually procured PDFs
+      <text x={HUM_C} y={Y_R1 + R1_H * 0.81} textAnchor="middle"
+        fontSize={8.5} fill={EXC_TEXT} fontFamily="Arial, sans-serif">
+        full-text excl: n = 21 (12%)
       </text>
 
       {/* Arrows Row 1 → Row 2 */}
@@ -299,7 +299,7 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       </text>
       <text x={HUM_C} y={Y_R2 + R2_H * 0.48} textAnchor="middle"
         fontSize={16} fontWeight="700" fill={AMBER} fontFamily="Arial, sans-serif">
-        n = 86
+        n = 154
       </text>
       <text x={HUM_C} y={Y_R2 + R2_H * 0.70} textAnchor="middle"
         fontSize={9.5} fill={AMBER} fontFamily="Arial, sans-serif">
@@ -307,7 +307,7 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       </text>
       <text x={HUM_C} y={Y_R2 + R2_H * 0.88} textAnchor="middle"
         fontSize={8.5} fill={AMBER} fontFamily="Arial, sans-serif">
-        PRIMARY OUTPUT · ongoing
+        PRIMARY OUTPUT
       </text>
     </svg>
   );
