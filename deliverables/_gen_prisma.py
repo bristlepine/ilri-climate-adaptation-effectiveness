@@ -169,7 +169,7 @@ EY_H = Y_HCODE + BH_HCODE / 2
 EH_H = 1.20
 rect(ax, EX, EY_H - EH_H / 2, EW, EH_H, bg=RED_BG, ec=RED_BDR)
 label(ax, EX, EY_H - EH_H / 2, EW, EH_H,
-      ["Not retrievable", "n = 5  (3%)",
+      ["Not retrievable", "n = 8  (4%)",
        "Full-text excluded", "n = 21  (12%)"],
       [10.5, 11.5, 10.5, 11.5],
       [RED_TXT, RED_TXT, RED_TXT, RED_TXT],
@@ -183,7 +183,7 @@ down_arrow(ax, CM, Y_HCODE, Y_HINC + BH_INC)
 # Human included
 rect(ax, CX, Y_HINC, CW, BH_INC, bg=AMB_BG, ec=AMBER, lw=2.0)
 label(ax, CX, Y_HINC, CW, BH_INC,
-      ["HUMAN INCLUDED", "n = 154  (86%)", "PRIMARY OUTPUT"],
+      ["HUMAN INCLUDED", "n = 151  (84%)", "PRIMARY OUTPUT"],
       [11, 14, 11], [AMBER, AMBER, GREEN], [True, True, True])
 
 plt.tight_layout(pad=0.2)

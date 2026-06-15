@@ -257,7 +257,7 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       </text>
       <text x={HUM_C} y={Y_R1 + R1_H * 0.63} textAnchor="middle"
         fontSize={8.5} fill={EXC_TEXT} fontFamily="Arial, sans-serif">
-        not retrievable: n = 5 (3%)
+        not retrievable: n = 8 (4%)
       </text>
       <text x={HUM_C} y={Y_R1 + R1_H * 0.81} textAnchor="middle"
         fontSize={8.5} fill={EXC_TEXT} fontFamily="Arial, sans-serif">
@@ -299,11 +299,11 @@ export default function PrismaFlow({ className = '' }: { className?: string }) {
       </text>
       <text x={HUM_C} y={Y_R2 + R2_H * 0.48} textAnchor="middle"
         fontSize={16} fontWeight="700" fill={AMBER} fontFamily="Arial, sans-serif">
-        n = 154
+        n = 151
       </text>
       <text x={HUM_C} y={Y_R2 + R2_H * 0.70} textAnchor="middle"
         fontSize={9.5} fill={AMBER} fontFamily="Arial, sans-serif">
-        86% of coded
+        84% of coded
       </text>
       <text x={HUM_C} y={Y_R2 + R2_H * 0.88} textAnchor="middle"
         fontSize={8.5} fill={AMBER} fontFamily="Arial, sans-serif">
