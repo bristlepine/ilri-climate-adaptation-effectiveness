@@ -204,11 +204,11 @@ export default function SystematicMapPage() {
         </div>
       </section>
 
-      {/* Evidence Gap Map */}
-      <section id="evidence-gap-map" className="bg-sand px-6 py-16">
+      {/* Evidence Map */}
+      <section id="evidence-map" className="bg-sand px-6 py-16">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between gap-4 mb-2">
-            <SectionHeading id="evidence-gap-map" className="text-2xl font-logo font-bold text-green shrink-0">Evidence Gap Map</SectionHeading>
+            <SectionHeading id="evidence-map" className="text-2xl font-logo font-bold text-green shrink-0">Evidence Map</SectionHeading>
             <div className="flex-none flex items-center gap-2">
               <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
                 {DATASET_MODES.map((mode, i) => (
@@ -219,7 +219,7 @@ export default function SystematicMapPage() {
                 ))}
               </div>
               <button
-                onClick={() => setExpandedFig({ src: figJson('evidence_gap_map'), pngSrc: figPng('evidence_gap_map'), csvSrc: '/map/data/evidence_gap_map.csv', title: 'Evidence Gap Map' })}
+                onClick={() => setExpandedFig({ src: figJson('evidence_gap_map'), pngSrc: figPng('evidence_gap_map'), csvSrc: '/map/data/evidence_gap_map.csv', title: 'Evidence Map' })}
                 className="flex items-center gap-1.5 text-xs font-tagline font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-green hover:text-green transition bg-white"
               >
                 <Maximize2 className="w-3.5 h-3.5" /> Fullscreen

@@ -33,7 +33,7 @@ STEP15_CSV = ROOT / "scripts" / "outputs" / "step15" / "step15_human.csv"
 OUT_DIR = ROOT / "scripts" / "outputs" / "step15c"
 FRONTEND_DIR = ROOT / "frontend" / "public" / "map" / "data"
 
-BATCH_ORDER = ["FT-R2a", "FT-R2b", "FT-R2c", "FT-R2d", "FT-R3"]
+BATCH_ORDER = ["FT-R2a", "FT-R2b", "FT-R2c", "FT-R2d", "FT-R3", "FT-R4", "FT-R5", "FT-R6", "FT-R7"]
 
 # Canonical codebook values per field (from CODEBOOK_FT.md).
 # Anything not in this set is off-codebook free text — mapped to "other".
@@ -283,7 +283,7 @@ def build_figure(rows: list[dict]) -> dict:
             },
             {
                 "xref": "paper", "yref": "paper",
-                "x": 0.01, "y": 0.27,
+                "x": 0.01, "y": 0.35,
                 "text": "New categories added per batch",
                 "showarrow": False,
                 "font": {"size": 12, "color": "#374151"},

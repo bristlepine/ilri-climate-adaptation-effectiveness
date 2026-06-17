@@ -544,15 +544,17 @@ _METHOD_LABELS: Dict[str, str] = {
     "ethnographic":                            "Qualitative",
     "constant_comparative_methods":            "Qualitative",
     "case_study":                              "Qualitative",
-    # Participatory
-    "participatory":                           "Participatory",
-    "participatory_methods":                   "Participatory",
-    "participatory_action_research":           "Participatory",
-    # Experimental / RCT
-    "experimental":                            "Experimental / RCT",
-    "rct":                                     "Experimental / RCT",
-    "quasi_experimental":                      "Experimental / RCT",
-    "quasi-experimental":                      "Experimental / RCT",
+    # Participatory (subset of qualitative)
+    "participatory":                           "Participatory (qualitative)",
+    "participatory_methods":                   "Participatory (qualitative)",
+    "participatory_action_research":           "Participatory (qualitative)",
+    # Experimental / RCT (subset of quantitative)
+    "experimental":                            "Experimental / RCT (quantitative)",
+    "rct":                                     "Experimental / RCT (quantitative)",
+    "quasi_experimental":                      "Experimental / RCT (quantitative)",
+    "quasi-experimental":                      "Experimental / RCT (quantitative)",
+    "experimentation":                         "Experimental / RCT (quantitative)",
+    "sureys":                                  "Quantitative",
     # Mixed methods
     "mixed_methods":                           "Mixed methods",
     "mixed-methods":                           "Mixed methods",
@@ -579,9 +581,9 @@ _METHOD_LABELS: Dict[str, str] = {
     "sureys":                                  "Quantitative",
     "surey":                                   "Quantitative",
     "quanitative":                             "Quantitative",
-    "experimentation":                         "Experimental / RCT",
-    "experimental_design":                     "Experimental / RCT",
-    "rct_experimental":                        "Experimental / RCT",
+    "experimentation":                         "Experimental / RCT (quantitative)",
+    "experimental_design":                     "Experimental / RCT (quantitative)",
+    "rct_experimental":                        "Experimental / RCT (quantitative)",
     "review":                                  "Secondary data",
     "desk_review":                             "Secondary data",
     "document_review":                         "Secondary data",
@@ -2520,15 +2522,124 @@ def _split_h(series: pd.Series) -> List[str]:
     return out
 
 
+_COUNTRY_TYPO_MAP = {
+    # typos / misspellings
+    "euthopia": "Ethiopia", "ethopia": "Ethiopia", "ethipia": "Ethiopia",
+    "ndia": "India",
+    "vietam": "Vietnam",
+    # case variants handled by title() but keep explicit ones too
+    "china": "China", "vietnam": "Vietnam", "zimbabwe": "Zimbabwe",
+    "ghana": "Ghana", "uganda": "Uganda", "zambia": "Zambia",
+    "indonesia": "Indonesia", "tunisia": "Tunisia", "brazil": "Brazil",
+    "nicaragua": "Nicaragua", "south_africa": "South Africa",
+    # sub-national → country
+    "susa county": "Iran", "bakian village": "Iran",
+    "khuzestan province (southwestern iran)": "Iran",
+    "fars province": "Iran",
+    "northwest (battambang province and pailin province)": "Cambodia",
+}
+
+_COUNTRY_REGION_SKIP = {
+    "east africa", "west africa", "central africa", "southern africa",
+    "north africa", "west_african", "africa", "sub-saharan africa",
+    "south asia", "south-east asia", "southeast asia", "latin america",
+    "central america", "caribbean", "lmics", "low-income countries",
+    "not_reported", "global", "",
+}
+
+
+import re as _re
+
+_KNOWN_COUNTRIES = {
+    "afghanistan","albania","algeria","angola","argentina","armenia","australia",
+    "austria","azerbaijan","bangladesh","benin","bolivia","botswana","brazil",
+    "burkina faso","burundi","cambodia","cameroon","chad","chile","china","colombia",
+    "congo","costa rica","côte d'ivoire","cote d'ivoire","cuba","ecuador","egypt",
+    "eritrea","eswatini","ethiopia","gambia","ghana","guatemala","guinea","haiti",
+    "honduras","india","indonesia","iran","iraq","jordan","kenya","laos","lesotho",
+    "liberia","madagascar","malawi","malaysia","mali","mauritania","mexico","mongolia",
+    "morocco","mozambique","myanmar","namibia","nepal","nicaragua","niger","nigeria",
+    "pakistan","panama","papua new guinea","peru","philippines","rwanda","senegal",
+    "sierra leone","somalia","south africa","sri lanka","sudan","tanzania","thailand",
+    "timor-leste","togo","tunisia","turkey","uganda","ukraine","uruguay","vietnam",
+    "zambia","zimbabwe",
+}
+
+_COUNTRY_TYPO_MAP = {
+    "euthopia": "Ethiopia", "ethopia": "Ethiopia", "ethipia": "Ethiopia",
+    "euthiopia": "Ethiopia",
+    "ndia": "India",
+    "vietam": "Vietnam",
+    "china": "China", "vietnam": "Vietnam", "zimbabwe": "Zimbabwe",
+    "ghana": "Ghana", "uganda": "Uganda", "zambia": "Zambia",
+    "indonesia": "Indonesia", "tunisia": "Tunisia", "brazil": "Brazil",
+    "nicaragua": "Nicaragua", "south_africa": "South Africa",
+}
+
+_COUNTRY_REGION_SKIP = {
+    "east africa", "west africa", "central africa", "southern africa",
+    "north africa", "west_african", "africa", "sub-saharan africa",
+    "south asia", "south-east asia", "southeast asia", "latin america",
+    "central america", "caribbean", "lmics", "low-income countries",
+    "not_reported", "global", "east", "horn of africa", "eritrea horn of africa",
+    "",
+}
+
+_SUBNATIONAL_SIGNALS = [
+    "province", "region", "district", "county", "village", "division",
+    "basin", "valley", "plain", "zone", "state", "municipality", "prefecture",
+    "department", "commune", "ward", "highland", "lowland", "savannah",
+]
+
+
+def _is_subnational(token: str) -> bool:
+    t = token.lower()
+    return any(s in t for s in _SUBNATIONAL_SIGNALS)
+
+
+def _extract_countries(raw: str) -> list:
+    """Extract canonical country names from a raw country_region string."""
+    import re
+    results = []
+    # Remove parenthetical sub-national content
+    cleaned = re.sub(r'\([^)]*\)', '', raw)
+    # Split on ; , and (case-insensitive)
+    parts = re.split(r'[;,]|\band\b', cleaned, flags=re.IGNORECASE)
+    for part in parts:
+        part = part.strip(" ._-")
+        if not part or len(part) < 3:
+            continue
+        # Remove underscores — treat first segment as country
+        if '_' in part:
+            part = part.split('_')[0].strip()
+        lower = part.lower().strip()
+        # Skip regional/supranational labels
+        if lower in _COUNTRY_REGION_SKIP:
+            continue
+        # Typo map
+        if lower in _COUNTRY_TYPO_MAP:
+            results.append(_COUNTRY_TYPO_MAP[lower])
+            continue
+        # Skip obvious sub-national entries
+        if _is_subnational(lower):
+            continue
+        # Match against known country list
+        title = part.title().replace("'S", "'s")
+        if lower in _KNOWN_COUNTRIES:
+            results.append(title)
+        elif lower.replace("-", " ") in _KNOWN_COUNTRIES:
+            results.append(title)
+    return results
+
+
 def _geo_counts(df: pd.DataFrame, col: str) -> Dict[str, int]:
     cc: Dict[str, int] = {}
     if col not in df.columns:
         return cc
     for val in df[col].dropna().astype(str):
-        for c in val.split(";"):
-            c = c.strip()
-            if c and c.lower() not in _SKIP_GEO:
-                cc[c] = cc.get(c, 0) + 1
+        for country in _extract_countries(val):
+            if country.lower() not in _COUNTRY_REGION_SKIP:
+                cc[country] = cc.get(country, 0) + 1
     return cc
 
 
@@ -2626,20 +2737,110 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
             for raw, nv in raw_counts.items():
                 label = _method_label(raw)
                 merged_m[label] = merged_m.get(label, 0) + nv
-            counts = pd.Series(merged_m).sort_values(ascending=False).head(12)
-            fig = go.Figure(go.Bar(
-                x=counts.values.tolist(), y=counts.index.tolist(), orientation="h",
-                marker_color=PALETTE[:len(counts)],
-                hovertemplate="<b>%{y}</b><br>Studies: %{x}<extra></extra>",
+
+            # Stacked overlay: parent categories with subtypes shown inside
+            # Parent bars (full width, light colour)
+            parents = {
+                "Quantitative":   merged_m.get("Quantitative", 0),
+                "Qualitative":    merged_m.get("Qualitative",  0),
+                "Modelling":      merged_m.get("Modelling",    0),
+                "Mixed methods":  merged_m.get("Mixed methods",0),
+            }
+            # Subtype bars (overlaid at base, dark colour, same y)
+            subtypes = {
+                "Quantitative":  merged_m.get("Experimental / RCT (quantitative)", 0),
+                "Qualitative":   merged_m.get("Participatory (qualitative)",        0),
+                "Modelling":     0,
+                "Mixed methods": 0,
+            }
+            sub_labels = {
+                "Quantitative": "Experimental / RCT",
+                "Qualitative":  "Participatory",
+                "Modelling":    "",
+                "Mixed methods": "",
+            }
+            ys = list(parents.keys())
+            parent_vals = [parents[y] for y in ys]
+            sub_vals    = [subtypes[y] for y in ys]
+
+            LIGHT_BLUE  = "#93c5fd"
+            DARK_BLUE   = "#1d4ed8"
+            LIGHT_GREEN = "#86efac"
+            DARK_GREEN  = "#15803d"
+            ORANGE      = "#f97316"
+            PURPLE      = "#a855f7"
+
+            parent_colors = [LIGHT_BLUE, LIGHT_GREEN, ORANGE, PURPLE]
+            sub_colors    = [DARK_BLUE,  DARK_GREEN,  "rgba(0,0,0,0)", "rgba(0,0,0,0)"]
+
+            hover_parent = [
+                f"<b>{y}</b><br>Total: {parents[y]} studies" +
+                (f"<br>incl. {subtypes[y]} {sub_labels[y]}" if subtypes[y] else "") +
+                "<extra></extra>"
+                for y in ys
+            ]
+            hover_sub = [
+                f"<b>{sub_labels[y]}</b> (subset of {y})<br>{subtypes[y]} studies<extra></extra>"
+                if subtypes[y] else "<extra></extra>"
+                for y in ys
+            ]
+
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                name="Parent category",
+                x=parent_vals, y=ys, orientation="h",
+                marker_color=parent_colors,
+                hovertemplate=hover_parent,
+                showlegend=False,
             ))
+            fig.add_trace(go.Bar(
+                name="Subtype",
+                x=sub_vals, y=ys, orientation="h",
+                marker_color=sub_colors,
+                hovertemplate=hover_sub,
+                showlegend=False,
+            ))
+
+            # Labels for both portions of each bar
+            for i, y in enumerate(ys):
+                p = parents[y]
+                s = subtypes[y]
+                rest = p - s
+                if s > 0:
+                    # Dark subtype portion: centered if wide enough, else outside right
+                    sub_text = f"Exp./RCT ({s})" if y == "Quantitative" else f"{sub_labels[y]} ({s})"
+                    if s >= 18:
+                        fig.add_annotation(x=s/2, y=y, text=sub_text,
+                                           font=dict(size=10, color="white"), showarrow=False,
+                                           xanchor="center", yanchor="middle")
+                    else:
+                        fig.add_annotation(x=s + 1, y=y, text=sub_text,
+                                           font=dict(size=10, color="#1e3a8a"), showarrow=False,
+                                           xanchor="left", yanchor="middle")
+                    # Light remaining portion: centered
+                    if rest > 12:
+                        rest_label = f"Other {y.lower()} ({rest})"
+                        fig.add_annotation(x=s + rest/2, y=y, text=rest_label,
+                                           font=dict(size=10, color="#374151"), showarrow=False,
+                                           xanchor="center", yanchor="middle")
+                else:
+                    # Single bar: count at end
+                    if p > 0:
+                        fig.add_annotation(x=p + 1, y=y, text=str(p),
+                                           font=dict(size=10, color="#374151"), showarrow=False,
+                                           xanchor="left", yanchor="middle")
             fig.update_layout(
-                title=dict(text=f"<b>Methodological Approach (Human-coded)</b><br><sup>n={n:,}</sup>",
-                           x=0.5, xanchor="center", font=dict(size=14)),
+                barmode="overlay",
+                title=dict(
+                    text=f"<b>Methodological Approach (Human-coded)</b><br>"
+                         f"<sup>n={n:,} · studies may appear in multiple categories · "
+                         f"dark shading shows subtype within parent category</sup>",
+                    x=0.5, xanchor="center", font=dict(size=14)),
                 height=380, xaxis_title="Number of Studies",
                 yaxis=dict(autorange="reversed"),
                 plot_bgcolor="white", paper_bgcolor="white",
                 font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
-                margin=dict(l=200, r=40, t=100, b=60),
+                margin=dict(l=160, r=40, t=100, b=60),
             )
             _save_json_to(fig, target / "methodology.json")
 
@@ -3286,22 +3487,8 @@ def run(config: dict) -> dict:
         print("[step16] No full-text coded records yet — only ROSES diagram produced.")
         print("[step16] Re-run after step15 completes to produce all figures.")
     else:
-        print("[step16] Producing evidence map figures (static)...")
-        for fn, label in [
-            (_temporal_trends,   "temporal_trends.png"),
-            (_producer_type_bar, "producer_type_bar.png"),
-            (_methodology_bar,   "methodology_bar.png"),
-            (_domain_heatmap,    "domain_heatmap.png"),
-            (_geographic_bar,    "geographic_bar.png"),
-            (_geographic_map,    "geographic_map.png"),
-            (_domain_type_bar,   "domain_type_bar.png"),
-            (_equity_bar,        "equity_bar.png"),
-        ]:
-            try:
-                fn(df, out_dir)
-                figures_saved.append(label)
-            except Exception as e:
-                print(f"[step16] WARNING: {label} failed — {type(e).__name__}: {e}")
+        # Static matplotlib PNGs (LLM corpus) intentionally skipped —
+        # use interactive/human/ Plotly PNGs for all deliverables.
 
         print("[step16] Producing evidence map figures (interactive)...")
         for fn, label in [

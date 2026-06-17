@@ -17,7 +17,7 @@ const stages = [
   {
     number: '01',
     title: 'Systematic Map',
-    description: 'Catalogues the full range of adaptation processes, outcomes, and measurement approaches used in the agriculture sector. Produces a searchable database and evidence gap map.',
+    description: 'Catalogues the full range of adaptation processes, outcomes, and measurement approaches used in the agriculture sector. Produces a searchable database and evidence map.',
     deliverables: 'D1 – D5',
     image: '/images/adaptation.jpg',
     href: '/systematic-map',

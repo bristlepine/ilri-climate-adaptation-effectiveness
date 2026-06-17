@@ -190,6 +190,13 @@ def main():
     # Stack all batches
     stacked = pd.concat(dfs, ignore_index=True)
 
+    # Assign synthetic unique IDs to rows with missing/invalid DOIs so they
+    # are not collapsed together during deduplication (different papers can
+    # share NaN or "Not Found" as their DOI value).
+    missing_doi_mask = stacked["doi"].isna() | stacked["doi"].str.strip().str.lower().isin(["", "not found", "n/a", "na"])
+    for idx in stacked[missing_doi_mask].index:
+        stacked.at[idx, "doi"] = f"NO_DOI_{stacked.at[idx, 'batch']}_{idx}"
+
     # Deduplicate within each batch: keep last row per doi (most complete coding).
     # Calibration rounds (FT-R1a) had multiple coders for the same DOIs.
     before_dedup = len(stacked)

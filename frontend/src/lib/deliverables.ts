@@ -63,7 +63,7 @@ export const deliverables: Deliverable[] = [
     subtitle: '(Interim)',
     type: 'Report + Searchable Database',
     description:
-      'First draft of the systematic map across five databases (39,113 records; 2,750 coded). Includes a preliminary searchable database and evidence gap map. LLM-assisted extraction; human validation in Deliverable 5.',
+      'First draft of the systematic map across five databases (39,113 records; 2,750 coded). Includes a preliminary searchable database and evidence map. LLM-assisted extraction; human validation in Deliverable 5.',
     due: 'Apr 2026',
     status: 'submitted',
     zenodo: 'https://doi.org/10.5281/zenodo.19811622',
@@ -75,7 +75,7 @@ export const deliverables: Deliverable[] = [
     subtitle: '(Final)',
     type: 'Report + Searchable Database',
     description:
-      'Final scoping review and systematic map incorporating all databases, grey literature, and full-text screening. Includes the complete searchable extraction database and evidence gap map, published on Zenodo and CGSpace.',
+      'Final scoping review and systematic map incorporating all databases, grey literature, and full-text screening. Includes the complete searchable extraction database and evidence map, published on Zenodo and CGSpace.',
     due: 'May 2026',
     status: 'not-started',
     zenodo: undefined,

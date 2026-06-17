@@ -34,7 +34,7 @@ REPO_ROOT = HERE.parent.parent.parent.parent
 CODED_CSV    = REPO_ROOT / "scripts" / "outputs" / "step15" / "step15_coded.csv"
 MANIFEST_CSV = REPO_ROOT / "scripts" / "outputs" / "step13" / "step13_manifest.csv"
 CODEBOOK_PDF = (REPO_ROOT / "documentation" / "coding" / "systematic-map"
-                / "Systematic Map Codebook — D5.6 (for comments).pdf")
+                / "rounds" / "CODEBOOK_FT.pdf")
 CREDS_DIR    = REPO_ROOT / "deliverables" / ".credentials"
 
 # Google Drive parent folder (contains FT-R1a, FT-R2a, ...)
