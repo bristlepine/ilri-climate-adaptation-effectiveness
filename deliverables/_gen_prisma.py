@@ -1,6 +1,16 @@
-"""Generate two separate PRISMA flow diagrams:
-  - prisma_human_d5.png  (human coding path — use in report)
-  - prisma_llm_d5.png    (LLM path — supplementary reference)
+"""Generate a PRISMA 2020-compliant flow diagram (human primary track only).
+
+Covers PRISMA 2020 + ROSES for Systematic Maps mandatory items:
+  • All sources named individually with record counts (Item 14a/b)
+  • Total records identified, duplicates removed (14c)
+  • Records screened at T/A with exclusion reasons (14d) — LLM-assisted
+  • Full texts sought, not retrieved, assessed, excluded with reasons (14e-h)
+  • Studies included (14i)
+  • Human vs LLM roles clearly labelled throughout
+
+Outputs:
+  scripts/outputs/step16/interactive/human/prisma.png
+  deliverables/prisma_flow_d5.png  (legacy copy)
 """
 
 import matplotlib
@@ -8,236 +18,249 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 from pathlib import Path
+import shutil
 
-STEP16 = Path(__file__).parent.parent / "scripts" / "outputs" / "step16"
-OUT_HUMAN  = STEP16 / "interactive" / "human" / "prisma.png"
-OUT_LLM    = STEP16 / "interactive" / "llm"   / "prisma.png"
-# Legacy path in deliverables/ — kept for backwards compat only
-OUT_LEGACY = Path(__file__).parent / "prisma_flow_d5.png"
+OUT = (Path(__file__).parent.parent /
+       "scripts/outputs/step16/interactive/human/prisma.png")
+LEG = Path(__file__).parent / "prisma_flow_d5.png"
 
-GREEN   = "#21472E"
-L_GREEN = "#eef4f0"
-MID_GRN = "#c8dece"
-RED_BG  = "#fef2f2"
-RED_BDR = "#fca5a5"
-RED_TXT = "#b91c1c"
-AMBER   = "#b85c00"
-AMB_BG  = "#fff8f0"
-AMB_BDR = "#f6ad55"
-GREY    = "#9ca3af"
-BLACK   = "#1a1a1a"
-BLUE    = "#1e40af"
-BLUE_BG = "#f8fafc"
-BLUE_BDR= "#94a3b8"
+# ── Colours ───────────────────────────────────────────────────────────────────
+G    = "#21472E";  LG = "#eef4f0";  MG = "#c8dece"
+RBG  = "#fef2f2"; RBD = "#fca5a5"; RT = "#b91c1c"
+AMB  = "#b85c00"; ABG = "#fff8f0"; ABD = "#f6ad55"
+BLU  = "#1e40af"; BBG = "#eff6ff"; BBD = "#93c5fd"
+GRY  = "#9ca3af"; DRK = "#374151"; BLK = "#1a1a1a"
 
-DPI = 200
+FW, FH, DPI = 15, 22, 200
+
+fig, ax = plt.subplots(figsize=(FW, FH))
+ax.set_xlim(0, FW); ax.set_ylim(0, FH)
+ax.axis("off"); fig.patch.set_facecolor("white")
 
 
-def make_figure(fh=10):
-    FW, FH = 13, fh
-    fig, ax = plt.subplots(figsize=(FW, FH))
-    ax.set_xlim(0, FW)
-    ax.set_ylim(0, FH)
-    ax.axis("off")
-    ax.set_facecolor("white")
-    fig.patch.set_facecolor("white")
-    return fig, ax, FW, FH
+def bx(x, y, w, h, bg="white", ec=G, lw=1.5):
+    ax.add_patch(FancyBboxPatch(
+        (x, y), w, h, boxstyle="round,pad=0.12",
+        linewidth=lw, edgecolor=ec, facecolor=bg, zorder=2))
 
 
-def rect(ax, x, y, w, h, bg="white", ec=GREEN, lw=1.5):
-    p = FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.08",
-                       linewidth=lw, edgecolor=ec, facecolor=bg, zorder=2)
-    ax.add_patch(p)
+def tx(x, y, s, fs=10, c=BLK, bold=False, ha="center", va="center"):
+    ax.text(x, y, s, ha=ha, va=va, fontsize=fs, color=c,
+            fontweight="bold" if bold else "normal",
+            fontfamily="DejaVu Sans", zorder=3)
 
 
-def label(ax, x, y, w, h, lines, fsizes, colors, bold_mask=None):
-    n = len(lines)
-    row_h = h / (n + 0.4)
-    for i, (text, fs, color) in enumerate(zip(lines, fsizes, colors)):
-        ty = y + h - (i + 0.7) * row_h
-        weight = "bold" if (bold_mask and bold_mask[i]) else "normal"
-        ax.text(x + w/2, ty, text, ha="center", va="center",
-                fontsize=fs, color=color, fontweight=weight,
-                fontfamily="DejaVu Sans", zorder=3)
+def dn(x, y0, y1, col=GRY):
+    """Downward arrow from y0 to y1."""
+    ax.annotate("", xy=(x, y1+0.07), xytext=(x, y0-0.07),
+                arrowprops=dict(arrowstyle="-|>", color=col,
+                                lw=1.5, mutation_scale=15), zorder=4)
 
 
-def down_arrow(ax, x, y_from, y_to):
-    GAP = 0.08
-    ax.annotate("", xy=(x, y_to + GAP), xytext=(x, y_from - GAP),
-                arrowprops=dict(arrowstyle="-|>", color=GREY, lw=1.4,
-                                mutation_scale=14), zorder=4)
+def rt(x0, x1, y, col=GRY):
+    """Rightward arrow from x0 to x1."""
+    ax.annotate("", xy=(x1-0.07, y), xytext=(x0+0.07, y),
+                arrowprops=dict(arrowstyle="-|>", color=col,
+                                lw=1.3, mutation_scale=13), zorder=4)
 
 
-def right_arrow(ax, x_from, x_to, y):
-    GAP = 0.06
-    ax.annotate("", xy=(x_to + GAP, y), xytext=(x_from - GAP, y),
-                arrowprops=dict(arrowstyle="-|>", color=GREY, lw=1.2,
-                                mutation_scale=12), zorder=4)
+def band(yb, yt, lbl):
+    ax.add_patch(FancyBboxPatch(
+        (0.15, yb), 0.52, yt-yb, boxstyle="round,pad=0.06",
+        linewidth=1, edgecolor=MG, facecolor=LG, zorder=1))
+    lb = ax.text(0.41, (yb+yt)/2, lbl, ha="center", va="center",
+                 fontsize=9, color=G, fontweight="bold",
+                 fontfamily="DejaVu Sans", zorder=2)
+    lb.set_rotation(90)
 
 
-def phase_band(ax, y_bot, y_top, text):
-    p = FancyBboxPatch((0.15, y_bot), 0.6, y_top - y_bot,
-                       boxstyle="round,pad=0.06", linewidth=1,
-                       edgecolor=MID_GRN, facecolor=L_GREEN, zorder=1)
-    ax.add_patch(p)
-    ax.text(0.45, (y_bot + y_top) / 2, text, ha="center", va="center",
-            fontsize=9, color=GREEN, fontweight="bold", rotation=90,
-            fontfamily="DejaVu Sans")
+# ── Layout constants ──────────────────────────────────────────────────────────
+# Main column (dedup, screening, eligibility boxes)
+MX, MW = 0.85, 10.8
+MC     = MX + MW / 2        # ≈ 6.25
+
+# Exclusion column
+EX, EW = MX + MW + 0.3, 2.9    # right edge ≈ 14.95
+
+# Source identification boxes (side by side, together span main column width)
+AX, AW = 0.85, 5.25             # Box A right edge = 6.10
+BX, BW = 6.35, 5.25             # Box B right edge = 11.60
+SOURCE_CENTRE = (AX + BX + BW) / 2   # ≈ 6.23
 
 
-# ── shared layout ─────────────────────────────────────────────────────────────
-CX, CW = 1.2, 8.0
-CM     = CX + CW / 2
-EX, EW = CX + CW + 0.35, 2.8
-BH_STD  = 0.90
-BH_TALL = 1.10
-BH_INC  = 1.20
-
-Y_BOX1 = 7.80
-Y_BOX2 = 6.10
-Y_BOX3 = 4.40
+# ── Phase bands ───────────────────────────────────────────────────────────────
+#   IDENTIFICATION  :  18.3 – 21.8
+#   SCREENING       :  12.2 – 18.3
+#   ELIGIBILITY     :   7.0 – 12.2
+#   INCLUDED        :   0.3 –  7.0
+band(18.3, 21.8, "IDENTIFICATION")
+band(12.2, 18.3, "SCREENING")
+band( 7.0, 12.2, "ELIGIBILITY")
+band( 0.3,  7.0, "INCLUDED")
 
 
-def draw_shared_boxes(ax):
-    """Boxes 1–3 identical in both diagrams."""
-    # Box 1
-    rect(ax, CX, Y_BOX1, CW, BH_TALL)
-    label(ax, CX, Y_BOX1, CW, BH_TALL,
-          ["Records identified", "n = 40,653  (29 sources)"],
-          [11.5, 13.5], [BLACK, GREEN], [False, True])
+# ═══════════════════════════════════════════════════════
+# IDENTIFICATION — two source boxes side by side
+# ═══════════════════════════════════════════════════════
 
-    # Box 2
-    rect(ax, CX, Y_BOX2, CW, BH_STD)
-    label(ax, CX, Y_BOX2, CW, BH_STD,
-          ["Records after deduplication", "n = 26,182"],
-          [11.5, 13.5], [BLACK, GREEN], [False, True])
-    down_arrow(ax, CM, Y_BOX1, Y_BOX2 + BH_STD)
+AH = BH = 2.65
+AY = BY = 18.8      # bottom of source boxes; top = 21.45
 
-    EY = Y_BOX2 + BH_STD / 2
-    rect(ax, EX, EY - 0.38, EW, 0.76, bg=RED_BG, ec=RED_BDR)
-    label(ax, EX, EY - 0.38, EW, 0.76,
-          ["Duplicates removed", "n = 14,471"],
-          [10.5, 12], [RED_TXT, RED_TXT], [False, True])
-    right_arrow(ax, CX + CW, EX, EY)
+bx(AX, AY, AW, AH, ec=G)
+tx(AX + AW/2, AY+AH-0.32, "Bibliographic databases  (7)",
+   fs=10.5, bold=True, c=G)
+db = [
+    ("Scopus",                   "17,083"),
+    ("Web of Science",           "15,170"),
+    ("CAB Abstracts",             "5,723"),
+    ("Academic Search Premier",   "1,187"),
+    ("EconLit",                     "478"),
+    ("ProQuest",                    "367"),
+    ("AGRIS",                         "3"),
+]
+rh = (AH - 0.65) / len(db)
+for i, (nm, n) in enumerate(db):
+    ry = AY + AH - 0.65 - (i + 0.5) * rh
+    tx(AX + 0.22, ry, nm, fs=8.5, c=DRK, ha="left")
+    tx(AX + AW - 0.18, ry, n, fs=8.5, c=G, bold=True, ha="right")
 
-    # Box 3
-    rect(ax, CX, Y_BOX3, CW, BH_STD)
-    label(ax, CX, Y_BOX3, CW, BH_STD,
-          ["Records screened (title & abstract)", "n = 26,182"],
-          [11.5, 13.5], [BLACK, GREEN], [False, True])
-    down_arrow(ax, CM, Y_BOX2, Y_BOX3 + BH_STD)
+bx(BX, BY, BW, BH, ec=G)
+tx(BX + BW/2, BY+BH-0.32, "Grey literature  (21 sources)",
+   fs=10.5, bold=True, c=G)
+gl = [
+    ("Google Scholar",                                           "193"),
+    ("DuckDuckGo",                                                 "3"),
+    ("UN agencies  (FAO · IFAD · UNDP · UNEP · UNFCCC)",         "57"),
+    ("Development banks  (WB · GCF · GEF · IDB · ADB · AfDB · FCDO)", "338"),
+    ("Research centres  (CGSpace · IPAM · ARA · GCA · WASP)",    "86"),
+    ("M&E networks  (3ie · Campbell Collaboration)",               "8"),
+]
+rh2 = (BH - 0.65) / len(gl)
+for i, (nm, n) in enumerate(gl):
+    ry = BY + BH - 0.65 - (i + 0.5) * rh2
+    tx(BX + 0.22, ry, nm, fs=8.2, c=DRK, ha="left")
+    tx(BX + BW - 0.18, ry, n, fs=8.5, c=G, bold=True, ha="right")
 
-    EY = Y_BOX3 + BH_STD / 2
-    rect(ax, EX, EY - 0.52, EW, 1.04, bg=RED_BG, ec=RED_BDR)
-    label(ax, EX, EY - 0.52, EW, 1.04,
-          ["Records excluded", "n = 17,429  (67%)",
-           "concept, methodology,", "context, population, geography"],
-          [10.5, 12, 9.5, 9.5], [RED_TXT, RED_TXT, RED_TXT, RED_TXT],
-          [False, True, False, False])
-    right_arrow(ax, CX + CW, EX, EY)
+# Total identified summary bar
+tx(SOURCE_CENTRE, 18.60,
+   "Total records identified:   n = 40,653   (28 sources)",
+   fs=11.5, bold=True, c=G)
+
+dn(AX + AW/2, AY, 18.63)
+dn(BX + BW/2, BY, 18.63)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-#  HUMAN PRISMA
-# ══════════════════════════════════════════════════════════════════════════════
-fig, ax, FW, FH = make_figure(fh=10)
+# ═══════════════════════════════════════════════════════
+# DEDUPLICATION
+# ═══════════════════════════════════════════════════════
+DD_Y, DD_H = 16.8, 1.00
+bx(MX, DD_Y, MW, DD_H, ec=G)
+tx(MC, DD_Y+DD_H-0.33, "Records after deduplication", fs=11.5, c=DRK)
+tx(MC, DD_Y+0.28, "n = 26,173", fs=16, bold=True, c=G)
+dn(MC, 18.56, DD_Y+DD_H)
 
-# Title
-ax.text(FW/2, 9.75, "Figure 1. PRISMA Flow Diagram — Human Coding (Primary)",
-        ha="center", va="center", fontsize=11.5, color=BLACK,
-        fontweight="bold", fontfamily="DejaVu Sans", zorder=3)
+bx(EX, DD_Y, EW, DD_H, bg=RBG, ec=RBD)
+tx(EX+EW/2, DD_Y+DD_H-0.33, "Duplicates removed", fs=10, c=RT)
+tx(EX+EW/2, DD_Y+0.28, "n = 14,480", fs=13, bold=True, c=RT)
+rt(MX+MW, EX, DD_Y+DD_H/2, col=RBD)
 
-phase_band(ax, 7.40, 9.20, "IDENTIFICATION")
-phase_band(ax, 4.00, 7.40, "SCREENING")
-phase_band(ax, 0.40, 4.00, "INCLUDED")
 
-draw_shared_boxes(ax)
+# ═══════════════════════════════════════════════════════
+# T/A SCREENING — LLM-assisted
+# ═══════════════════════════════════════════════════════
+SC_Y, SC_H = 14.55, 1.40
+bx(MX, SC_Y, MW, SC_H, bg=BBG, ec=BBD, lw=2.0)
+tx(MC, SC_Y+SC_H-0.35,
+   "Records screened at title & abstract   [LLM-assisted, human-validated]",
+   fs=11, c=BLU)
+tx(MC, SC_Y+0.60, "n = 26,173", fs=16, bold=True, c=BLU)
+tx(MC, SC_Y+0.24,
+   "qwen2.5:14b  ·  temperature 0.0  ·  calibration κ = 0.72  ·  sensitivity = 0.97",
+   fs=8.5, c="#475569")
+dn(MC, DD_Y, SC_Y+SC_H)
 
-# Arrow from Box 3 down to Human coding
-Y_HCODE = 2.35
-BH_HCODE = 1.10
-down_arrow(ax, CM, Y_BOX3, Y_HCODE + BH_HCODE)
+bx(EX, SC_Y, EW, SC_H, bg=RBG, ec=RBD)
+tx(EX+EW/2, SC_Y+SC_H-0.35, "Records excluded", fs=10, c=RT)
+tx(EX+EW/2, SC_Y+0.78, "n = 17,425  (66%)", fs=13, bold=True, c=RT)
+tx(EX+EW/2, SC_Y+0.46, "Concept · methodology ·", fs=9, c=RT)
+tx(EX+EW/2, SC_Y+0.22, "context · population", fs=9, c=RT)
+rt(MX+MW, EX, SC_Y+SC_H/2, col=RBD)
 
-# Human coding box
-rect(ax, CX, Y_HCODE, CW, BH_HCODE, bg=AMB_BG, ec=AMB_BDR)
-label(ax, CX, Y_HCODE, CW, BH_HCODE,
-      ["HUMAN CODING  (primary)", "random sample: n = 180"],
-      [11, 12.5], [AMBER, "#92400e"], [True, True])
+# Passed T/A
+PT_Y, PT_H = 12.65, 0.90
+bx(MX, PT_Y, MW, PT_H, ec=G)
+tx(MC, PT_Y+PT_H-0.30, "Records passing title & abstract screening", fs=11.5, c=DRK)
+tx(MC, PT_Y+0.24, "n = 8,748", fs=16, bold=True, c=G)
+dn(MC, SC_Y, PT_Y+PT_H)
 
-# Exclusion box — split into not retrievable vs full-text excluded
-EY_H = Y_HCODE + BH_HCODE / 2
-EH_H = 1.20
-rect(ax, EX, EY_H - EH_H / 2, EW, EH_H, bg=RED_BG, ec=RED_BDR)
-label(ax, EX, EY_H - EH_H / 2, EW, EH_H,
-      ["Not retrievable", "n = 8  (4%)",
-       "Full-text excluded", "n = 21  (12%)"],
-      [10.5, 11.5, 10.5, 11.5],
-      [RED_TXT, RED_TXT, RED_TXT, RED_TXT],
-      [False, True, False, True])
-right_arrow(ax, CX + CW, EX, EY_H)
 
-# Arrow to Human included
-Y_HINC = 0.55
-down_arrow(ax, CM, Y_HCODE, Y_HINC + BH_INC)
+# ═══════════════════════════════════════════════════════
+# ELIGIBILITY — human full-text screening
+# ═══════════════════════════════════════════════════════
 
-# Human included
-rect(ax, CX, Y_HINC, CW, BH_INC, bg=AMB_BG, ec=AMBER, lw=2.0)
-label(ax, CX, Y_HINC, CW, BH_INC,
-      ["HUMAN INCLUDED", "n = 151  (84%)", "PRIMARY OUTPUT"],
-      [11, 14, 11], [AMBER, AMBER, GREEN], [True, True, True])
+# Full texts sought (random sample)
+FS_Y, FS_H = 10.85, 1.00
+bx(MX, FS_Y, MW, FS_H, bg=ABG, ec=ABD)
+tx(MC, FS_Y+FS_H-0.32,
+   "Full texts sought   (random sample from 8,748)", fs=11, c=AMB)
+tx(MC, FS_Y+0.27, "n = 180", fs=16, bold=True, c=AMB)
+dn(MC, PT_Y, FS_Y+FS_H)
 
-plt.tight_layout(pad=0.2)
-plt.savefig(str(OUT_HUMAN), dpi=DPI, bbox_inches="tight", facecolor="white")
-import shutil; shutil.copy(str(OUT_HUMAN), str(OUT_LEGACY))
+bx(EX, FS_Y, EW, FS_H, bg=RBG, ec=RBD)
+tx(EX+EW/2, FS_Y+FS_H-0.32, "Not retrieved", fs=10, c=RT)
+tx(EX+EW/2, FS_Y+0.27, "n = 8  (4%)", fs=13, bold=True, c=RT)
+rt(MX+MW, EX, FS_Y+FS_H/2, col=RBD)
+
+# Full texts assessed for eligibility
+FA_Y, FA_H = 8.65, 1.00
+bx(MX, FA_Y, MW, FA_H, bg=ABG, ec=ABD)
+tx(MC, FA_Y+FA_H-0.32, "Full texts assessed for eligibility", fs=11, c=AMB)
+tx(MC, FA_Y+0.27, "n = 172", fs=16, bold=True, c=AMB)
+dn(MC, FS_Y, FA_Y+FA_H)
+
+bx(EX, FA_Y, EW, FA_H, bg=RBG, ec=RBD)
+tx(EX+EW/2, FA_Y+FA_H-0.32, "Full texts excluded", fs=10, c=RT)
+tx(EX+EW/2, FA_Y+0.56, "n = 21  (12%)", fs=13, bold=True, c=RT)
+tx(EX+EW/2, FA_Y+0.26, "PCCM criteria not met", fs=9, c=RT)
+rt(MX+MW, EX, FA_Y+FA_H/2, col=RBD)
+
+
+# ═══════════════════════════════════════════════════════
+# INCLUDED
+# ═══════════════════════════════════════════════════════
+IY, IH = 5.55, 1.25
+bx(MX, IY, MW, IH, bg=ABG, ec=AMB, lw=2.3)
+tx(MC, IY+IH-0.35, "Studies included in systematic map",
+   fs=12.5, bold=True, c=AMB)
+tx(MC, IY+0.32, "n = 151", fs=22, bold=True, c=AMB)
+dn(MC, FA_Y, IY+IH)
+
+
+# ═══════════════════════════════════════════════════════
+# Footer notes  (within INCLUDED band)
+# ═══════════════════════════════════════════════════════
+tx(MC, 4.78,
+   "Title & abstract screening performed by LLM (Ollama; qwen2.5:14b; temperature 0.0), "
+   "calibrated against reconciled human decisions (κ = 0.72, sensitivity = 0.97).",
+   fs=8.0, c=DRK)
+tx(MC, 4.40,
+   "Full-text screening performed by human reviewers on a random sample of n = 180 "
+   "drawn from n = 8,748 records passing title & abstract screening.",
+   fs=8.0, c=DRK)
+tx(MC, 4.05,
+   "USAID DEC taken offline 2025; J-PAL searched with no relevant results; "
+   "Lens.org listed in protocol but superseded by Scopus + WoS coverage.",
+   fs=7.5, c=GRY)
+tx(MC, 3.72,
+   "PRISMA 2020 flow diagram.   CEE Guidelines for Systematic Evidence Syntheses v6.0.",
+   fs=7.5, c=GRY)
+
+
+# ── Save ──────────────────────────────────────────────────────────────────────
+plt.tight_layout(pad=0.15)
+OUT.parent.mkdir(parents=True, exist_ok=True)
+plt.savefig(str(OUT), dpi=DPI, bbox_inches="tight", facecolor="white")
+shutil.copy(str(OUT), str(LEG))
 plt.close()
-print(f"Saved: {OUT_HUMAN}  ({OUT_HUMAN.stat().st_size//1024} KB)")
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  LLM PRISMA
-# ══════════════════════════════════════════════════════════════════════════════
-fig, ax, FW, FH = make_figure()
-
-phase_band(ax, 7.40, 9.20, "IDENTIFICATION")
-phase_band(ax, 4.00, 7.40, "SCREENING")
-phase_band(ax, 3.00, 4.00, "ELIGIBILITY")
-phase_band(ax, 0.40, 3.00, "INCLUDED")
-
-draw_shared_boxes(ax)
-
-# Box 4: Full texts sought
-Y_BOX4 = 3.10
-down_arrow(ax, CM, Y_BOX3, Y_BOX4 + BH_STD)
-rect(ax, CX, Y_BOX4, CW, BH_STD)
-label(ax, CX, Y_BOX4, CW, BH_STD,
-      ["Full texts sought", "n = 8,748  (33% of screened)"],
-      [11.5, 13.5], [BLACK, GREEN], [False, True])
-
-EY = Y_BOX4 + BH_STD / 2
-rect(ax, EX, EY - 0.42, EW, 0.84, bg=RED_BG, ec=RED_BDR)
-label(ax, EX, EY - 0.42, EW, 0.84,
-      ["Not retrieved", "n = 5,243  (60%)"],
-      [10.5, 12], [RED_TXT, RED_TXT], [False, True])
-right_arrow(ax, CX + CW, EX, EY)
-
-# LLM screening box
-Y_LTRACK = 1.90
-BH_LTRACK = 1.25
-down_arrow(ax, CM, Y_BOX4, Y_LTRACK + BH_LTRACK)
-rect(ax, CX, Y_LTRACK, CW, BH_LTRACK, bg=BLUE_BG, ec=BLUE_BDR)
-label(ax, CX, Y_LTRACK, CW, BH_LTRACK,
-      ["LLM SCREENING", "retrieved: n = 3,505  (40%)", "excluded: n = 1,096  (31%)"],
-      [11, 12.5, 11], ["#475569", BLUE, "#475569"], [True, True, False])
-
-# LLM included
-Y_LINC = 0.65
-down_arrow(ax, CM, Y_LTRACK, Y_LINC + BH_INC)
-rect(ax, CX, Y_LINC, CW, BH_INC, bg=BLUE_BG, ec=BLUE_BDR, lw=2.0)
-label(ax, CX, Y_LINC, CW, BH_INC,
-      ["LLM INCLUDED", "n = 2,368  (68%)", "exploratory reference only"],
-      [11, 14, 11], [BLUE, BLUE, "#64748b"], [True, True, False])
-
-plt.tight_layout(pad=0.2)
-plt.savefig(str(OUT_LLM), dpi=DPI, bbox_inches="tight", facecolor="white")
-plt.close()
-print(f"Saved: {OUT_LLM}  ({OUT_LLM.stat().st_size//1024} KB)")
+print(f"Saved : {OUT}  ({OUT.stat().st_size//1024} KB)")
+print(f"Copied: {LEG}")
