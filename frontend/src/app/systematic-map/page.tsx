@@ -3,26 +3,9 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PlotlyChart from "@/components/PlotlyChart";
-import PrismaFlow from "@/components/PrismaFlow";
 import { useState, useEffect } from "react";
 import { Download, Maximize2, X } from "lucide-react";
 import SectionHeading from "@/components/SectionHeading";
-
-type DatasetMode = 'llm' | 'human' | 'compare';
-
-const DATASET_LABELS: Record<DatasetMode, string> = {
-  human:   'Human  (n=151)',
-  llm:     'LLM  (n=2,368)',
-  compare: 'Compare',
-};
-
-const DATASET_DESCS: Record<DatasetMode, string> = {
-  human:   'Human-coded primary output — 151 records across 9 coding rounds.',
-  llm:     'Automated screening reference corpus — 2,368 records (exploratory only).',
-  compare: 'Human (amber) vs automated screening (teal) — % of studies for direct comparison.',
-};
-
-const DATASET_MODES: DatasetMode[] = ['human', 'llm', 'compare'];
 
 interface Study {
   doi: string;
@@ -39,7 +22,6 @@ interface Study {
 }
 
 export default function SystematicMapPage() {
-  const [lightbox, setLightbox] = useState<string | null>(null);
   const [expandedFig, setExpandedFig] = useState<{ src: string; pngSrc?: string; csvSrc?: string; title: string } | null>(null);
   const [studies, setStudies] = useState<Study[]>([]);
   const [studiesLoading, setStudiesLoading] = useState(true);
@@ -48,21 +30,13 @@ export default function SystematicMapPage() {
   const [sortCol, setSortCol] = useState<keyof Study>('year');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [geoView, setGeoView] = useState<'map' | 'bar'>('map');
-  const [flowView, setFlowView] = useState<'sankey' | 'prisma'>('prisma');
-  const [datasetMode, setDatasetMode] = useState<DatasetMode>('human');
 
-  const figJson = (name: string) => {
-    if (datasetMode === 'human')   return `/map/data/human/${name}.json`;
-    if (datasetMode === 'compare') return `/map/data/compare/${name}.json`;
-    return `/map/data/${name}.json`;
-  };
-  const figPng = (name: string) =>
-    datasetMode === 'llm' ? `/map/${name}.png` : undefined;
+  const figJson = (name: string) => `/map/data/human/${name}.json`;
 
   const staticFigures = [
-    { name: 'temporal_trends', json: figJson('temporal_trends'), png: figPng('temporal_trends'),  csv: '/map/data/temporal_trends.csv',  title: 'Publications Over Time',       description: 'Number of included studies per publication year.' },
-    { name: 'methodology',     json: figJson('methodology'),     png: figPng('methodology_bar'),  csv: '/map/data/methodology.csv',      title: 'Methodological Approaches',    description: 'Primary methodological design across included studies.' },
-    { name: 'equity',          json: figJson('equity'),          png: figPng('equity_bar'),       csv: '/map/data/equity.csv',           title: 'Equity & Inclusion',           description: 'Equity and inclusion dimensions addressed in studies. Red bar = studies with no marginalized group focus.' },
+    { name: 'temporal_trends', json: figJson('temporal_trends'), csv: '/map/data/temporal_trends.csv',  title: 'Publications Over Time',       description: 'Number of included studies per publication year.' },
+    { name: 'methodology',     json: figJson('methodology'),     csv: '/map/data/methodology.csv',      title: 'Methodological Approaches',    description: 'Primary methodological design across included studies.' },
+    { name: 'equity',          json: figJson('equity'),          csv: '/map/data/equity.csv',           title: 'Equity & Inclusion',           description: 'Equity and inclusion dimensions addressed in studies. Red bar = studies with no marginalized group focus.' },
   ];
 
   useEffect(() => {
@@ -121,58 +95,23 @@ export default function SystematicMapPage() {
       {/* Status Banner */}
       <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3">
         <p className="max-w-5xl mx-auto text-xs font-tagline text-yellow-800">
-          <strong>Final systematic map — June 2026.</strong> 40,653 records identified across 29 sources → 26,173 after deduplication → 8,753 full texts sought → 151 human-coded studies across 9 rounds. Human-coded figures are the primary output. Automated screening corpus (n=2,368) available as exploratory reference via the toggle above.
+          <strong>Final systematic map — June 2026.</strong> 40,653 records identified across 28 sources → 26,173 after deduplication → 180 full texts screened → 151 studies included across 9 human coding rounds.
         </p>
       </div>
 
-      {/* ROSES Flow Diagram */}
+      {/* PRISMA Flow Diagram */}
       <section id="flow-diagram" className="bg-white px-6 py-16">
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-            <div>
-              <SectionHeading id="flow-diagram" className="text-2xl font-logo font-bold text-green">ROSES Flow Diagram</SectionHeading>
-              <p className="font-tagline text-sm text-gray-500 mt-1">Record flow across all 27 sources and screening stages, following ROSES reporting standards.</p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {/* View toggle */}
-              <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
-                <button
-                  onClick={() => setFlowView('prisma')}
-                  className={`px-3 py-1.5 transition ${flowView === 'prisma' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'}`}
-                >
-                  PRISMA
-                </button>
-                <button
-                  onClick={() => setFlowView('sankey')}
-                  className={`px-3 py-1.5 transition border-l border-gray-200 ${flowView === 'sankey' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'}`}
-                >
-                  Sankey
-                </button>
-              </div>
-              {flowView === 'sankey' && (
-                <button
-                  onClick={() => setExpandedFig({ src: '/map/data/roses_flow.json', pngSrc: '/map/roses_flow.png', csvSrc: '/map/data/roses_flow.csv', title: 'ROSES Flow Diagram' })}
-                  className="flex items-center gap-1.5 text-xs font-tagline font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-green hover:text-green transition bg-white"
-                >
-                  <Maximize2 className="w-3.5 h-3.5" /> Fullscreen
-                </button>
-              )}
-            </div>
+          <div className="mb-6">
+            <SectionHeading id="flow-diagram" className="text-2xl font-logo font-bold text-green">PRISMA Flow Diagram</SectionHeading>
+            <p className="font-tagline text-sm text-gray-500 mt-1">Record flow across all 28 sources and screening stages, following PRISMA 2020 and ROSES reporting standards.</p>
           </div>
           <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
-            {flowView === 'sankey' ? (
-              <PlotlyChart
-                src="/map/data/roses_flow.json"
-                fallbackImg="/map/roses_flow.png"
-                pngSrc="/map/roses_flow.png"
-                csvSrc="/map/data/roses_flow.csv"
-                height={540}
-              />
-            ) : (
-              <div className="p-6">
-                <PrismaFlow />
-              </div>
-            )}
+            <img
+              src="/map/prisma_flow_d5.png"
+              alt="PRISMA 2020 flow diagram"
+              className="w-full h-auto block"
+            />
           </div>
         </div>
       </section>
@@ -209,38 +148,23 @@ export default function SystematicMapPage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between gap-4 mb-2">
             <SectionHeading id="evidence-map" className="text-2xl font-logo font-bold text-green shrink-0">Evidence Map</SectionHeading>
-            <div className="flex-none flex items-center gap-2">
-              <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
-                {DATASET_MODES.map((mode, i) => (
-                  <button key={mode} onClick={() => setDatasetMode(mode)}
-                    className={`px-3 py-1.5 transition ${datasetMode === mode ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'} ${i > 0 ? 'border-l border-gray-200' : ''}`}>
-                    {DATASET_LABELS[mode]}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => setExpandedFig({ src: figJson('evidence_gap_map'), pngSrc: figPng('evidence_gap_map'), csvSrc: '/map/data/evidence_gap_map.csv', title: 'Evidence Map' })}
-                className="flex items-center gap-1.5 text-xs font-tagline font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-green hover:text-green transition bg-white"
-              >
-                <Maximize2 className="w-3.5 h-3.5" /> Fullscreen
-              </button>
-            </div>
+            <button
+              onClick={() => setExpandedFig({ src: figJson('evidence_gap_map'), csvSrc: '/map/data/evidence_gap_map.csv', title: 'Evidence Map' })}
+              className="flex items-center gap-1.5 text-xs font-tagline font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-green hover:text-green transition bg-white"
+            >
+              <Maximize2 className="w-3.5 h-3.5" /> Fullscreen
+            </button>
           </div>
           <p className="font-tagline text-sm text-gray-500 mb-6">
-            {datasetMode === 'compare'
-              ? 'Left bubble = Human · right = LLM. Blue = process domains · green = outcome. Grey = evidence gap.'
-              : 'Bubble size indicates number of studies per domain–producer-type cell. Grey circles indicate evidence gaps.'}
+            Bubble size indicates number of studies per domain–producer-type cell. Grey circles indicate evidence gaps.
           </p>
           <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
             <PlotlyChart
-              src={datasetMode === 'compare' ? '/map/data/compare/evidence_gap_map.json' : figJson('evidence_gap_map')}
-              fallbackImg={figPng('evidence_gap_map')}
-              pngSrc={figPng('evidence_gap_map')}
+              src={figJson('evidence_gap_map')}
               csvSrc="/map/data/evidence_gap_map.csv"
-              height={datasetMode === 'compare' ? 740 : 700}
+              height={700}
             />
           </div>
-
         </div>
       </section>
 
@@ -250,14 +174,6 @@ export default function SystematicMapPage() {
           <div className="flex items-center justify-between gap-4 mb-2">
             <SectionHeading id="geographic-distribution" className="text-2xl font-logo font-bold text-green shrink-0">Geographic Distribution</SectionHeading>
             <div className="flex-none flex items-center gap-2">
-              <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
-                {DATASET_MODES.map((mode, i) => (
-                  <button key={mode} onClick={() => setDatasetMode(mode)}
-                    className={`px-3 py-1.5 transition ${datasetMode === mode ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'} ${i > 0 ? 'border-l border-gray-200' : ''}`}>
-                    {DATASET_LABELS[mode]}
-                  </button>
-                ))}
-              </div>
               <div className="flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
                 <button onClick={() => setGeoView('map')}
                   className={`px-3 py-1.5 transition ${geoView === 'map' ? 'bg-green text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
@@ -270,8 +186,8 @@ export default function SystematicMapPage() {
               </div>
               <button
                 onClick={() => setExpandedFig(geoView === 'map'
-                  ? { src: figJson('geographic_map'), pngSrc: figPng('geographic_map'), csvSrc: '/map/data/geographic_map.csv', title: 'Geographic Distribution — Map' }
-                  : { src: figJson('geographic_bar'), pngSrc: figPng('geographic_bar'), csvSrc: '/map/data/geographic_map.csv', title: 'Geographic Distribution — Bar' }
+                  ? { src: figJson('geographic_map'), csvSrc: '/map/data/geographic_map.csv', title: 'Geographic Distribution — Map' }
+                  : { src: figJson('geographic_bar'), csvSrc: '/map/data/geographic_map.csv', title: 'Geographic Distribution — Bar' }
                 )}
                 className="flex items-center gap-1.5 text-xs font-tagline font-semibold px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-green hover:text-green transition bg-white"
               >
@@ -281,33 +197,10 @@ export default function SystematicMapPage() {
           </div>
           <p className="font-tagline text-sm text-gray-500 mb-4">Countries by study count. Multi-country studies counted in each country.</p>
           <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
-            {datasetMode === 'compare' ? (
-              <div className="flex divide-x divide-gray-100">
-                <div className="flex-1 min-w-0 relative">
-                  <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full pointer-events-none">Human (n=151)</div>
-                  <PlotlyChart src="/map/data/human/geographic_map.json" height={420} />
-                </div>
-                <div className="flex-1 min-w-0 relative">
-                  <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full pointer-events-none">LLM (n=2,368)</div>
-                  <PlotlyChart src="/map/data/geographic_map.json" height={420} />
-                </div>
-              </div>
-            ) : geoView === 'map' ? (
-              <PlotlyChart
-                src={figJson('geographic_map')}
-                fallbackImg={figPng('geographic_map')}
-                pngSrc={figPng('geographic_map')}
-                csvSrc="/map/data/geographic_map.csv"
-                height={500}
-              />
+            {geoView === 'map' ? (
+              <PlotlyChart src={figJson('geographic_map')} csvSrc="/map/data/geographic_map.csv" height={500} />
             ) : (
-              <PlotlyChart
-                src={figJson('geographic_bar')}
-                fallbackImg={figPng('geographic_bar')}
-                pngSrc={figPng('geographic_bar')}
-                csvSrc="/map/data/geographic_map.csv"
-                height={500}
-              />
+              <PlotlyChart src={figJson('geographic_bar')} csvSrc="/map/data/geographic_map.csv" height={500} />
             )}
           </div>
         </div>
@@ -411,30 +304,17 @@ export default function SystematicMapPage() {
       </section>
 
       {/* Supporting Charts */}
-      <section id="evidence-map" className="bg-sand px-6 py-16">
+      <section id="supporting-charts" className="bg-sand px-6 py-16">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between gap-4 mb-1">
-            <SectionHeading id="evidence-map" className="text-2xl font-logo font-bold text-green shrink-0">Evidence Map</SectionHeading>
-            <div className="flex-none flex rounded-full border border-gray-200 overflow-hidden text-xs font-tagline font-semibold">
-              {DATASET_MODES.map((mode, i) => (
-                <button key={mode} onClick={() => setDatasetMode(mode)}
-                  className={`px-3 py-1.5 transition ${datasetMode === mode ? 'bg-green text-white' : 'bg-white text-gray-500 hover:text-green'} ${i > 0 ? 'border-l border-gray-200' : ''}`}>
-                  {DATASET_LABELS[mode]}
-                </button>
-              ))}
-            </div>
+          <div className="mb-4">
+            <SectionHeading id="supporting-charts" className="text-2xl font-logo font-bold text-green">Supporting Charts</SectionHeading>
+            <p className="font-tagline text-sm text-gray-500 mt-1">Use the <Maximize2 className="inline w-3.5 h-3.5 mx-0.5 text-gray-400" /> button to expand any chart for full interactive exploration.</p>
           </div>
-          <p className="font-tagline text-xs text-gray-400 mb-0">{DATASET_DESCS[datasetMode]}</p>
-          <p className="font-tagline text-sm text-gray-500 mb-1 mt-3">Use the <Maximize2 className="inline w-3.5 h-3.5 mx-0.5 text-gray-400" /> button to expand any chart for full interactive exploration.</p>
 
-          {/* Methodology bar chart — full width, own row, responds to dataset mode */}
+          {/* Methodology bar chart — full width */}
           <div className="mt-6 group rounded-xl overflow-hidden bg-white shadow-[0_2px_12px_rgba(202,194,181,0.25)] hover:shadow-[0_4px_16px_rgba(202,194,181,0.4)] transition-all duration-300">
             <div className="relative overflow-hidden bg-white">
-              <PlotlyChart
-                src={figJson('methodology_bars')}
-                height={datasetMode === 'compare' ? 560 : 520}
-                className="w-full"
-              />
+              <PlotlyChart src={figJson('methodology_bars')} height={520} className="w-full" />
               <button
                 onClick={() => setExpandedFig({ src: figJson('methodology_bars'), title: 'Quantitative vs Qualitative by Domain' })}
                 className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-500 hover:text-green hover:border-green transition opacity-0 group-hover:opacity-100"
@@ -445,50 +325,24 @@ export default function SystematicMapPage() {
             </div>
             <div className="p-4 border-t border-gray-100">
               <h3 className="font-logo font-bold text-charcoal text-base">Quantitative vs Qualitative by Domain</h3>
-              <p className="font-tagline text-xs text-gray-500 mt-1">
-                {datasetMode === 'compare'
-                  ? 'Dark = automated screening (n=2,368) · Light = Human (n=151). Blue = process domains · Green = outcome domains.'
-                  : 'Blue = process domains · Green = outcome domains. Non-exclusive: mixed-method studies counted in both bars.'}
-              </p>
+              <p className="font-tagline text-xs text-gray-500 mt-1">Blue = process domains · Green = outcome domains. Non-exclusive: mixed-method studies counted in both bars.</p>
             </div>
           </div>
 
           {/* Remaining charts — 2-column grid */}
-          <div className={`grid gap-6 mt-6 ${datasetMode === 'compare' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+          <div className="grid gap-6 mt-6 grid-cols-1 md:grid-cols-2">
             {staticFigures.map((fig) => (
               <div key={fig.name}
                 className="group rounded-xl overflow-hidden bg-white shadow-[0_2px_12px_rgba(202,194,181,0.25)] hover:shadow-[0_4px_16px_rgba(202,194,181,0.4)] transition-all duration-300 flex flex-col">
                 <div className="relative overflow-hidden bg-white">
-                  {datasetMode === 'compare' ? (
-                    <div className="flex divide-x divide-gray-100">
-                      <div className="flex-1 min-w-0 relative">
-                        <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full pointer-events-none">Human (n=151)</div>
-                        <PlotlyChart src={`/map/data/human/${fig.name}.json`} height={300} />
-                      </div>
-                      <div className="flex-1 min-w-0 relative">
-                        <div className="absolute top-2 left-2 z-10 text-xs font-tagline font-semibold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full pointer-events-none">LLM (n=2,368)</div>
-                        <PlotlyChart src={`/map/data/${fig.name}.json`} height={300} />
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <PlotlyChart
-                        src={fig.json}
-                        fallbackImg={datasetMode === 'llm' ? fig.png : undefined}
-                        pngSrc={datasetMode === 'llm' ? fig.png : undefined}
-                        csvSrc={fig.csv}
-                        height={320}
-                        className="w-full"
-                      />
-                      <button
-                        onClick={() => setExpandedFig({ src: fig.json, pngSrc: datasetMode === 'llm' ? fig.png : undefined, csvSrc: fig.csv, title: fig.title })}
-                        className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-500 hover:text-green hover:border-green transition opacity-0 group-hover:opacity-100"
-                        title="Expand chart"
-                      >
-                        <Maximize2 className="w-3.5 h-3.5" />
-                      </button>
-                    </>
-                  )}
+                  <PlotlyChart src={fig.json} csvSrc={fig.csv} height={320} className="w-full" />
+                  <button
+                    onClick={() => setExpandedFig({ src: fig.json, csvSrc: fig.csv, title: fig.title })}
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 text-gray-500 hover:text-green hover:border-green transition opacity-0 group-hover:opacity-100"
+                    title="Expand chart"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
                 <div className="p-4 border-t border-gray-100">
                   <h3 className="font-logo font-bold text-charcoal text-base">{fig.title}</h3>
@@ -499,15 +353,6 @@ export default function SystematicMapPage() {
           </div>
         </div>
       </section>
-
-      {/* PNG Lightbox (kept for backward compat, currently unused) */}
-      {lightbox && (
-        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center cursor-zoom-out"
-          onClick={() => setLightbox(null)}>
-          <img src={lightbox} alt="Enlarged figure" className="w-screen h-screen object-contain p-4" />
-          <span className="absolute top-4 right-5 text-white/50 font-tagline text-xs select-none">click anywhere to close</span>
-        </div>
-      )}
 
       {/* Interactive Fullscreen Modal */}
       {expandedFig && (
