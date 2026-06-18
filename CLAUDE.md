@@ -1,5 +1,7 @@
 # CLAUDE.md — ILRI Climate Adaptation Effectiveness
 
+> **Git rule:** Never `git push` without explicit confirmation from the user.
+
 Bristlepine / ILRI systematic map on methods for tracking climate adaptation for smallholder producers in LMICs. CEE/Campbell standards.
 
 **Git commits:** Never include `Co-Authored-By: Claude` or any AI attribution. Clean messages only.
@@ -99,6 +101,10 @@ Papers with `Skip-*` or `exclude` get `confirmed_include=no` and a note pre-fill
 
 - Papers with **no DOI** in `papers_ft-rX_missing.csv` won't have their `procurement_status` updated even if Jenn marked them — the script matches by DOI. Check these manually if Jenn marks them as excluded.
 - `assignments.csv` has a `status` and `completed_date` column (beyond the script's fieldnames) — preserve these manually when editing.
+
+---
+
+> **Git rule:** Never `git push` without explicit confirmation from the user.
 
 ---
 
