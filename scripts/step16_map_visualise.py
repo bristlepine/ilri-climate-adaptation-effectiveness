@@ -2686,7 +2686,7 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
                 hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
             ))
             fig.update_layout(
-                title=dict(text=f"<b>Publications Over Time (Human-coded)</b><br><sup>n={len(years):,}</sup>",
+                title=dict(text=f"<b>Publications Over Time</b><br><sup>n={len(years):,}</sup>",
                            x=0.5, xanchor="center", font=dict(size=14)),
                 height=380, xaxis_title="Publication Year", yaxis_title="Number of Studies",
                 plot_bgcolor="white", paper_bgcolor="white",
@@ -2717,7 +2717,7 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
                 hovertemplate="<b>%{y}</b><br>Studies: %{x}<extra></extra>",
             ))
             fig.update_layout(
-                title=dict(text=f"<b>Producer Types Studied (Human-coded)</b><br><sup>n={n:,}</sup>",
+                title=dict(text=f"<b>Producer Types Studied</b><br><sup>n={n:,}</sup>",
                            x=0.5, xanchor="center", font=dict(size=14)),
                 height=380, xaxis_title="Number of Studies",
                 yaxis=dict(autorange="reversed"),
@@ -2832,7 +2832,7 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
             fig.update_layout(
                 barmode="overlay",
                 title=dict(
-                    text=f"<b>Methodological Approach (Human-coded)</b><br>"
+                    text=f"<b>Methodological Approach</b><br>"
                          f"<sup>n={n:,} · studies may appear in multiple categories · "
                          f"dark shading shows subtype within parent category</sup>",
                     x=0.5, xanchor="center", font=dict(size=14)),
@@ -2867,7 +2867,7 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
                 hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
             ))
             fig.update_layout(
-                title=dict(text=f"<b>Process/Outcome Domains (Human-coded)</b><br><sup>n={n:,}</sup>",
+                title=dict(text=f"<b>Process/Outcome Domains</b><br><sup>n={n:,}</sup>",
                            x=0.5, xanchor="center", font=dict(size=14)),
                 height=420, yaxis_title="Number of Studies",
                 xaxis=dict(tickangle=-35),
@@ -2897,7 +2897,7 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
                 hovertemplate="<b>%{x}</b><br>Studies: %{y}<extra></extra>",
             ))
             fig.update_layout(
-                title=dict(text=f"<b>Equity & Inclusion (Human-coded)</b><br>"
+                title=dict(text=f"<b>Equity & Inclusion</b><br>"
                                f"<sup>Red = no marginalized group focus. Multi-select (n={n:,})</sup>",
                            x=0.5, xanchor="center", font=dict(size=14)),
                 height=380, yaxis_title="Number of Studies",
@@ -2938,7 +2938,7 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
                     text=ct.values.tolist(), texttemplate="%{text}",
                 ))
                 fig.update_layout(
-                    title=dict(text=f"<b>Domains × Producer Type (Human-coded)</b><br><sup>n={n:,}</sup>",
+                    title=dict(text=f"<b>Domains × Producer Type</b><br><sup>n={n:,}</sup>",
                                x=0.5, xanchor="center", font=dict(size=14)),
                     height=max(400, ct.shape[0] * 28 + 150),
                     xaxis=dict(tickangle=-30, side="top"),
@@ -2958,7 +2958,7 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
             hovertemplate="<b>%{location}</b><br>Studies: %{z}<extra></extra>",
         ))
         fig_map.update_layout(
-            title=dict(text=f"<b>Geographic Distribution (Human-coded)</b><br><sup>n={n:,}</sup>",
+            title=dict(text=f"<b>Geographic Distribution</b><br><sup>n={n:,}</sup>",
                        x=0.5, xanchor="center", font=dict(size=14)),
             geo=dict(showframe=False, showcoastlines=True, projection_type="natural earth",
                      showland=True, landcolor="#F5F5F5", showocean=True, oceancolor="#EBF4FB",
@@ -2978,7 +2978,7 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
             text=values, textposition="outside",
         ))
         fig_bar.update_layout(
-            title=dict(text=f"<b>Studies by Country (Human-coded)</b><br><sup>n={n:,}</sup>",
+            title=dict(text=f"<b>Studies by Country</b><br><sup>n={n:,}</sup>",
                        x=0.5, xanchor="center", font=dict(size=14)),
             height=max(400, len(countries) * 22 + 120),
             xaxis_title="Number of Studies",
@@ -3052,7 +3052,7 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
             line=dict(color="#9E9E9E", width=1.5, dash="dot"))
         fig.update_layout(
             title=dict(
-                text=f"<b>Evidence Gap Map (Human-coded)</b><br><sup>Bubble size = number of studies (n={n_cont:,})</sup>",
+                text=f"<b>Evidence Gap Map</b><br><sup>Bubble size = number of studies (n={n_cont:,})</sup>",
                 x=0.5, xanchor="center", font=dict(size=14)),
             height=700,
             xaxis=dict(title=dict(text="Producer Type", standoff=20), side="top",
