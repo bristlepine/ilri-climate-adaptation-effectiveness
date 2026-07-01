@@ -2809,14 +2809,14 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
                 if s > 0:
                     # Dark subtype portion: centered if wide enough, else outside right
                     sub_text = f"Exp./RCT ({s})" if y == "Quantitative" else f"{sub_labels[y]} ({s})"
-                    if s >= 18:
+                    if s >= 10:
                         fig.add_annotation(x=s/2, y=y, text=sub_text,
-                                           font=dict(size=10, color="white"), showarrow=False,
+                                           font=dict(size=9, color="white"), showarrow=False,
                                            xanchor="center", yanchor="middle")
                     else:
-                        fig.add_annotation(x=s + 1, y=y, text=sub_text,
-                                           font=dict(size=10, color="#1e3a8a"), showarrow=False,
-                                           xanchor="left", yanchor="middle")
+                        fig.add_annotation(x=s/2, y=y, text=sub_text,
+                                           font=dict(size=9, color="white"), showarrow=False,
+                                           xanchor="center", yanchor="middle")
                     # Light remaining portion: centered
                     if rest > 12:
                         rest_label = f"Other {y.lower()} ({rest})"
