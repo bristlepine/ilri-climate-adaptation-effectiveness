@@ -105,6 +105,90 @@ OUTCOME_DOMAINS: List[str] = [
 ALL_DOMAINS: List[str] = PROCESS_DOMAINS + OUTCOME_DOMAINS
 N_PROCESS = len(PROCESS_DOMAINS)   # 7
 
+PROCESS_DOMAINS_SET = set(PROCESS_DOMAINS)
+OUTCOME_DOMAINS_SET = set(OUTCOME_DOMAINS)
+
+# Typo/free-text aliases seen in human coding (process_outcome_domains is a
+# free-text field for human coders, unlike the LLM's constrained taxonomy
+# output) — used only to classify process-vs-outcome for the Venn diagram,
+# not for the EGM cell counts.
+_DOMAIN_TYPO_ALIASES: Dict[str, str] = {
+    "acces_information_services":              "access_information_services",
+    "resilience_adaptative_capacity":           "resilience_adaptive_capacity",
+    "resilience_adaptation_capacity_building":  "resilience_adaptive_capacity",
+    "resilience":                               "resilience_adaptive_capacity",
+    "participation_coproduction i":             "participation_coproduction",
+    "reduction_of_risk":                        "risk_reduction",
+    "adaptaation_reduction_of_risk":            "risk_reduction",
+    "livelihood":                               "livelihoods",
+    "livelihood_sustainability":                "livelihoods",
+    "sustainable_livelihood":                   "livelihoods",
+    "adoptation_uptake":                        "uptake_adoption",
+    "uptake adoption":                          "uptake_adoption",
+    "decision_making":                          "decision_making_planning",
+    "decision_making_plans":                    "decision_making_planning",
+    "decision_makingplanning":                  "decision_making_planning",
+    "planning_of_dicision_making":               "decision_making_planning",
+    "planning_the_decision_making":              "decision_making_planning",
+    "planning_decision_making":                 "decision_making_planning",
+    "yield_productivity":                       "yields_productivity",
+}
+
+
+def _domain_tokens(raw: Any) -> List[str]:
+    """Split a process_outcome_domains value into normalised domain tokens.
+
+    Splits on ';', ',' and ':' — human coders used all three as separators —
+    then maps known typos/synonyms to their canonical domain code.
+    """
+    out: List[str] = []
+    for part in re.split(r"[;,:]", str(raw)):
+        part = part.strip().lower()
+        if not part or part in _SKIP:
+            continue
+        out.append(_DOMAIN_TYPO_ALIASES.get(part, part))
+    return out
+
+
+def _process_outcome_label(raw: Any) -> str:
+    """Classify a single process_outcome_domains value as process_only,
+    outcome_only, both, or neither."""
+    toks = set(_domain_tokens(raw))
+    has_p = bool(toks & PROCESS_DOMAINS_SET)
+    has_o = bool(toks & OUTCOME_DOMAINS_SET)
+    if has_p and has_o:
+        return "both"
+    if has_p:
+        return "process_only"
+    if has_o:
+        return "outcome_only"
+    return "neither"
+
+
+def _process_outcome_classify(values: "pd.Series | List[Any]") -> Dict[str, int]:
+    """Classify each row's process_outcome_domains value as process-only,
+    outcome-only, both, or neither — each study counted once even if it
+    carries multiple tags within the same category."""
+    counts = {"process_only": 0, "outcome_only": 0, "both": 0, "neither": 0}
+    for raw in values:
+        counts[_process_outcome_label(raw)] += 1
+    return counts
+
+
+def _domain_venn_list(df: pd.DataFrame, dom_col: str) -> pd.DataFrame:
+    """Per-study listing of which process/outcome bucket each study falls into."""
+    rows = []
+    for _, row in df.iterrows():
+        raw = row.get(dom_col, "")
+        rows.append({
+            "doi": row.get("doi", ""),
+            "title": row.get("title", ""),
+            "domain_type": _process_outcome_label(raw),
+            "process_outcome_domains_raw": raw,
+        })
+    return pd.DataFrame(rows)
+
+
 # Producer types (coded values from producer_type_value)
 PRODUCER_TYPES: List[str] = [
     "crop",
@@ -1418,6 +1502,84 @@ def _egm_interactive(df: pd.DataFrame, out_root: Path, out_dir: Path) -> None:
             })
     egm_df = pd.DataFrame(egm_rows)
     _save_csv(egm_df, "evidence_gap_map", out_dir)
+
+
+def _venn_figure(counts: Dict[str, int], subtitle: str):
+    """Schematic two-circle Venn (process vs. outcome domains) as a Plotly figure.
+
+    Not area-proportional — this is a labelled schematic, matching how the
+    EGM figure treats process (blue) vs outcome (green) domains.
+    """
+    import plotly.graph_objects as go
+
+    p_only  = counts["process_only"]
+    o_only  = counts["outcome_only"]
+    both    = counts["both"]
+    neither = counts["neither"]
+    total   = p_only + o_only + both + neither
+
+    def pct(v: int) -> str:
+        return f"{v / total * 100:.1f}%" if total else "0%"
+
+    fig = go.Figure()
+    fig.add_shape(type="circle", xref="x", yref="y",
+                  x0=0.0, x1=2.0, y0=0.0, y1=2.0,
+                  fillcolor=BLUE, opacity=0.40, line=dict(color=BLUE, width=2))
+    fig.add_shape(type="circle", xref="x", yref="y",
+                  x0=1.15, x1=3.15, y0=0.0, y1=2.0,
+                  fillcolor=GREEN, opacity=0.40, line=dict(color=GREEN, width=2))
+
+    fig.add_annotation(x=0.55, y=1.0, showarrow=False,
+                        text=f"<b>Process only</b><br>{p_only:,}<br>({pct(p_only)})",
+                        font=dict(size=13, color=DKGREY))
+    fig.add_annotation(x=2.6, y=1.0, showarrow=False,
+                        text=f"<b>Outcome only</b><br>{o_only:,}<br>({pct(o_only)})",
+                        font=dict(size=13, color=DKGREY))
+    fig.add_annotation(x=1.575, y=1.0, showarrow=False,
+                        text=f"<b>Both</b><br>{both:,}<br>({pct(both)})",
+                        font=dict(size=13, color="white"))
+    fig.add_annotation(x=0.55, y=2.18, showarrow=False,
+                        text="<b>PROCESS DOMAINS</b>", font=dict(size=11, color=BLUE))
+    fig.add_annotation(x=2.6, y=2.18, showarrow=False,
+                        text="<b>OUTCOME DOMAINS</b>", font=dict(size=11, color=GREEN))
+    fig.add_annotation(x=1.575, y=-0.35, showarrow=False,
+                        text=f"Neither process nor outcome domain tagged: {neither:,} ({pct(neither)})",
+                        font=dict(size=11, color=GREY))
+
+    fig.update_layout(
+        title=dict(
+            text=f"<b>Studies by Domain Type: Process vs. Outcome</b><br>"
+                 f"<sup>{subtitle} · n={total:,} · each study counted once even if tagged "
+                 f"with multiple domains</sup>",
+            x=0.5, xanchor="center", font=dict(size=14),
+        ),
+        xaxis=dict(visible=False, range=[-0.3, 3.45]),
+        yaxis=dict(visible=False, range=[-0.7, 2.55], scaleanchor="x", scaleratio=1),
+        plot_bgcolor="white", paper_bgcolor="white",
+        height=560, margin=dict(l=40, r=40, t=110, b=60),
+        font=dict(family="Lato, Arial, sans-serif", color=DKGREY),
+    )
+    return fig
+
+
+def _domain_venn_interactive(df: pd.DataFrame, out_dir: Path) -> None:
+    """Process-vs-outcome Venn diagram for the LLM-coded corpus."""
+    dom_col = "process_outcome_domains_value"
+    if df.empty or dom_col not in df.columns:
+        return
+
+    counts = _process_outcome_classify(df[dom_col].tolist())
+    fig = _venn_figure(counts, "LLM-coded corpus")
+    _save_plotly(fig, "domain_venn", out_dir)
+
+    try:
+        fig.write_image(str(out_dir / "domain_venn.png"), scale=2, width=900, height=560)
+        print("[step16] Saved -> domain_venn.png (Plotly/kaleido)")
+    except Exception as e:
+        print(f"[step16] kaleido PNG export failed for domain_venn ({e})")
+
+    _save_csv(pd.DataFrame([counts]), "domain_venn", out_dir)
+    _save_csv(_domain_venn_list(df, dom_col), "domain_venn_list", out_dir)
 
 
 def _geographic_interactive(df: pd.DataFrame, out_dir: Path) -> None:
@@ -3067,6 +3229,15 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
         )
         _save_json_to(fig, target / "evidence_gap_map.json")
 
+    # ── Process vs Outcome Venn ──────────────────────────────────────────────
+    dom_col_h = "process_outcome_domains_value"
+    if dom_col_h in h.columns:
+        counts_h = _process_outcome_classify(h[dom_col_h].tolist())
+        fig_venn = _venn_figure(counts_h, "Human-coded primary studies")
+        _save_json_to(fig_venn, target / "domain_venn.json")
+        pd.DataFrame([counts_h]).to_csv(target / "domain_venn.csv", index=False)
+        _domain_venn_list(h, dom_col_h).to_csv(target / "domain_venn_list.csv", index=False)
+
     print(f"[step16] Human figures done: {len(list(target.glob('*.json')))} files")
 
 
@@ -3493,6 +3664,7 @@ def run(config: dict) -> dict:
         print("[step16] Producing evidence map figures (interactive)...")
         for fn, label in [
             (_egm_interactive,           "evidence_gap_map.json"),
+            (_domain_venn_interactive,   "domain_venn.json"),
             (_geographic_interactive,    "geographic_map.json + geographic_bar.json"),
             (_temporal_interactive,      "temporal_trends.json"),
             (_producer_interactive,      "producer_type.json"),

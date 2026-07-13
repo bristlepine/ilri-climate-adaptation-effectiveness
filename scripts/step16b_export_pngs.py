@@ -34,6 +34,7 @@ LLM_PNG.mkdir(exist_ok=True)
 # Figure dimensions: (width, height) in pixels at scale=2
 DIMS: dict[str, tuple[int, int]] = {
     "evidence_gap_map":  (1100, 700),
+    "domain_venn":       (900,  560),
     "domain_heatmap":    (1000, 560),
     "geographic_map":    (1000, 520),
     "geographic_bar":    (900,  480),
