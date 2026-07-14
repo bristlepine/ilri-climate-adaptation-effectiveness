@@ -1505,10 +1505,16 @@ def _egm_interactive(df: pd.DataFrame, out_root: Path, out_dir: Path) -> None:
 
 
 def _venn_figure(counts: Dict[str, int], subtitle: str):
-    """Schematic two-circle Venn (process vs. outcome domains) as a Plotly figure.
+    """Schematic two-circle Venn (process vs. outcome domains).
 
-    Not area-proportional — this is a labelled schematic, matching how the
-    EGM figure treats process (blue) vs outcome (green) domains.
+    Fixed equal-size, fixed-overlap layout — deliberately not
+    area-proportional. An area-proportional version was tried, but for
+    lopsided counts (e.g. one domain's studies almost entirely nested inside
+    the other's) the process-only/outcome-only crescents can become so thin
+    that a label anchored at the circles' vertical centre line actually
+    lands in the overlap region, not the crescent — a fixed layout avoids
+    that failure mode by construction, at the cost of not encoding magnitude
+    in circle area.
     """
     import plotly.graph_objects as go
 
@@ -1529,19 +1535,26 @@ def _venn_figure(counts: Dict[str, int], subtitle: str):
                   x0=1.15, x1=3.15, y0=0.0, y1=2.0,
                   fillcolor=GREEN, opacity=0.40, line=dict(color=GREEN, width=2))
 
-    fig.add_annotation(x=0.55, y=1.0, showarrow=False,
-                        text=f"<b>Process only</b><br>{p_only:,}<br>({pct(p_only)})",
-                        font=dict(size=13, color=DKGREY))
-    fig.add_annotation(x=2.6, y=1.0, showarrow=False,
-                        text=f"<b>Outcome only</b><br>{o_only:,}<br>({pct(o_only)})",
-                        font=dict(size=13, color=DKGREY))
-    fig.add_annotation(x=1.575, y=1.0, showarrow=False,
-                        text=f"<b>Both</b><br>{both:,}<br>({pct(both)})",
-                        font=dict(size=13, color="white"))
-    fig.add_annotation(x=0.55, y=2.18, showarrow=False,
-                        text="<b>PROCESS DOMAINS</b>", font=dict(size=11, color=BLUE))
-    fig.add_annotation(x=2.6, y=2.18, showarrow=False,
-                        text="<b>OUTCOME DOMAINS</b>", font=dict(size=11, color=GREEN))
+    # All three region counts sit outside the circles with a leader line
+    # pointing at their region's centre — fixed positions since the layout
+    # itself is fixed.
+    def _callout(x, y, text, ax, ay):
+        fig.add_annotation(x=x, y=y, ax=ax, ay=ay, showarrow=True,
+                            arrowhead=2, arrowsize=1, arrowwidth=1.2, arrowcolor=GREY,
+                            text=text, font=dict(size=12, color=DKGREY),
+                            xanchor="center", yanchor="middle",
+                            bgcolor="white", bordercolor=GREY, borderwidth=1, borderpad=4)
+
+    _callout(0.55, 1.0, f"<b>Process only</b><br>{p_only:,}<br>({pct(p_only)})", -110, -70)
+    _callout(1.575, 1.0, f"<b>Both</b><br>{both:,}<br>({pct(both)})", 0, -140)
+    _callout(2.6, 1.0, f"<b>Outcome only</b><br>{o_only:,}<br>({pct(o_only)})", 110, -70)
+
+    # Category titles flank the diagram on their own side.
+    fig.add_annotation(x=-0.35, y=1.0, showarrow=False, xanchor="right", yanchor="middle",
+                        text="<b>PROCESS<br>DOMAINS</b>", font=dict(size=12, color=BLUE))
+    fig.add_annotation(x=3.5, y=1.0, showarrow=False, xanchor="left", yanchor="middle",
+                        text="<b>OUTCOME<br>DOMAINS</b>", font=dict(size=12, color=GREEN))
+
     fig.add_annotation(x=1.575, y=-0.35, showarrow=False,
                         text=f"Neither process nor outcome domain tagged: {neither:,} ({pct(neither)})",
                         font=dict(size=11, color=GREY))
@@ -1553,10 +1566,10 @@ def _venn_figure(counts: Dict[str, int], subtitle: str):
                  f"with multiple domains</sup>",
             x=0.5, xanchor="center", font=dict(size=14),
         ),
-        xaxis=dict(visible=False, range=[-0.3, 3.45]),
-        yaxis=dict(visible=False, range=[-0.7, 2.55], scaleanchor="x", scaleratio=1),
+        xaxis=dict(visible=False, range=[-1.7, 4.85]),
+        yaxis=dict(visible=False, range=[-0.7, 2.9], scaleanchor="x", scaleratio=1),
         plot_bgcolor="white", paper_bgcolor="white",
-        height=560, margin=dict(l=40, r=40, t=110, b=60),
+        height=620, margin=dict(l=130, r=130, t=170, b=60),
         font=dict(family="Lato, Arial, sans-serif", color=DKGREY),
     )
     return fig
