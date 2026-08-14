@@ -3006,6 +3006,156 @@ def _human_figures_all(human_df: pd.DataFrame, out_dir: Path) -> None:
             )
             _save_json_to(fig, target / "methodology.json")
 
+    # ── Methodology detail: combined vs process-domain vs outcome-domain ───────
+    col = "methodological_approach_value"
+    dom_col = "process_outcome_domains_value"
+    if col in h.columns and dom_col in h.columns:
+        from plotly.subplots import make_subplots
+
+        DETAIL_CATS = ["Quantitative", "Qualitative", "Modelling", "Mixed methods"]
+        LIGHT_BLUE, DARK_BLUE   = "#93c5fd", "#1d4ed8"
+        LIGHT_GREEN, DARK_GREEN = "#86efac", "#15803d"
+        DETAIL_ORANGE = "#f97316"
+        DETAIL_PURPLE = "#a855f7"
+        SUB_LABELS = {
+            "Quantitative":  "Exp./RCT",
+            "Qualitative":   "Participatory",
+            "Modelling":     "",
+            "Mixed methods": "",
+        }
+
+        def _methodology_raw_counts(sub: pd.DataFrame) -> Dict[str, int]:
+            merged: Dict[str, int] = {}
+            for raw in _split_h(sub[col]):
+                label = _method_label(raw)
+                merged[label] = merged.get(label, 0) + 1
+            return merged
+
+        def _parent_subtype(merged: Dict[str, int]):
+            parents = {c: merged.get(c, 0) for c in DETAIL_CATS}
+            subtypes = {
+                "Quantitative":  merged.get("Experimental / RCT (quantitative)", 0),
+                "Qualitative":   merged.get("Participatory (qualitative)",        0),
+                "Modelling":     0,
+                "Mixed methods": 0,
+            }
+            return parents, subtypes
+
+        is_process = h[dom_col].apply(lambda v: _process_outcome_label(v) == "process_only")
+        is_outcome = h[dom_col].apply(lambda v: _process_outcome_label(v) == "outcome_only")
+
+        combined_merged = _methodology_raw_counts(h)
+        process_merged  = _methodology_raw_counts(h[is_process])
+        outcome_merged  = _methodology_raw_counts(h[is_outcome])
+
+        n_combined = len(h)
+        n_process  = int(is_process.sum())
+        n_outcome  = int(is_outcome.sum())
+
+        if sum(combined_merged.values()) > 0:
+            fig = make_subplots(
+                rows=2, cols=2,
+                specs=[[{"colspan": 2}, None], [{}, {}]],
+                row_heights=[0.44, 0.56],
+                vertical_spacing=0.18,
+                horizontal_spacing=0.10,
+                subplot_titles=(
+                    f"Combined (n={n_combined:,})",
+                    f"Process domains only (n={n_process:,})",
+                    f"Outcome domains only (n={n_outcome:,})",
+                ),
+            )
+
+            def _add_detail_facet(merged: Dict[str, int], row: int, col_: int) -> None:
+                parents, subtypes = _parent_subtype(merged)
+                ys = DETAIL_CATS
+                parent_vals = [parents[y] for y in ys]
+                sub_vals    = [subtypes[y] for y in ys]
+                parent_colors = [LIGHT_BLUE, LIGHT_GREEN, DETAIL_ORANGE, DETAIL_PURPLE]
+                sub_colors    = [DARK_BLUE,  DARK_GREEN,  "rgba(0,0,0,0)", "rgba(0,0,0,0)"]
+
+                hover_parent = [
+                    f"<b>{y}</b><br>Total: {parents[y]} studies" +
+                    (f"<br>incl. {subtypes[y]} {SUB_LABELS[y]}" if subtypes[y] else "") +
+                    "<extra></extra>"
+                    for y in ys
+                ]
+                hover_sub = [
+                    (f"<b>{SUB_LABELS[y]}</b> (subset of {y})<br>{subtypes[y]} studies<extra></extra>"
+                     if subtypes[y] else "<extra></extra>")
+                    for y in ys
+                ]
+
+                fig.add_trace(go.Bar(
+                    x=parent_vals, y=ys, orientation="h",
+                    marker_color=parent_colors,
+                    hovertemplate=hover_parent,
+                    showlegend=False,
+                ), row=row, col=col_)
+                fig.add_trace(go.Bar(
+                    x=sub_vals, y=ys, orientation="h",
+                    marker_color=sub_colors,
+                    hovertemplate=hover_sub,
+                    showlegend=False,
+                ), row=row, col=col_)
+
+                # Total count only — which color is which category/subtype is explained
+                # once by the legend, not repeated as inline text on every bar.
+                facet_max = max(parent_vals) if any(parent_vals) else 1
+                offset = facet_max * 0.02
+                for y in ys:
+                    p = parents[y]
+                    if p == 0:
+                        continue
+                    fig.add_annotation(x=p + offset, y=y, text=str(p),
+                                       font=dict(size=9, color="#374151"), showarrow=False,
+                                       xanchor="left", yanchor="middle", row=row, col=col_)
+
+            _add_detail_facet(combined_merged, 1, 1)
+            _add_detail_facet(process_merged, 2, 1)
+            _add_detail_facet(outcome_merged, 2, 2)
+
+            # Legend swatches (invisible dummy points) — one entry per parent category
+            # and per subtype, shown once below the subtitle to explain dark vs light.
+            for name, color in [
+                ("Quantitative", LIGHT_BLUE),
+                ("of which Experimental / RCT", DARK_BLUE),
+                ("Qualitative", LIGHT_GREEN),
+                ("of which Participatory", DARK_GREEN),
+                ("Modelling", DETAIL_ORANGE),
+                ("Mixed methods", DETAIL_PURPLE),
+            ]:
+                fig.add_trace(go.Bar(
+                    x=[None], y=[None], marker_color=color, name=name, showlegend=True,
+                ), row=1, col=1)
+
+            fig.update_yaxes(autorange="reversed", row=1, col=1)
+            fig.update_yaxes(autorange="reversed", row=2, col=1)
+            fig.update_yaxes(autorange="reversed", row=2, col=2)
+            fig.update_xaxes(title_text="Number of Studies", row=1, col=1)
+            fig.update_xaxes(title_text="Number of Studies", row=2, col=1)
+            fig.update_xaxes(title_text="Number of Studies", row=2, col=2)
+
+            fig.update_layout(
+                barmode="overlay",
+                title=dict(
+                    text=f"<b>Methodological Approach — Process vs Outcome Domains</b><br>"
+                         f"<sup>Lower panels are mutually exclusive — dual-tagged studies excluded from both · "
+                         f"n={n_combined:,} studies total</sup>",
+                    x=0.5, xanchor="center", font=dict(size=14),
+                ),
+                legend=dict(
+                    orientation="h", x=0.5, xanchor="center", y=1.06, yanchor="bottom",
+                    font=dict(size=10), traceorder="normal",
+                ),
+                height=860,
+                plot_bgcolor="white",
+                paper_bgcolor="white",
+                font=dict(family="Lato, Arial, sans-serif", size=11, color=DKGREY),
+                margin=dict(l=150, r=40, t=190, b=60),
+            )
+            _save_json_to(fig, target / "methodology_detail.json")
+
     # ── Process/Outcome domains ───────────────────────────────────────────────
     col = "process_outcome_domains_value"
     if col in h.columns:

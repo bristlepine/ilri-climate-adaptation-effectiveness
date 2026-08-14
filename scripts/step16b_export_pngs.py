@@ -39,6 +39,7 @@ DIMS: dict[str, tuple[int, int]] = {
     "geographic_map":    (1000, 520),
     "geographic_bar":    (900,  480),
     "methodology":       (900,  460),
+    "methodology_detail": (1000, 860),
     "temporal_trends":   (900,  460),
     "equity":            (900,  440),
     "domain_type":       (900,  440),
