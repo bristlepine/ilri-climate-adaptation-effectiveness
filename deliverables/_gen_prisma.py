@@ -61,39 +61,51 @@ SCOPUS_RETURNED = step2b["scopus_corpus_size"]
 BY_DB = step2b["by_database_imported"]
 
 NAMED_DBS = ["Web of Science", "CAB Abstracts", "Academic Search Premier",
-             "EconLit", "ProQuest", "Google Scholar", "AGRIS"]
+             "EconLit", "ProQuest", "AGRIS"]
 db = [("Scopus", SCOPUS_RETURNED)] + [(nm, BY_DB[nm]) for nm in NAMED_DBS]
 
-# Grouping of grey-lit sources into display categories — this categorisation
-# (which source goes under which label) is a content choice; the NUMBERS are
-# always summed live from step2b_summary.json, never typed in.
+# Web-based search engines — its own ROSES/CEE category, separate from both
+# bibliographic databases and organisational websites (matches §8.3 of the
+# methods text).
+WEB_ENGINES = ["Google Scholar", "DuckDuckGo"]
+we = [(nm, BY_DB[nm]) for nm in WEB_ENGINES]
+WEB_ENGINES_TOTAL = sum(n for _, n in we)
+
+# Organisational-website groups (§8.4). Two sources — USAID and J-PAL — were
+# genuinely searched but returned zero records, so they never appear in
+# step2b_summary.json's by_database_imported dict (nothing to sum). They are
+# added back in explicitly here at n=0 so the source COUNT matches the
+# methods text (21 organisational websites), even though they contribute
+# nothing to the record TOTAL.
+ZERO_YIELD_SOURCES = {"USAID", "J-PAL"}
 GREY_LIT_GROUPS = {
     "UN agencies  (FAO · IFAD · UNDP · UNEP · UNFCCC)":
         ["FAO", "IFAD", "UNDP", "UNEP", "UNFCCC"],
-    "Dev. banks  (WB · GCF · GEF · IDB · ADB · AfDB · FCDO)":
-        ["World Bank", "GEF", "GCF", "IDB", "ADB", "AfDB", "FCDO"],
+    "Dev. banks  (WB · GCF · GEF · USAID · IDB · ADB · AfDB · FCDO)":
+        ["World Bank", "GEF", "GCF", "USAID", "IDB", "ADB", "AfDB", "FCDO"],
     "Research centres  (CGSpace · IPAM · ARA · GCA · WASP)":
         ["CGSpace (CGIAR)", "IPAM", "Adaptation Research Alliance", "GCA", "WASP"],
-    "M&E networks  (3ie · Campbell Collaboration)":
-        ["3ie", "Campbell Collaboration"],
-    "DuckDuckGo": ["DuckDuckGo"],
+    "M&E networks  (3ie · Campbell · J-PAL)":
+        ["3ie", "Campbell Collaboration", "J-PAL"],
 }
-grey_lit_keys = set(BY_DB) - set(NAMED_DBS)
+grey_lit_keys = (set(BY_DB) - set(NAMED_DBS) - set(WEB_ENGINES)) | ZERO_YIELD_SOURCES
 grouped_keys = {k for grp in GREY_LIT_GROUPS.values() for k in grp}
 assert grey_lit_keys == grouped_keys, (
-    f"Grey-lit source list in step2b_summary.json no longer matches the "
+    f"Organisational-website source list no longer matches the "
     f"GREY_LIT_GROUPS mapping in this script — new/removed source(s): "
-    f"{grey_lit_keys ^ grouped_keys}. Update GREY_LIT_GROUPS above."
+    f"{grey_lit_keys ^ grouped_keys}. Update GREY_LIT_GROUPS (and "
+    f"ZERO_YIELD_SOURCES, if a zero-record source was added/removed) above."
 )
-gl = [(label, sum(BY_DB[k] for k in keys)) for label, keys in GREY_LIT_GROUPS.items()]
+gl = [(label, sum(BY_DB.get(k, 0) for k in keys)) for label, keys in GREY_LIT_GROUPS.items()]
 GREY_LIT_TOTAL = sum(n for _, n in gl)
 
-N_DATABASES = len(db)              # 8
-N_GREY_SOURCES = len(grey_lit_keys)  # 20
-N_SOURCES = N_DATABASES + N_GREY_SOURCES
+N_DATABASES = len(db)                  # 7
+N_WEB_ENGINES = len(WEB_ENGINES)        # 2
+N_GREY_SOURCES = len(grey_lit_keys)      # 21
+N_SOURCES = N_DATABASES + N_WEB_ENGINES + N_GREY_SOURCES
 
 IDENTIFIED_TOTAL = SCOPUS_RETURNED + sum(BY_DB.values())
-assert IDENTIFIED_TOTAL == sum(n for _, n in db) + GREY_LIT_TOTAL
+assert IDENTIFIED_TOTAL == sum(n for _, n in db) + WEB_ENGINES_TOTAL + GREY_LIT_TOTAL
 
 # ── DEDUPLICATION ────────────────────────────────────────────────────────────
 # rows_total in each screening meta file = the exact record count that fed
@@ -156,11 +168,20 @@ EX  = MR + 0.35                     # = 10.95
 EW  = 3.75                          # right edge = 14.70 (< FW=15 ✓)
 EC  = EX + EW / 2                   # = 12.825
 
-# Source boxes (identification): together span exactly MX to MR, with a wider
-# gap between them for visual separation
-ID_GAP = 0.40
-AX, AW = MX, (MW - ID_GAP) / 2     # = 1.20, 4.50   right = 5.70
-BX, BW = MX + AW + ID_GAP, AW      # = 6.10, 4.50   right = 10.60
+# Source boxes (identification): three columns — bibliographic databases,
+# web-based search engines, organisational websites — together spanning
+# exactly MX to MR. Widths are uneven on purpose: the organisational-websites
+# column has the longest row labels (grouped, multi-org parenthetical lists)
+# so it gets more room; web engines only ever lists two short names so it
+# gets the least.
+ID_GAP = 0.25
+BOXES_W = MW - 2 * ID_GAP           # = 8.90  (total width to split 3 ways)
+AW = 0.30 * BOXES_W                  # bibliographic databases
+BW = 0.22 * BOXES_W                  # web search engines
+CW = BOXES_W - AW - BW               # organisational websites (remainder, largest)
+AX = MX
+BX = AX + AW + ID_GAP
+CX = BX + BW + ID_GAP
 
 # ── Vertical constants ────────────────────────────────────────────────────────
 GAP  = 0.52     # gap between consecutive boxes
@@ -275,27 +296,37 @@ band( 0.2,  4.0, "INCLUDED")
 
 bx(AX, SRC_Y, AW, SRC_H, ec=G)
 tx(AX + AW/2, SRC_Y+SRC_H-0.34, f"Bibliographic databases  ({N_DATABASES})",
-   fs=11, bold=True, c=G)
+   fs=9.5, bold=True, c=G)
 rh = (SRC_H - 0.70) / len(db)
 for i, (nm, n) in enumerate(db):
     ry = SRC_Y + SRC_H - 0.70 - (i + 0.5) * rh
-    tx(AX + 0.22, ry, nm, fs=9, c=DRK, ha="left")
-    tx(AX + AW - 0.18, ry, fmt(n), fs=9, c=G, bold=True, ha="right")
+    tx(AX + 0.18, ry, nm, fs=7.6, c=DRK, ha="left")
+    tx(AX + AW - 0.15, ry, fmt(n), fs=7.6, c=G, bold=True, ha="right")
 
 bx(BX, SRC_Y, BW, SRC_H, ec=G)
-tx(BX + BW/2, SRC_Y+SRC_H-0.34, f"Grey literature  ({N_GREY_SOURCES} sources)",
-   fs=11, bold=True, c=G)
+tx(BX + BW/2, SRC_Y+SRC_H-0.34, f"Web search engines  ({N_WEB_ENGINES})",
+   fs=9.5, bold=True, c=G)
+rhw = (SRC_H - 0.70) / len(we)
+for i, (nm, n) in enumerate(we):
+    ry = SRC_Y + SRC_H - 0.70 - (i + 0.5) * rhw
+    tx(BX + 0.18, ry, nm, fs=7.6, c=DRK, ha="left")
+    tx(BX + BW - 0.15, ry, fmt(n), fs=7.6, c=G, bold=True, ha="right")
+
+bx(CX, SRC_Y, CW, SRC_H, ec=G)
+tx(CX + CW/2, SRC_Y+SRC_H-0.34, f"Organisational websites  ({N_GREY_SOURCES})",
+   fs=9.5, bold=True, c=G)
 rh2 = (SRC_H - 0.70) / len(gl)
 for i, (nm, n) in enumerate(gl):
     ry = SRC_Y + SRC_H - 0.70 - (i + 0.5) * rh2
-    tx(BX + 0.22, ry, nm, fs=6.7, c=DRK, ha="left")
-    tx(BX + BW - 0.18, ry, fmt(n), fs=9,   c=G, bold=True, ha="right")
+    tx(CX + 0.15, ry, nm, fs=6.0, c=DRK, ha="left")
+    tx(CX + CW - 0.13, ry, fmt(n), fs=7.6, c=G, bold=True, ha="right")
 
 # Total-identified summary line
 tx(MC, NOTE_Y, f"Total records identified:   n = {fmt(IDENTIFIED_TOTAL)}   ({N_SOURCES} sources)",
    fs=12.5, bold=True, c=G)
 dn(AX + AW/2, SRC_Y, NOTE_Y + 0.05)
 dn(BX + BW/2, SRC_Y, NOTE_Y + 0.05)
+dn(CX + CW/2, SRC_Y, NOTE_Y + 0.05)
 
 
 # ═══════════════════════════════════════
