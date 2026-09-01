@@ -1,0 +1,99 @@
+{
+  "identified_total": 40658,
+  "n_sources": 31,
+  "n_databases": 7,
+  "n_web_engines": 2,
+  "n_grey_sources": 22,
+  "databases": [
+    {
+      "name": "Scopus",
+      "n": 17021
+    },
+    {
+      "name": "Web of Science",
+      "n": 15179
+    },
+    {
+      "name": "CAB Abstracts",
+      "n": 5723
+    },
+    {
+      "name": "Academic Search Premier",
+      "n": 1187
+    },
+    {
+      "name": "EconLit",
+      "n": 479
+    },
+    {
+      "name": "ProQuest",
+      "n": 368
+    },
+    {
+      "name": "AGRIS",
+      "n": 3
+    }
+  ],
+  "web_engines": [
+    {
+      "name": "Google Scholar",
+      "n": 198
+    },
+    {
+      "name": "DuckDuckGo",
+      "n": 3
+    }
+  ],
+  "web_engines_total": 201,
+  "organisational_websites": [
+    {
+      "label": "UN agencies  (FAO \u00b7 IFAD \u00b7 UNDP \u00b7 UNEP \u00b7 UNFCCC)",
+      "n": 57
+    },
+    {
+      "label": "Dev. banks  (WB \u00b7 GCF \u00b7 GEF \u00b7 USAID \u00b7 IDB \u00b7 ADB \u00b7 AfDB \u00b7 FCDO)",
+      "n": 341
+    },
+    {
+      "label": "Research centres  (CGSpace \u00b7 IPAM-Amazon \u00b7 ARA \u00b7 GCA \u00b7 WASP)",
+      "n": 86
+    },
+    {
+      "label": "M&E networks  (3ie \u00b7 Campbell \u00b7 J-PAL)",
+      "n": 8
+    },
+    {
+      "label": "Adaptation metrics platform  (IPAM-AdaptMetrics)",
+      "n": 5
+    }
+  ],
+  "organisational_websites_total": 497,
+  "after_dedup": 26178,
+  "duplicates_removed": 14480,
+  "passed_ta": 8748,
+  "excluded_ta": 17430,
+  "excluded_ta_pct": 67,
+  "ft_sought": 180,
+  "ft_batches": 9,
+  "excluded_ft": 29,
+  "excluded_ft_pct": 16,
+  "included": 151,
+  "llm_model": "qwen2.5:14b",
+  "llm_kappa": 0.72,
+  "llm_sensitivity": 0.97,
+  "ft_retrieved": 3505,
+  "ft_not_retrieved": 5243,
+  "ft_source_breakdown": {
+    "unpaywall": 2173,
+    "elsevier_doi": 1100,
+    "semantic_scholar": 157,
+    "openalex": 37,
+    "core_title": 33,
+    "openalex_location": 3,
+    "frontiers": 2
+  },
+  "llm_ft_screened": 3465,
+  "llm_ft_included": 2368,
+  "llm_ft_excluded": 1096,
+  "llm_ft_needs_manual": 1
+}

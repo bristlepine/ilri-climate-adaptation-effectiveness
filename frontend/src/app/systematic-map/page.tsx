@@ -17,8 +17,19 @@ interface Study {
   producer_type: string;
   adaptation_focus: string;
   domain_type: string;
+  indicators_measured: string;
+  purpose_of_assessment: string;
   methodology: string;
   equity: string;
+}
+
+interface PrismaStats {
+  identified_total: number;
+  n_sources: number;
+  after_dedup: number;
+  ft_sought: number;
+  ft_batches: number;
+  included: number;
 }
 
 export default function SystematicMapPage() {
@@ -30,6 +41,7 @@ export default function SystematicMapPage() {
   const [sortCol, setSortCol] = useState<keyof Study>('year');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [geoView, setGeoView] = useState<'map' | 'bar'>('map');
+  const [stats, setStats] = useState<PrismaStats | null>(null);
 
   const figJson = (name: string) => `/map/data/human/${name}.json`;
 
@@ -44,6 +56,11 @@ export default function SystematicMapPage() {
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then((data: Study[]) => { setStudies(data); setStudiesLoading(false); })
       .catch(() => { setStudiesError(true); setStudiesLoading(false); });
+
+    fetch('/map/data/prisma_stats.json')
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((data: PrismaStats) => setStats(data))
+      .catch(() => {});
   }, []);
 
   const handleSort = (col: keyof Study) => {
@@ -61,6 +78,7 @@ export default function SystematicMapPage() {
         s.producer_type?.toLowerCase().includes(q) ||
         s.adaptation_focus?.toLowerCase().includes(q) ||
         s.domain_type?.toLowerCase().includes(q) ||
+        s.indicators_measured?.toLowerCase().includes(q) ||
         s.methodology?.toLowerCase().includes(q) ||
         s.year?.includes(q)
       );
@@ -95,7 +113,10 @@ export default function SystematicMapPage() {
       {/* Status Banner */}
       <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3">
         <p className="max-w-5xl mx-auto text-xs font-tagline text-yellow-800">
-          <strong>Final systematic map — June 2026.</strong> 40,653 records identified across 28 sources → 26,173 after deduplication → 180 full texts screened → 151 studies included across 9 human coding rounds.
+          <strong>Final systematic map — June 2026.</strong>{' '}
+          {stats
+            ? `${stats.identified_total.toLocaleString()} records identified across ${stats.n_sources} sources → ${stats.after_dedup.toLocaleString()} after deduplication → ${stats.ft_sought} full texts screened → ${stats.included} studies included across ${stats.ft_batches} human coding rounds.`
+            : 'Loading pipeline numbers…'}
         </p>
       </div>
 
@@ -104,7 +125,9 @@ export default function SystematicMapPage() {
         <div className="max-w-5xl mx-auto">
           <div className="mb-6">
             <SectionHeading id="flow-diagram" className="text-2xl font-logo font-bold text-green">PRISMA Flow Diagram</SectionHeading>
-            <p className="font-tagline text-sm text-gray-500 mt-1">Record flow across all 28 sources and screening stages, following PRISMA 2020 and ROSES reporting standards.</p>
+            <p className="font-tagline text-sm text-gray-500 mt-1">
+              Record flow across all {stats ? stats.n_sources : '—'} sources and screening stages, following PRISMA 2020 and ROSES reporting standards.
+            </p>
           </div>
           <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
             <img
@@ -122,7 +145,7 @@ export default function SystematicMapPage() {
           <p className="text-xs font-tagline uppercase tracking-widest text-green mb-3">What the evidence shows</p>
           <SectionHeading id="key-findings" className="text-2xl font-logo font-bold text-charcoal mb-4">Key findings</SectionHeading>
           <p className="font-tagline text-sm text-gray-600 leading-relaxed max-w-3xl mb-8">
-            Across 151 human-coded studies, the evidence base is recent, geographically concentrated, and skewed toward process outcomes and crop systems. Non-crop producers, marginalized groups, and cost data remain severely underrepresented.
+            Across {stats ? stats.included : '—'} human-coded studies, the evidence base is recent, geographically concentrated, and skewed toward process outcomes and crop systems. Non-crop producers, marginalized groups, and cost data remain severely underrepresented.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
@@ -261,7 +284,7 @@ export default function SystematicMapPage() {
                 <table className="w-full text-xs font-tagline border-collapse">
                   <thead className="sticky top-0 bg-gray-100 z-10">
                     <tr>
-                      {([['year','Year','w-12'],['title','Title','min-w-[220px]'],['country','Country',''],['producer_type','Producer Type',''],['domain_type','Domain Type',''],['methodology','Methodology','']] as [keyof Study, string, string][]).map(([col, label, extra]) => (
+                      {([['year','Year','w-12'],['title','Title','min-w-[220px]'],['country','Country',''],['producer_type','Producer Type',''],['domain_type','Domain Type',''],['indicators_measured','Indicators Measured','min-w-[180px]'],['methodology','Methodology','']] as [keyof Study, string, string][]).map(([col, label, extra]) => (
                         <th key={col} onClick={() => handleSort(col)}
                           className={`text-left px-3 py-2 text-gray-600 font-semibold border-b border-gray-200 cursor-pointer select-none hover:bg-gray-200 transition ${extra}`}>
                           {label}{sortCol === col ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
@@ -287,12 +310,13 @@ export default function SystematicMapPage() {
                         <td className="px-3 py-2 text-gray-600 align-top">{study.country || '—'}</td>
                         <td className="px-3 py-2 text-gray-600 align-top">{study.producer_type || '—'}</td>
                         <td className="px-3 py-2 text-gray-600 align-top">{study.domain_type || '—'}</td>
+                        <td className="px-3 py-2 text-gray-600 align-top line-clamp-2">{study.indicators_measured || '—'}</td>
                         <td className="px-3 py-2 text-gray-600 align-top">{study.methodology || '—'}</td>
                       </tr>
                     ))}
                     {filteredStudies.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-3 py-8 text-center text-gray-400">No studies match your search.</td>
+                        <td colSpan={7} className="px-3 py-8 text-center text-gray-400">No studies match your search.</td>
                       </tr>
                     )}
                   </tbody>

@@ -38,6 +38,7 @@ ROOT = Path(__file__).parent.parent
 OUT_DIR = ROOT / "scripts" / "outputs"
 OUT = OUT_DIR / "step16" / "interactive" / "human" / "prisma.png"
 LEG = Path(__file__).parent / "prisma_flow_d5.png"
+STATS_OUT = ROOT / "frontend" / "public" / "map" / "data" / "prisma_stats.json"
 
 
 def _load(rel):
@@ -55,6 +56,7 @@ step12b = _load("step12b/step12b_results.meta.json")
 step13_summary = _load("step13/step13_summary.json")
 step13_merge = _load("step13/step13_merge_summary.json")
 step15b = _load("step15/step15b_summary.json")
+step14 = _load("step14/step14_results.meta.json")  # LLM full-text screening (exploratory track)
 
 # ── IDENTIFICATION ──────────────────────────────────────────────────────────
 SCOPUS_RETURNED = step2b["scopus_corpus_size"]
@@ -83,10 +85,12 @@ GREY_LIT_GROUPS = {
         ["FAO", "IFAD", "UNDP", "UNEP", "UNFCCC"],
     "Dev. banks  (WB · GCF · GEF · USAID · IDB · ADB · AfDB · FCDO)":
         ["World Bank", "GEF", "GCF", "USAID", "IDB", "ADB", "AfDB", "FCDO"],
-    "Research centres  (CGSpace · IPAM · ARA · GCA · WASP)":
+    "Research centres  (CGSpace · IPAM-Amazon · ARA · GCA · WASP)":
         ["CGSpace (CGIAR)", "IPAM", "Adaptation Research Alliance", "GCA", "WASP"],
     "M&E networks  (3ie · Campbell · J-PAL)":
         ["3ie", "Campbell Collaboration", "J-PAL"],
+    "Adaptation metrics platform  (IPAM-AdaptMetrics)":
+        ["IPAM (Adaptation Metrics Platform)"],
 }
 grey_lit_keys = (set(BY_DB) - set(NAMED_DBS) - set(WEB_ENGINES)) | ZERO_YIELD_SOURCES
 grouped_keys = {k for grp in GREY_LIT_GROUPS.values() for k in grp}
@@ -174,8 +178,8 @@ EC  = EX + EW / 2                   # = 12.825
 # column has the longest row labels (grouped, multi-org parenthetical lists)
 # so it gets more room; web engines only ever lists two short names so it
 # gets the least.
-ID_GAP = 0.25
-BOXES_W = MW - 2 * ID_GAP           # = 8.90  (total width to split 3 ways)
+ID_GAP = 0.55
+BOXES_W = MW - 2 * ID_GAP           # (total width to split 3 ways)
 AW = 0.30 * BOXES_W                  # bibliographic databases
 BW = 0.22 * BOXES_W                  # web search engines
 CW = BOXES_W - AW - BW               # organisational websites (remainder, largest)
@@ -434,6 +438,48 @@ shutil.copy(str(OUT), str(LEG))
 plt.close()
 print(f"Saved : {OUT}  ({OUT.stat().st_size//1024} KB)")
 print(f"Copied: {LEG}")
+
+# ── Stats JSON — same numbers that drew the figure above, for the frontend ───
+# so the website can render these figures programmatically instead of typing
+# them in by hand (and drifting out of sync with this script, again).
+stats = {
+    "identified_total": IDENTIFIED_TOTAL,
+    "n_sources": N_SOURCES,
+    "n_databases": N_DATABASES,
+    "n_web_engines": N_WEB_ENGINES,
+    "n_grey_sources": N_GREY_SOURCES,
+    "databases": [{"name": nm, "n": n} for nm, n in db],
+    "web_engines": [{"name": nm, "n": n} for nm, n in we],
+    "web_engines_total": WEB_ENGINES_TOTAL,
+    "organisational_websites": [{"label": lbl, "n": n} for lbl, n in gl],
+    "organisational_websites_total": GREY_LIT_TOTAL,
+    "after_dedup": AFTER_DEDUP,
+    "duplicates_removed": DUPLICATES_REMOVED,
+    "passed_ta": PASSED_TA,
+    "excluded_ta": EXCLUDED_TA,
+    "excluded_ta_pct": EXCLUDED_TA_PCT,
+    "ft_sought": FT_SOUGHT,
+    "ft_batches": BATCHES,
+    "excluded_ft": EXCLUDED_FT,
+    "excluded_ft_pct": EXCLUDED_FT_PCT,
+    "included": INCLUDED,
+    "llm_model": "qwen2.5:14b",
+    "llm_kappa": 0.72,
+    "llm_sensitivity": 0.97,
+    # Full-text retrieval (feeds both the human sample and the LLM exploratory track)
+    "ft_retrieved": step13_summary["status_counts"]["retrieved"],
+    "ft_not_retrieved": step13_summary["status_counts"]["needs_manual"],
+    "ft_source_breakdown": step13_summary["source_breakdown"],
+    # LLM full-text screening — exploratory track, not the primary result (see INCLUDED above)
+    "llm_ft_screened": step14["rows_total"],
+    "llm_ft_included": step14["decision_counts"]["Include"],
+    "llm_ft_excluded": step14["decision_counts"]["Exclude"],
+    "llm_ft_needs_manual": step14["decision_counts"].get("Needs_Manual", 0),
+}
+STATS_OUT.parent.mkdir(parents=True, exist_ok=True)
+with open(STATS_OUT, "w") as f:
+    json.dump(stats, f, indent=2)
+print(f"Stats : {STATS_OUT}")
 print()
 print(f"Identified {fmt(IDENTIFIED_TOTAL)} ({N_SOURCES} sources) -> "
       f"dedup {fmt(AFTER_DEDUP)} -> passed T&A {fmt(PASSED_TA)} -> "

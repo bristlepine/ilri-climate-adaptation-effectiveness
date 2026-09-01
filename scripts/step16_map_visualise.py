@@ -2322,6 +2322,8 @@ def _export_studies_json(df: pd.DataFrame, out_dir: Path) -> None:
         ("producer_type_value",              "producer_type"),
         ("adaptation_focus_value",           "adaptation_focus"),
         ("process_outcome_domains_value",    "domain_type"),
+        ("indicators_measured_value",        "indicators_measured"),
+        ("purpose_of_assessment_value",      "purpose_of_assessment"),
         ("methodological_approach_value",    "methodology"),
         ("marginalized_subpopulations_value","equity"),
     ]
@@ -2362,6 +2364,8 @@ def _export_studies_csv(df: pd.DataFrame, out_dir: Path) -> None:
         ("producer_type_value",              "producer_type"),
         ("adaptation_focus_value",           "adaptation_focus"),
         ("process_outcome_domains_value",    "domain_type"),
+        ("indicators_measured_value",        "indicators_measured"),
+        ("purpose_of_assessment_value",      "purpose_of_assessment"),
         ("methodological_approach_value",    "methodology"),
         ("marginalized_subpopulations_value","equity"),
     ]
