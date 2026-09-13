@@ -106,3 +106,9 @@ deliverables/.credentials/
 *.temp
 *.bak
 
+# -------------------------------
+# Claude Code local state (per-user, never versioned)
+# -------------------------------
+.claude/settings.local.json
+.claude/worktrees/
+
