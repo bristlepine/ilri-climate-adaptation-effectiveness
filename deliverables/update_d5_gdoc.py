@@ -418,7 +418,7 @@ DOCUMENT = [
      "IRR statistics: custom Python (Cohen's κ, Wilson confidence intervals).\n"
      "Human screening: EPPI Reviewer (cloud-based systematic review platform).\n"
      "Website: Next.js (React) hosted on AWS Amplify.\n"
-     "All code and calibration data: github.com/bristlepine/ilri-climate-adaptation-effectiveness"),
+     "All code and calibration data: [Zenodo DOI — to be assigned upon final release]"),
 
 ]
 

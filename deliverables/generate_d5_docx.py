@@ -602,8 +602,8 @@ def build(pngs: dict[str, Path | None]) -> None:
 
     doc.add_paragraph()
     _add_body(doc,
-        "All pipeline code, criteria YAML, calibration data, and coding templates are publicly "
-        "available on GitHub: github.com/bristlepine/ilri-climate-adaptation-effectiveness. "
+        "All pipeline code, criteria YAML, calibration data, and coding templates are archived "
+        "at [Zenodo DOI — to be assigned upon final release]. "
         "The interactive evidence gap map (HTML) is available as a standalone file and as part "
         "of the project website. All figures are reproducible by re-running "
         "step16_map_visualise.py against the coded dataset."

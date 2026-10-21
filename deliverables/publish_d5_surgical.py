@@ -301,7 +301,7 @@ SEC5_DB = _lines(
     "The database includes all 2,368 LLM-screened records with key metadata (year, title, "
     "country, producer type, domain, methodology). A toggle switches between the human-coded "
     "results (n = 86, authoritative) and the LLM corpus (n = 2,368, exploratory). All data "
-    "and code are available at github.com/bristlepine/ilri-climate-adaptation-effectiveness",
+    "and code are archived at [Zenodo DOI — to be assigned upon final release]",
 )
 
 SEC6_CONCLUSIONS = _lines(

@@ -1,0 +1,12 @@
+Organization: IPAM (International Platform on Adaptation Metrics)
+Repository: https://adaptationmetrics.org/index.php/
+Search date: 2026-08-26
+
+Method: No internal search function available on the platform. All policy papers
+listed under the site's Policy Papers section were screened in full (per protocol
+§8.4: "no search available, so all policy papers will be screened").
+
+Total policy papers on platform: 5
+Note: Full-text PDFs are behind a JavaScript bot-verification challenge that
+blocks automated retrieval; title/abstract-level screening was performed using
+the descriptions published on the platform's own policy-papers listing page.

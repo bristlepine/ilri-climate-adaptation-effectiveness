@@ -250,8 +250,8 @@ DOCUMENT = [
      "The website includes all 2,368 LLM-screened records with key metadata, filterable by "
      "country, producer type, domain, and methodology. A toggle switches between the "
      "human-coded results (n = 86, primary) and the LLM corpus (n = 2,368, exploratory). "
-     "All data and code are available on GitHub: "
-     "github.com/bristlepine/ilri-climate-adaptation-effectiveness"),
+     "All data and code are archived at "
+     "[Zenodo DOI — to be assigned upon final release]"),
 
     # ── 9. References ──────────────────────────────────────────────────────────
     ("HEADING_1", "9.  References"),
