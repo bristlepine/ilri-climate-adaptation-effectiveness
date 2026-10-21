@@ -159,6 +159,9 @@ def render_text_pages(pdf: PdfPages, md_text: str) -> None:
     plt.close(fig)
 
 
+MAX_IMAGE_DPI = 400  # cap so file size stays sane; most source PNGs are 2-6k px wide
+
+
 def render_image_page(pdf: PdfPages, img_path: Path, title: str = "") -> None:
     img = Image.open(img_path)
     iw, ih = img.size
@@ -174,14 +177,21 @@ def render_image_page(pdf: PdfPages, img_path: Path, title: str = "") -> None:
     else:
         fig_w, fig_h = PAGE_W, PAGE_H
 
-    fig = plt.figure(figsize=(fig_w, fig_h))
+    # Render at the image's own native resolution (capped) instead of
+    # matplotlib's default ~100 dpi, which was blurring every embedded PNG —
+    # the axes occupy ~0.94 of fig_w, so match dpi to native px / drawn inches.
+    drawn_w_in = fig_w * 0.94
+    native_dpi = iw / drawn_w_in
+    dpi = min(native_dpi, MAX_IMAGE_DPI)
+
+    fig = plt.figure(figsize=(fig_w, fig_h), dpi=dpi)
     if title:
         fig.text(0.5, 0.975, title, ha="center", va="top", fontsize=11,
                   fontweight="bold", color=HEAD_COLOR)
     ax = fig.add_axes([0.03, 0.02, 0.94, 0.92 if title else 0.96])
-    ax.imshow(img)
+    ax.imshow(img, interpolation="lanczos")
     ax.axis("off")
-    pdf.savefig(fig)
+    pdf.savefig(fig, dpi=dpi)
     plt.close(fig)
 
 
