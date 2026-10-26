@@ -2,9 +2,11 @@
 """
 r8_flag_d6_candidates.py
 
-Flags the D6 candidate subset: confirmed-include papers (rework/outputs/
-step15/step15_human.csv) whose outcome focus is yields/income, assessed with
-a quantitative method. Forrest's 2026-10-26 ask (see work/handover/ilri.md)
+Flags the D6 candidate subset: confirmed-include papers (rework/data/
+D5_rework_database.csv, filtered confirmed_include == yes) whose outcome
+focus is yields/income, assessed with a quantitative method. Output carries
+the ID column (ILRI01-FT-XXX) for direct paper lookup when reviewing.
+Forrest's 2026-10-26 ask (see work/handover/ilri.md)
 was "flag which of the confirmed-include papers are process/outcome-domain
 papers using yield/income methods" — a vague prose criterion, so this script
 makes the operational definition explicit and reproducible rather than a
@@ -45,7 +47,11 @@ import pandas as pd
 from openpyxl.styles import Alignment
 
 REWORK_ROOT = Path(__file__).parent.parent
-HUMAN_CSV = REWORK_ROOT / "outputs" / "step15" / "step15_human.csv"
+# Sourced from the rework database directly (not step15_human.csv) so the
+# output carries the ID column (ILRI01-FT-XXX) — needed to look papers up
+# directly when reviewing, which step15_human.csv doesn't carry (it's keyed
+# on doi/title only, to match the original pipeline's schema).
+DATABASE_CSV = REWORK_ROOT / "data" / "D5_rework_database.csv"
 OUT_XLSX = REWORK_ROOT / "outputs" / "d6_candidates.xlsx"
 
 OUTCOME_DOMAINS = ["yields_productivity", "income_assets"]
@@ -53,7 +59,8 @@ QUANT_METHODS = ["quantitative", "experimental", "modeling_with_empirical_valida
 
 
 def main() -> None:
-    df = pd.read_csv(HUMAN_CSV, dtype=str).fillna("")
+    db = pd.read_csv(DATABASE_CSV, dtype=str).fillna("")
+    df = db[db["confirmed_include"].str.lower() == "yes"].copy()
 
     domain_mask = pd.Series(False, index=df.index)
     for d in OUTCOME_DOMAINS:
@@ -66,7 +73,7 @@ def main() -> None:
 
     candidate_mask = domain_mask & method_mask
     candidates = df[candidate_mask][
-        ["doi", "title", "process_outcome_domains", "methodological_approach",
+        ["ID", "doi", "title", "process_outcome_domains", "methodological_approach",
          "indicators_measured"]
     ].copy()
 
@@ -96,7 +103,7 @@ def main() -> None:
         methodology.to_excel(writer, sheet_name="Methodology", index=False, header=False)
 
         for sheet_name, frame, widths in [
-            ("D6 candidates", candidates, [16, 45, 32, 28, 45]),
+            ("D6 candidates", candidates, [16, 16, 45, 32, 28, 45]),
             ("Methodology", methodology, [45, 100]),
         ]:
             ws = writer.sheets[sheet_name]
