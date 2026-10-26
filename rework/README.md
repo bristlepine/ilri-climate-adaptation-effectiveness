@@ -80,6 +80,13 @@ rework/
                              embeds (Figures 1-9) into one flat folder, named and
                              ready to drop straight back into the live paths —
                              see outputs/d5_figures/ below
+    r8_flag_d6_candidates.py   flags the D6 handoff subset: confirmed-include
+                             papers tagged yields_productivity/income_assets
+                             AND coded with a quantitative/experimental/modeling
+                             method (controlled-vocabulary fields only — see its
+                             docstring for why free-text parsing of
+                             indicators_measured was tried and rejected) ->
+                             outputs/d6_candidates.csv
   outputs/
     step15/                 new step15_human.csv (115 rows) + step15b_summary.json
     step16/                 new figures, same filenames as scripts/outputs/step16/ —
@@ -104,7 +111,7 @@ rework/
 
 Run order: `r1_build_database.py` → `r2_run_figures.py` → `r2b_export_pngs.py` →
 `r3_gen_prisma_rework.py` → `r4_diff_report.py` → `r5_diff_figures.py` →
-`r6_build_pdf.py` → `r7_collect_d5_figures.py`.
+`r6_build_pdf.py` → `r7_collect_d5_figures.py` → `r8_flag_d6_candidates.py`.
 
 Join key between old and new data is **DOI** (title as fallback for the handful of
 records without one) — Forrest's `D5_rework_database.csv` carries both `doi` and
