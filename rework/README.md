@@ -86,7 +86,10 @@ rework/
                              method (controlled-vocabulary fields only — see its
                              docstring for why free-text parsing of
                              indicators_measured was tried and rejected) ->
-                             outputs/d6_candidates.csv
+                             outputs/d6_candidates.xlsx (two tabs: "D6
+                             candidates" the flagged list, "Methodology" the
+                             criteria/rejected-alternatives writeup, so the
+                             reasoning travels with the list)
   outputs/
     step15/                 new step15_human.csv (115 rows) + step15b_summary.json
     step16/                 new figures, same filenames as scripts/outputs/step16/ —

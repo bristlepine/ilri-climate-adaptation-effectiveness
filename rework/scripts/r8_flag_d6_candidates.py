@@ -10,6 +10,11 @@ papers using yield/income methods" — a vague prose criterion, so this script
 makes the operational definition explicit and reproducible rather than a
 one-off judgment call buried in chat history.
 
+Output is a single two-tab workbook (outputs/d6_candidates.xlsx) rather than
+a bare CSV, so the criteria travel with the list instead of living only in
+this docstring or chat history: "D6 candidates" (the flagged papers) and
+"Methodology" (this docstring's reasoning, in sheet form).
+
 Criterion (confirmed with Zarrar 2026-10-26 — deliberately grounded only in
 controlled-vocabulary codebook fields, not free-text parsing of
 indicators_measured: that field is free text, and a first attempt at a
@@ -37,10 +42,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+from openpyxl.styles import Alignment
 
 REWORK_ROOT = Path(__file__).parent.parent
 HUMAN_CSV = REWORK_ROOT / "outputs" / "step15" / "step15_human.csv"
-OUT_CSV = REWORK_ROOT / "outputs" / "d6_candidates.csv"
+OUT_XLSX = REWORK_ROOT / "outputs" / "d6_candidates.xlsx"
 
 OUTCOME_DOMAINS = ["yields_productivity", "income_assets"]
 QUANT_METHODS = ["quantitative", "experimental", "modeling_with_empirical_validation"]
@@ -69,9 +75,69 @@ def main() -> None:
     print(f"[r8] {candidate_mask.sum()} also use a quantitative/experimental/"
           f"modeling method -> D6 candidates")
 
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
-    candidates.to_csv(OUT_CSV, index=False)
-    print(f"[r8] Wrote {len(candidates)} rows -> {OUT_CSV}")
+    methodology_rows = [
+        ("What this is",
+         f"{candidate_mask.sum()} of {len(df)} D5 confirmed-include papers, flagged as "
+         f"the subset to hand off to D6."),
+        ("Why",
+         "Forrest's 2026-10-26 ask (logged in work/handover/ilri.md): \"flag which of the "
+         "confirmed-include papers are process/outcome-domain papers using yield/income "
+         "methods.\" That phrase wasn't an operational definition anywhere in the data — "
+         "this sheet is Claude's attempt to make one explicit and reproducible, confirmed "
+         "with Zarrar 2026-10-26. It is not Forrest's own wording."),
+        ("", ""),
+        ("CRITERION", ""),
+        ("A paper is a candidate if BOTH:", ""),
+        ("1. Domain",
+         f"process_outcome_domains contains yields_productivity or income_assets "
+         f"({domain_mask.sum()}/{len(df)} papers meet this alone)"),
+        ("2. Method",
+         "methodological_approach contains quantitative, experimental, or "
+         "modeling_with_empirical_validation — i.e. the outcome was actually measured "
+         "with a quantitative method, not just discussed qualitatively"),
+        ("Why these two fields",
+         "Both are controlled-vocabulary codebook fields (fixed value sets), not free "
+         "text — deliberate, see \"Rejected alternatives\" below."),
+        ("", ""),
+        ("REJECTED ALTERNATIVES", ""),
+        ("Domain tag alone, no method filter",
+         f"{domain_mask.sum()} papers — too broad: includes papers where yield/income is "
+         f"mentioned but only discussed qualitatively (narrative), not measured."),
+        ("Domain tag + method filter + a regex over indicators_measured "
+         "requiring an explicit unit (kg/ha, $, etc.)",
+         "30 papers — tried first, since indicators_measured names the actual indicator. "
+         "Rejected: it's free text, so the regex's fixed unit vocabulary produced false "
+         "negatives — e.g. \"wheat and barley yield 1988-2017\" (no adjacent unit), "
+         "\"catchability (kg/manday)\" (unanticipated unit format), \"Household income per "
+         "adult equivalent (KES)\" (currency code not in the list). No fixed vocabulary "
+         "reliably covers free text, so this was dropped in favour of the two "
+         "controlled-vocabulary fields above, which don't have that failure mode."),
+        ("", ""),
+        ("REPRODUCE", ""),
+        ("Command", "conda run -n ilri01 python rework/scripts/r8_flag_d6_candidates.py"),
+        ("Source",
+         f"rework/outputs/step15/step15_human.csv ({len(df)} confirmed-include records, "
+         f"per rework/scripts/r1_build_database.py's confirmed_include filter)."),
+    ]
+    methodology = pd.DataFrame(methodology_rows, columns=["", ""])
+
+    OUT_XLSX.parent.mkdir(parents=True, exist_ok=True)
+    with pd.ExcelWriter(OUT_XLSX, engine="openpyxl") as writer:
+        candidates.to_excel(writer, sheet_name="D6 candidates", index=False)
+        methodology.to_excel(writer, sheet_name="Methodology", index=False, header=False)
+
+        for sheet_name, frame, widths in [
+            ("D6 candidates", candidates, [16, 45, 32, 28, 45]),
+            ("Methodology", methodology, [45, 100]),
+        ]:
+            ws = writer.sheets[sheet_name]
+            for i, w in enumerate(widths, start=1):
+                ws.column_dimensions[chr(64 + i)].width = w
+            for row in ws.iter_rows():
+                for cell in row:
+                    cell.alignment = Alignment(wrap_text=True, vertical="top")
+
+    print(f"[r8] Wrote {len(candidates)} candidate rows + methodology sheet -> {OUT_XLSX}")
 
 
 if __name__ == "__main__":
