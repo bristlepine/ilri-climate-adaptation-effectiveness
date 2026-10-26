@@ -7,10 +7,15 @@ one per ILRI01-FT-XXX record) into a step15_human.csv-equivalent dataset the
 original pipeline's step16_map_visualise.py can consume unmodified, plus a
 step15b_summary.json-equivalent for the PRISMA box counts.
 
-Filter: final_include == "yes" (115 / 151 coded records) — the full rework
-recommendation, per the 2026-10-21 decision with Zarrar. Rows are joined back
-to the original pipeline implicitly via DOI (title as fallback), matching how
-step16_map_visualise.py and deliverables/_gen_prisma.py already key on doi.
+Filter: confirmed_include == "yes" (108 / 151 coded records) — the ground
+truth after Forrest and Caro hand-checked all 27 borderline cases on
+2026-10-26 (9 overrides of the AI's borderline call: 8 flips include->exclude,
+1 exclude->include) and logged the result in confirmed_include. Supersedes the
+2026-10-21 prelim pass, which accepted the AI rework's own final_include
+recommendation as-is (115/151) pending this human borderline pass — that
+column is kept in the source data but no longer used here. Rows are joined
+back to the original pipeline implicitly via DOI (title as fallback), matching
+how step16_map_visualise.py and deliverables/_gen_prisma.py already key on doi.
 
 Run:
   conda run -n ilri01 python rework/scripts/r1_build_database.py
@@ -56,11 +61,20 @@ def main() -> None:
     db = pd.read_csv(DATA_IN, dtype=str)
     print(f"[r1] Loaded {len(db)} rows from {DATA_IN.name}")
 
-    included = db[db["final_include"].astype(str).str.lower() == "yes"].copy()
-    excluded = db[db["final_include"].astype(str).str.lower() == "no"].copy()
-    uncoded = db[db["final_include"].isna()].copy()
-    print(f"[r1] final_include: yes={len(included)}  no={len(excluded)}  "
+    included = db[db["confirmed_include"].astype(str).str.lower() == "yes"].copy()
+    excluded = db[db["confirmed_include"].astype(str).str.lower() == "no"].copy()
+    uncoded = db[db["confirmed_include"].isna()].copy()
+    print(f"[r1] confirmed_include: yes={len(included)}  no={len(excluded)}  "
           f"uncoded(no full text)={len(uncoded)}")
+
+    flips = db[
+        db["confirmed_include"].astype(str).str.lower().isin(["yes", "no"])
+        & db["final_include"].astype(str).str.lower().isin(["yes", "no"])
+        & (db["confirmed_include"].astype(str).str.lower()
+           != db["final_include"].astype(str).str.lower())
+    ]
+    print(f"[r1] {len(flips)} record(s) flipped from the AI's final_include by "
+          f"the 2026-10-26 human borderline check")
 
     out = pd.DataFrame()
     out["batch"] = included["source_round"]
@@ -73,6 +87,14 @@ def main() -> None:
     borderline_mask = included["borderline_flag"].astype(str).str.lower() == "true"
     out.loc[borderline_mask, "notes"] = (
         out.loc[borderline_mask, "notes"].fillna("") + " [borderline_inclusion]"
+    ).str.strip(" |")
+    # And flag where the human borderline check overrode the AI's own call.
+    flip_mask = included["ID"].isin(flips["ID"])
+    out.loc[flip_mask, "notes"] = (
+        out.loc[flip_mask, "notes"].fillna("")
+        + " [human-overrode AI exclude->include: "
+        + included.loc[flip_mask, "borderline_check_rationale"].fillna("").astype(str)
+        + "]"
     ).str.strip(" |")
 
     for field in CODEBOOK_FIELDS:
@@ -105,14 +127,17 @@ def main() -> None:
         "unique_dois": int(out["doi"].nunique()),
         "output_csv": str(out_csv),
         "rework_note": (
-            f"Prior pipeline excluded {orig_excluded} at the RA confirmed_include "
-            f"gate (unchanged). Forrest's rework additionally excludes "
-            f"{new_excluded_at_ft} of the {orig.get('final_human_records', 151)} "
-            f"records the RAs had included (23 clear + 13 borderline — full "
-            f"rework recommendation adopted per 2026-10-21 decision), and keeps "
-            f"4 out-of-window (2026) records and FT-021 (edited book, unsplit) "
-            f"provisionally, pending co-author sign-off — see "
-            f"rework/data/D5_Coding_Rework_Executive_Summary.md."
+            f"Prior pipeline excluded {orig_excluded} at the original RA "
+            f"confirmed_include gate (unchanged). Forrest's rework additionally "
+            f"excludes {new_excluded_at_ft} of the {orig.get('final_human_records', 151)} "
+            f"records the RAs had included, per the final confirmed_include ground "
+            f"truth: the AI rework's own recommendation (115/151, 36 exclusions), "
+            f"as hand-checked against all 27 borderline cases by Forrest and Caro "
+            f"on 2026-10-26 ({len(flips)} overrides of the AI's borderline call), "
+            f"giving 108/151 confirmed included. Still keeps 4 out-of-window (2026) "
+            f"records and FT-021 (edited book, unsplit) provisionally, pending "
+            f"co-author sign-off — see rework/data/D5_Coding_Rework_Executive_Summary.md "
+            f"and work/handover/ilri.md for the borderline-check detail."
         ),
     }
     summary_path = OUT_DIR / "step15b_summary.json"

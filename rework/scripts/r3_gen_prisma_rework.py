@@ -240,7 +240,8 @@ band( 0.2,  4.0, "INCLUDED")
 
 # ── PRELIMINARY banner ────────────────────────────────────────────────────────
 tx(FW/2, FH - 0.07,
-   "PRELIMINARY — rework eligibility correction, pending co-author sign-off",
+   "PRELIMINARY — rework eligibility correction, borderline-adjudicated 2026-10-26, "
+   "pending final co-author sign-off",
    fs=9.5, bold=True, c=RT)
 
 
@@ -365,9 +366,11 @@ _fy = footer_block(_fy,
     f"Full-text eligibility re-assessed by an independent AI-reviewer rework (lead + second "
     f"reviewer adjudication, blinded A/B audit) of all n = {fmt(FT_SOUGHT)} records originally "
     f"human-coded ({BATCHES} batches of 20) drawn from n = {fmt(PASSED_TA)} records passing "
-    f"title & abstract screening. “Excluded” combines the original RA-stage exclusions with "
-    f"{EXCLUDED_FT - 29 if EXCLUDED_FT >= 29 else EXCLUDED_FT} additional exclusions identified by "
-    f"the rework (23 clear + 13 borderline). See rework/data/D5_Coding_Rework_Executive_Summary.md.",
+    f"title & abstract screening, then human-adjudicated on all 27 borderline cases by Forrest "
+    f"and Caro (2026-10-26, 9 overrides of the AI's borderline call). “Excluded” combines the "
+    f"original RA-stage exclusions with {EXCLUDED_FT - 29 if EXCLUDED_FT >= 29 else EXCLUDED_FT} "
+    f"additional exclusions confirmed by the rework. See "
+    f"rework/data/D5_Coding_Rework_Executive_Summary.md and work/handover/ilri.md.",
     fs=7.6, c=DRK, width_chars=100) - 0.34
 _fy = footer_block(_fy,
     "USAID DEC taken offline 2025; J-PAL searched with no results; "
@@ -375,7 +378,8 @@ _fy = footer_block(_fy,
     fs=7.8, c=GRY, width_chars=105) - 0.26
 _fy = footer_block(_fy,
     "PRISMA 2020.   CEE Guidelines for Systematic Evidence Syntheses v6.0.   "
-    "PRELIMINARY — figures only, pending co-author review of borderline cases.",
+    "PRELIMINARY — borderline-adjudicated, pending final co-author sign-off on remaining "
+    "open items (out-of-window records, FT-021 chapter split, metadata corrections).",
     fs=7.8, c=GRY, width_chars=105)
 
 

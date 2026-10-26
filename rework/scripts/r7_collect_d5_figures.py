@@ -13,8 +13,9 @@ this script prints) and re-run publish_d5_from_d4.py — no path hunting.
 Sources:
   - 8 of 9 figures come from the rework run (r2_run_figures.py /
     r3_gen_prisma_rework.py) — these change because they're built from the
-    115-record rework database (llm_vs_human.png included: it compares the
-    unchanged LLM corpus against whichever human.csv is on disk).
+    confirmed_include rework database (currently 108/151 records, per the
+    2026-10-26 borderline adjudication — llm_vs_human.png included: it
+    compares the unchanged LLM corpus against whichever human.csv is on disk).
   - 1 is carried over UNCHANGED from the original pipeline: saturation.png,
     the information-saturation curve across RA coding batches — a property
     of the coding *process*, not the eligibility recoding, so the rework
@@ -25,6 +26,7 @@ Run (after r1-r3; r5/r6 not required):
 """
 from __future__ import annotations
 
+import json
 import shutil
 from pathlib import Path
 
@@ -34,17 +36,23 @@ REPO_ROOT = REWORK_ROOT.parent
 ORIG_STEP16 = REPO_ROOT / "scripts" / "outputs" / "step16"
 ORIG_HUMAN = ORIG_STEP16 / "interactive" / "human"
 ORIG_DELIV = REPO_ROOT / "deliverables"
+ORIG_SUMMARY = REPO_ROOT / "scripts" / "outputs" / "step15" / "step15b_summary.json"
 
 NEW_STEP16 = REWORK_ROOT / "outputs" / "step16"
 NEW_HUMAN = NEW_STEP16 / "interactive" / "human"
 NEW_DIFFS = REWORK_ROOT / "outputs" / "diffs"
+NEW_SUMMARY = REWORK_ROOT / "outputs" / "step15" / "step15b_summary.json"
 
 OUT_DIR = REWORK_ROOT / "outputs" / "d5_figures"
+
+_orig_n = json.loads(ORIG_SUMMARY.read_text())["final_human_records"] if ORIG_SUMMARY.exists() else "?"
+_new_n = json.loads(NEW_SUMMARY.read_text())["final_human_records"] if NEW_SUMMARY.exists() else "?"
+_CHANGED_N = f"CHANGED (n={_orig_n} -> {_new_n})"
 
 # (output filename, source path, where it replaces in the live repo, changed?)
 MANIFEST = [
     ("prisma_flow_d5.png", NEW_DIFFS / "prisma_flow_d5_rework.png",
-     "deliverables/prisma_flow_d5.png", "CHANGED (n=151 -> 115)"),
+     "deliverables/prisma_flow_d5.png", _CHANGED_N),
     ("evidence_gap_map.png", NEW_HUMAN / "evidence_gap_map.png",
      "scripts/outputs/step16/interactive/human/evidence_gap_map.png", "CHANGED"),
     ("geographic_map.png", NEW_HUMAN / "geographic_map.png",
@@ -61,7 +69,7 @@ MANIFEST = [
      "scripts/outputs/step16/saturation.png",
      "UNCHANGED (coding-process saturation, not affected by eligibility rework)"),
     ("llm_vs_human.png", NEW_STEP16 / "llm_vs_human.png",
-     "scripts/outputs/step16/llm_vs_human.png", "CHANGED (human side now n=115)"),
+     "scripts/outputs/step16/llm_vs_human.png", f"CHANGED (human side now n={_new_n})"),
 ]
 
 

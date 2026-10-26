@@ -144,11 +144,12 @@ def make_side_by_side(old_path: Path, new_path: Path, out_path: Path,
 
 
 def make_field_shifts_chart(old_df: pd.DataFrame, new_df: pd.DataFrame) -> None:
+    n_old, n_new = len(old_df), len(new_df)
     n_fields = len(DIFF_FIELDS)
     fig, axes = plt.subplots(n_fields, 1, figsize=(9, 2.3 * n_fields))
     fig.suptitle(
         "Field-value shifts: prior (RA) coding vs rework coding\n"
-        "(counts among each dataset's own included records — n=151 before, n=115 after)",
+        f"(counts among each dataset's own included records — n={n_old} before, n={n_new} after)",
         fontsize=12, fontweight="bold", y=1.0, color=TEXT_COLOR,
     )
 
@@ -163,8 +164,8 @@ def make_field_shifts_chart(old_df: pd.DataFrame, new_df: pd.DataFrame) -> None:
         old_vals = [old_vc.get(v, 0) for v in values]
         new_vals = [new_vc.get(v, 0) for v in values]
 
-        ax.barh([i + h / 2 for i in y], old_vals, height=h, color=BEFORE_COLOR, label="Before (n=151)")
-        ax.barh([i - h / 2 for i in y], new_vals, height=h, color=AFTER_COLOR, label="After (n=115)")
+        ax.barh([i + h / 2 for i in y], old_vals, height=h, color=BEFORE_COLOR, label=f"Before (n={n_old})")
+        ax.barh([i - h / 2 for i in y], new_vals, height=h, color=AFTER_COLOR, label=f"After (n={n_new})")
 
         for i, v in enumerate(old_vals):
             if v:
@@ -185,7 +186,7 @@ def make_field_shifts_chart(old_df: pd.DataFrame, new_df: pd.DataFrame) -> None:
         plt.Rectangle((0, 0), 1, 1, color=BEFORE_COLOR),
         plt.Rectangle((0, 0), 1, 1, color=AFTER_COLOR),
     ]
-    fig.legend(handles, ["Before (prior RA coding, n=151)", "After (rework, n=115)"],
+    fig.legend(handles, [f"Before (prior RA coding, n={n_old})", f"After (rework, n={n_new})"],
                loc="lower center", ncol=2, frameon=False, fontsize=10,
                bbox_to_anchor=(0.5, -0.01))
     fig.tight_layout(rect=[0, 0.02, 1, 0.97])
@@ -198,6 +199,10 @@ def make_field_shifts_chart(old_df: pd.DataFrame, new_df: pd.DataFrame) -> None:
 def main() -> None:
     SBS_DIR.mkdir(parents=True, exist_ok=True)
 
+    old_df = pd.read_csv(OLD_HUMAN_CSV, dtype=str)
+    new_df = pd.read_csv(NEW_HUMAN_CSV, dtype=str)
+    n_old, n_new = len(old_df), len(new_df)
+
     for name, label in FIGURES:
         old_png = OLD_HUMAN_DIR / f"{name}.png"
         new_png = NEW_HUMAN_DIR / f"{name}.png"
@@ -206,17 +211,16 @@ def main() -> None:
             continue
         make_side_by_side(
             old_png, new_png, SBS_DIR / f"{name}.png",
-            f"BEFORE — {label} (n=151)", f"AFTER — {label} (n=115, rework)",
+            f"BEFORE — {label} (n={n_old})", f"AFTER — {label} (n={n_new}, rework)",
         )
 
     if OLD_PRISMA.exists() and NEW_PRISMA.exists():
         make_side_by_side(
             OLD_PRISMA, NEW_PRISMA, OUT_DIR / "prisma_side_by_side.png",
-            "BEFORE — PRISMA (n=151 included)", "AFTER — PRISMA (n=115, rework, prelim)",
+            f"BEFORE — PRISMA (n={n_old} included)",
+            f"AFTER — PRISMA (n={n_new}, rework, prelim)",
         )
 
-    old_df = pd.read_csv(OLD_HUMAN_CSV, dtype=str)
-    new_df = pd.read_csv(NEW_HUMAN_CSV, dtype=str)
     make_field_shifts_chart(old_df, new_df)
 
     print("[r5] Done.")
