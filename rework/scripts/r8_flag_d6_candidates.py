@@ -78,46 +78,15 @@ def main() -> None:
     methodology_rows = [
         ("What this is",
          f"{candidate_mask.sum()} of {len(df)} D5 confirmed-include papers, flagged as "
-         f"the subset to hand off to D6."),
-        ("Why",
-         "Forrest's 2026-10-26 ask (logged in work/handover/ilri.md): \"flag which of the "
-         "confirmed-include papers are process/outcome-domain papers using yield/income "
-         "methods.\" That phrase wasn't an operational definition anywhere in the data — "
-         "this sheet is Claude's attempt to make one explicit and reproducible, confirmed "
-         "with Zarrar 2026-10-26. It is not Forrest's own wording."),
+         f"candidates for D6."),
         ("", ""),
-        ("CRITERION", ""),
-        ("A paper is a candidate if BOTH:", ""),
+        ("Criterion", "A paper is a candidate if BOTH of the following are true:"),
         ("1. Domain",
-         f"process_outcome_domains contains yields_productivity or income_assets "
-         f"({domain_mask.sum()}/{len(df)} papers meet this alone)"),
+         "process_outcome_domains contains yields_productivity or income_assets"),
         ("2. Method",
          "methodological_approach contains quantitative, experimental, or "
-         "modeling_with_empirical_validation — i.e. the outcome was actually measured "
-         "with a quantitative method, not just discussed qualitatively"),
-        ("Why these two fields",
-         "Both are controlled-vocabulary codebook fields (fixed value sets), not free "
-         "text — deliberate, see \"Rejected alternatives\" below."),
-        ("", ""),
-        ("REJECTED ALTERNATIVES", ""),
-        ("Domain tag alone, no method filter",
-         f"{domain_mask.sum()} papers — too broad: includes papers where yield/income is "
-         f"mentioned but only discussed qualitatively (narrative), not measured."),
-        ("Domain tag + method filter + a regex over indicators_measured "
-         "requiring an explicit unit (kg/ha, $, etc.)",
-         "30 papers — tried first, since indicators_measured names the actual indicator. "
-         "Rejected: it's free text, so the regex's fixed unit vocabulary produced false "
-         "negatives — e.g. \"wheat and barley yield 1988-2017\" (no adjacent unit), "
-         "\"catchability (kg/manday)\" (unanticipated unit format), \"Household income per "
-         "adult equivalent (KES)\" (currency code not in the list). No fixed vocabulary "
-         "reliably covers free text, so this was dropped in favour of the two "
-         "controlled-vocabulary fields above, which don't have that failure mode."),
-        ("", ""),
-        ("REPRODUCE", ""),
-        ("Command", "conda run -n ilri01 python rework/scripts/r8_flag_d6_candidates.py"),
-        ("Source",
-         f"rework/outputs/step15/step15_human.csv ({len(df)} confirmed-include records, "
-         f"per rework/scripts/r1_build_database.py's confirmed_include filter)."),
+         "modeling_with_empirical_validation (i.e. the outcome was measured with a "
+         "quantitative method, not just discussed qualitatively)"),
     ]
     methodology = pd.DataFrame(methodology_rows, columns=["", ""])
 
