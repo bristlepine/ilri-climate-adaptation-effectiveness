@@ -17,6 +17,7 @@ Run:
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -24,6 +25,16 @@ REWORK_ROOT = Path(__file__).parent.parent
 REPO_ROOT = REWORK_ROOT.parent
 STEP16B_PATH = REPO_ROOT / "scripts" / "step16b_export_pngs.py"
 OUT_ROOT = REWORK_ROOT / "outputs" / "step16"
+
+# step16b's DIMS hardcodes a fixed PNG height per chart, overriding the
+# height each chart's own JSON layout already computes correctly (e.g.
+# geographic_bar's JSON sets height = max(400, n_countries*22+120), but the
+# PNG export forces 480px regardless — with ~39 countries that crams the
+# bars so tightly Plotly silently drops every other y-axis label). Rather
+# than edit the shared script's DIMS dict, read each listed chart's own
+# JSON height here and use that instead, so the name never gets lost again
+# regardless of how many bars there are.
+DYNAMIC_HEIGHT_CHARTS = ["geographic_bar"]
 
 
 def main() -> None:
@@ -40,6 +51,15 @@ def main() -> None:
     module.HUMAN_PNG = module.INTER / "human"
     module.COMP_PNG = module.INTER / "compare"
     module.LLM_PNG.mkdir(exist_ok=True, parents=True)
+
+    for name in DYNAMIC_HEIGHT_CHARTS:
+        json_path = module.HUMAN_J / f"{name}.json"
+        if json_path.exists():
+            height = json.loads(json_path.read_text())["layout"]["height"]
+            w, _ = module.DIMS.get(name, (900, height))
+            module.DIMS[name] = (w, height)
+            print(f"[r2b] {name}: using its own JSON height ({height}px) "
+                  f"instead of the fixed default")
 
     print(f"[r2b] Exporting PNGs under {OUT_ROOT}")
     module.main()
