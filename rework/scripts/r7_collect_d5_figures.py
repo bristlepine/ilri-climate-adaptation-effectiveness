@@ -2,9 +2,11 @@
 """
 r7_collect_d5_figures.py
 
-Collects every figure that deliverables/publish_d5_from_d4.py actually embeds
-into the D5 docx (its FIGURES + NEW_FIGURES lists, Figures 1-9) into one flat
-folder, rework/outputs/d5_figures/, named exactly as that script expects them.
+Collects every human-track figure embedded in the D5 docx into one flat
+folder, rework/outputs/d5_figures/, named exactly as the source scripts
+expect them: the original 9 from publish_d5_from_d4.py's FIGURES +
+NEW_FIGURES lists, plus 2 added for the v04 amendment (domain x time period,
+producer type x region — step16c_crosstabs.py).
 
 This makes the swap mechanical: once the rework numbers are approved, drop
 this folder's contents over the corresponding original paths (see the table
@@ -70,6 +72,11 @@ MANIFEST = [
      "UNCHANGED (coding-process saturation, not affected by eligibility rework)"),
     ("llm_vs_human.png", NEW_STEP16 / "llm_vs_human.png",
      "scripts/outputs/step16/llm_vs_human.png", f"CHANGED (human side now n={_new_n})"),
+    # v04 amendment additions (Figures 11-12), from r2c_run_crosstabs.py
+    ("crosstab_domain_time.png", NEW_HUMAN / "crosstab_domain_time.png",
+     "scripts/outputs/step16/interactive/human/crosstab_domain_time.png", _CHANGED_N),
+    ("crosstab_producer_region.png", NEW_HUMAN / "crosstab_producer_region.png",
+     "scripts/outputs/step16/interactive/human/crosstab_producer_region.png", _CHANGED_N),
 ]
 
 
