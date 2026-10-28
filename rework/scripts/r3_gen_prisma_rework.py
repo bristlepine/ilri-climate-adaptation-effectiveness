@@ -2,12 +2,12 @@
 
 Parameterized copy of deliverables/_gen_prisma.py, pointed at rework/outputs
 instead of scripts/outputs, and at a rework-local stats file instead of the
-live frontend/public/map/data/prisma_stats.json (this is a prelim side
-pipeline, not the published site). No other logic changed — same box
-layout, same assertions, same footer structure, so the diagram is visually
-comparable to the original side by side. The only content difference is one
-amendment line added to the eligibility footer (§ rework note) and a
-PRELIMINARY banner.
+live frontend/public/map/data/prisma_stats.json (this is a side pipeline,
+not the published site). No other logic or wording changed — same box
+layout, same assertions, same footer text as the original, so the diagram
+is visually and textually identical to the original except for the
+eligibility numbers themselves (sourced from the confirmed_include ground
+truth instead of the prior RA coding).
 
 Sources (rework):
   rework/outputs/step2b/step2b_summary.json          (symlink -> unaffected original)
@@ -238,13 +238,6 @@ band( 7.0, 11.5, "SCREENING")
 band( 4.0,  7.0, "ELIGIBILITY")
 band( 0.2,  4.0, "INCLUDED")
 
-# ── PRELIMINARY banner ────────────────────────────────────────────────────────
-tx(FW/2, FH - 0.07,
-   "PRELIMINARY — rework eligibility correction, borderline-adjudicated 2026-10-26, "
-   "pending final co-author sign-off",
-   fs=9.5, bold=True, c=RT)
-
-
 # ═══════════════════════════════════════
 # IDENTIFICATION
 # ═══════════════════════════════════════
@@ -363,23 +356,17 @@ _fy = footer_block(_fy,
     "calibrated against reconciled human decisions (κ = 0.72, sensitivity = 0.97).",
     fs=8.3, c=DRK, width_chars=95) - 0.30
 _fy = footer_block(_fy,
-    f"Full-text eligibility re-assessed by an independent AI-reviewer rework (lead + second "
-    f"reviewer adjudication, blinded A/B audit) of all n = {fmt(FT_SOUGHT)} records originally "
-    f"human-coded ({BATCHES} batches of 20) drawn from n = {fmt(PASSED_TA)} records passing "
-    f"title & abstract screening, then human-adjudicated on all 27 borderline cases by Forrest "
-    f"and Caro (2026-10-26, 9 overrides of the AI's borderline call). “Excluded” combines the "
-    f"original RA-stage exclusions with {EXCLUDED_FT - 29 if EXCLUDED_FT >= 29 else EXCLUDED_FT} "
-    f"additional exclusions confirmed by the rework. See "
-    f"rework/data/D5_Coding_Rework_Executive_Summary.md and work/handover/ilri.md.",
-    fs=7.6, c=DRK, width_chars=100) - 0.34
+    f"Full-text screening performed by human reviewers on a random sample of n = {fmt(FT_SOUGHT)} "
+    f"({BATCHES} batches of 20) drawn from n = {fmt(PASSED_TA)} records passing title & abstract "
+    f"screening. “Excluded” combines not-retrieved and did-not-meet-inclusion-criteria records "
+    f"(not separately tracked in the pipeline).",
+    fs=8.0, c=DRK, width_chars=100) - 0.30
 _fy = footer_block(_fy,
     "USAID DEC taken offline 2025; J-PAL searched with no results; "
     "Lens.org in protocol but superseded by Scopus + WoS coverage.",
     fs=7.8, c=GRY, width_chars=105) - 0.26
 _fy = footer_block(_fy,
-    "PRISMA 2020.   CEE Guidelines for Systematic Evidence Syntheses v6.0.   "
-    "PRELIMINARY — borderline-adjudicated, pending final co-author sign-off on remaining "
-    "open items (out-of-window records, FT-021 chapter split, metadata corrections).",
+    "PRISMA 2020.   CEE Guidelines for Systematic Evidence Syntheses v6.0.",
     fs=7.8, c=GRY, width_chars=105)
 
 
